@@ -535,7 +535,7 @@ function LemonadeGame(){
  }, []);
 
  const handleAuth = (user, name) => { setAuthUser(user); setAuthName(name); setShowAuth(false); };
- const handleLogout = async () => { if(supabase) await supabase.auth.signOut(); setAuthUser(null); setAuthName(''); };
+ const handleLogout = async () => { if(supabase) await supabase.auth.signOut(); setAuthUser(null); setAuthName(''); setPh('title'); };
 
  const saveGameResult = async (finalProfit, difficulty, competitors, stars, repFinal, cupsSold) => {
    if (!supabase || !authUser) return;
