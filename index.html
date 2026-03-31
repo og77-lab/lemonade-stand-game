@@ -400,13 +400,30 @@ const Btn=({children,onClick,color=C.gn,disabled,small,style={}})=>(
   onMouseLeave={e=>{e.target.style.transform="scale(1)";e.target.style.boxShadow=disabled?"none":`0 4px 14px ${color}40`;}}>
   {children}</button>);
 const Card=({children,style={}})=>(<div style={{background:C.cd,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderRadius:16,padding:16,border:`1px solid ${C.bd}`,boxShadow:"0 4px 20px rgba(0,0,0,.06)",marginBottom:12,transition:"transform .2s ease, box-shadow .2s ease",...style}}>{children}</div>);
-const SBar=({cash,lemons,honey,ice,rep,day,loan,onDash})=>{
+const SBar=({cash,lemons,honey,ice,rep,day,loan,onDash,onSave,saveMsg,userName,onLogout})=>{
  const cashColor=cash>=0?"#43A047":"#E53935";const repColor=rep>=65?"#43A047":rep<=35?"#E53935":"#3E2723";
  const hasLoan=loan>0;
  return(<div style={{position:"sticky",top:0,zIndex:20,
   background:"rgba(255,253,231,.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
   borderRadius:"0 0 16px 16px",padding:"8px 14px",marginBottom:10,
   boxShadow:"0 4px 20px rgba(0,0,0,.08)",border:"1px solid rgba(232,213,176,.4)"}}>
+  {userName&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,paddingBottom:4,borderBottom:"1px solid rgba(232,213,176,.3)"}}>
+   <div style={{display:"flex",alignItems:"center",gap:6}}>
+    <div style={{width:20,height:20,borderRadius:"50%",background:"linear-gradient(135deg,#FFD54F,#FF6F00)",
+      display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#FFF",fontWeight:800}}>
+      {userName.charAt(0).toUpperCase()}</div>
+    <span style={{fontSize:11,fontWeight:600,color:"#6D4C41"}}>{userName}</span>
+   </div>
+   <div style={{display:"flex",gap:4,alignItems:"center"}}>
+    {saveMsg&&<span style={{fontSize:10,color:saveMsg==='saved'?"#43A047":"#9E8E80",fontWeight:600,animation:saveMsg==='saving'?"pulse 1s infinite":"none"}}>
+      {saveMsg==='saving'?'💾...':saveMsg==='saved'?'✅ נשמר':'❌'}</span>}
+    {onSave&&<button onClick={onSave} style={{background:"linear-gradient(135deg,#1976D2,#1565C0)",color:"#FFF",border:"none",borderRadius:6,
+     padding:"2px 8px",fontSize:10,fontWeight:700,cursor:"pointer",transition:"transform .2s"}}
+     onMouseEnter={e=>e.target.style.transform="scale(1.05)"} onMouseLeave={e=>e.target.style.transform="scale(1)"}>💾</button>}
+    <button onClick={onLogout} style={{background:"none",border:"none",color:"#9E8E80",fontSize:10,
+      cursor:"pointer",fontFamily:"inherit"}}>יציאה</button>
+   </div>
+  </div>}
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,flexWrap:"wrap"}}>
    <div style={{display:"flex",gap:10,alignItems:"center",fontSize:13}}>
     <span style={{fontWeight:800,color:cashColor,background:cash>=0?"rgba(67,160,71,.08)":"rgba(229,57,53,.08)",padding:"2px 8px",borderRadius:8}}>{"💰₪"+cash.toFixed(0)}</span>
@@ -533,6 +550,73 @@ function LemonadeGame(){
      setSaveStatus('saved');
    } catch(e) { console.error(e); setSaveStatus('error'); }
    setTimeout(() => setSaveStatus(null), 3000);
+ };
+
+ const [gameSaveMsg, setGameSaveMsg] = useState(null);
+ const [hasSavedGame, setHasSavedGame] = useState(false);
+
+ // Check for saved game on login
+ useEffect(() => {
+   if (!supabase || !authUser) { setHasSavedGame(false); return; }
+   supabase.from('saved_games').select('id').eq('user_id', authUser.id).maybeSingle()
+     .then(({data}) => setHasSavedGame(!!data));
+ }, [authUser]);
+
+ const saveGame = async () => {
+   if (!supabase || !authUser) return;
+   setGameSaveMsg('saving');
+   try {
+     const state = { ph, dy, ca, lm, la, hn, ic, rp, up, ln, res, cm, cl, sd,
+       rL, rH, rI, pr, cu, hlp, iD, tP, npcState, dayLog, npcActions,
+       tOn, goalsOn, sfxOn, loc, bestCup, vipBonus, lastVip, iPd, cIL,
+       actionsToday, bL, bH, bI, bIn, bCI, showExpD, lastVip, dayGoal, hi };
+     const { error } = await supabase.from('saved_games').upsert({
+       user_id: authUser.id, game_state: state, updated_at: new Date().toISOString()
+     }, { onConflict: 'user_id' });
+     if (error) throw error;
+     setGameSaveMsg('saved');
+     setHasSavedGame(true);
+   } catch(e) { console.error('Save error:', e); setGameSaveMsg('error'); }
+   setTimeout(() => setGameSaveMsg(null), 2500);
+ };
+
+ const loadGame = async () => {
+   if (!supabase || !authUser) return false;
+   try {
+     const { data, error } = await supabase.from('saved_games').select('game_state')
+       .eq('user_id', authUser.id).maybeSingle();
+     if (error) throw error;
+     if (!data) return false;
+     const s = data.game_state;
+     setPh(s.ph); setDy(s.dy); setCa(s.ca); setLm(s.lm); setLa(s.la||[]);
+     setHn(s.hn); setIc(s.ic); setRp(s.rp); setUp(s.up||[]); setLn(s.ln);
+     setRes(s.res||[]); setCm(s.cm); setCl(s.cl); setSd(s.sd);
+     setRL(s.rL); setRH(s.rH); setRI(s.rI); setPr(s.pr); setCu(s.cu);
+     setHlp(s.hlp||false); setID(s.iD||null); setTP2(s.tP||null);
+     setNpcState(s.npcState||[]); setDayLog(s.dayLog||[]);
+     setNpcActions(s.npcActions||[]); setTOn(s.tOn||false);
+     setGoalsOn(s.goalsOn||false); setSfxOn(s.sfxOn!==undefined?s.sfxOn:true);
+     setLoc(s.loc||0); setBestCup(s.bestCup||null);
+     setVipBonus(s.vipBonus||false); setLastVip(s.lastVip||-3);
+     setIPd(s.iPd||false); setCIL(s.cIL||0);
+     setActionsToday(s.actionsToday||[]); setBL(s.bL||0); setBH(s.bH||0);
+     setBI(s.bI||0); setBIn(s.bIn||0); setBCI(s.bCI||0);
+     setShowExpD(s.showExpD||false); setDayGoal(s.dayGoal||null);
+     setHi(s.hi||[]); setDW(null); setDE(null); setDP(null);
+     // Re-setup morning data if we're in a gameplay phase
+     if (['morning','sim','summary'].includes(s.ph) && s.dy > 0) {
+       setPD(s.dy);
+     }
+     return true;
+   } catch(e) { console.error('Load error:', e); return false; }
+ };
+
+ const deleteSavedGame = async () => {
+   if (!supabase || !authUser) return;
+   try {
+     await supabase.from('saved_games').delete().eq('user_id', authUser.id);
+     setHasSavedGame(false);
+   } catch(e) { console.error(e); }
  };
 
  const [ph,setPh]=useState("title"),[dy,setDy]=useState(0),[ca,setCa]=useState(80),[lm,setLm]=useState(40);
@@ -764,8 +848,11 @@ function LemonadeGame(){
   if(rentC>0)rEx.push("🏠 שכירות מיקום: -₪"+rentC);
   setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak});
   setPh("summary");};
- const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0)-ln;const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);setPh("gameover");return;}
-  setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");};
+ const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0)-ln;const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);deleteSavedGame();setPh("gameover");return;}
+  setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");
+  // Auto-save at evening
+  if(authUser && supabase) setTimeout(()=>saveGame(), 500);
+ };
  const confIntel=()=>{let tc=0;
   if(bIn>0){tc+=INTL[bIn-1].c;const td=gd[dy+1],ac=INTL[bIn-1].ac;
    const r1=rng(sd^(dy*7919)),r2=rng(sd^(dy*6271)),r3=rng(sd^(dy*5381));
@@ -968,6 +1055,9 @@ function LemonadeGame(){
 
     {/* Action buttons */}
     <div style={{display:"flex",flexDirection:"column",gap:10,alignItems:"center",marginBottom:20}}>
+     {hasSavedGame && authUser && <Btn onClick={async()=>{const ok=await loadGame();if(!ok)alert('שגיאה בטעינה');}}
+       color="#1976D2" style={{width:260,fontSize:17,padding:"16px 28px",
+         boxShadow:"0 6px 20px rgba(25,118,210,.3)"}}>▶️ המשך משחק שמור</Btn>}
      <Btn onClick={()=>{setTOn(true);setTSt(0);setShT(true);setPh("setup");}} color={C.ac}
        style={{width:240,fontSize:16,padding:"14px 28px"}}>🎓 עם הדרכה</Btn>
      <Btn onClick={()=>{setTOn(false);setShT(false);setPh("setup");}} color={C.gn}
@@ -1026,7 +1116,7 @@ function LemonadeGame(){
    </div>}
    {}
    {ph==="morning"&&dW&&<div>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
     <div style={{textAlign:"center",fontWeight:800,fontSize:17,marginBottom:6}}>{"☀️ בוקר יום "+dy+" | "+LOC[loc].n}</div>
     {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return(
      <div style={{fontSize:10,color:C.tL,textAlign:"center",marginBottom:6,padding:"4px 8px",background:"#F5F5F5",borderRadius:6}}>
@@ -1234,7 +1324,7 @@ function LemonadeGame(){
    </div>}
    {}
    {ph==="sim"&&<div>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
     {(()=>{
      const sunX=10+sP*0.8, sunY=15+Math.sin(sP/100*Math.PI)*-12;
      const isRain=dW?.w.id?.includes("Rain");const isCld=dW?.w.id==="cloudy";
@@ -1356,7 +1446,7 @@ function LemonadeGame(){
    </div>}
    {}
    {ph==="summary"&&smD&&<div>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
     <h2 style={{textAlign:"center",fontSize:17,margin:"0 0 6px"}}>{"📊 יום "+smD.dy}</h2>
     <Card>
      <div style={{textAlign:"center",marginBottom:8}}><span style={{fontSize:12,color:C.tM}}>{"🥤 נמכרו "}</span>
@@ -1497,7 +1587,7 @@ function LemonadeGame(){
    </div>}
    {}
    {ph==="eveIntel"&&tP&&<div>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
     <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🌙 לפני יום 1":"🌙 ערב — שלב 1: מודיעין"}</div>
     {dy===0&&<Card style={{background:"#E8F5E9"}}><div style={{fontSize:13,fontWeight:700}}>🎉 ברוכים הבאים!</div>
      <div style={{fontSize:11,color:C.tL}}>יש לך 40 לימונים ו-₪80. קנה מודיעין, ואז דבש וקרח בשוק.</div></Card>}
@@ -1538,7 +1628,7 @@ function LemonadeGame(){
     const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
     const remOk=rem>=0;const canGo=sp===0||remOk;
     return <div>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
     <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🏪 שוק ליום 1":"🏪 שוק — ערב יום "+dy}</div>
     <div style={{position:"sticky",top:42,zIndex:15,background:"linear-gradient(135deg,#FFF8E1,#FFFDE7)",
      borderRadius:12,padding:"10px 14px",marginBottom:10,border:"2px solid "+(remOk?"#66BB6A":"#E53935"),boxShadow:"0 4px 16px rgba(0,0,0,.12)"}}>

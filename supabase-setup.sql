@@ -66,3 +66,31 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 8. Saved games table (one save slot per user)
+CREATE TABLE IF NOT EXISTS saved_games (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  game_state JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+ALTER TABLE saved_games ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own saves"
+  ON saved_games FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own saves"
+  ON saved_games FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own saves"
+  ON saved_games FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own saves"
+  ON saved_games FOR DELETE
+  USING (auth.uid() = user_id);
