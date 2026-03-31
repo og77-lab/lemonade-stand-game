@@ -27,7 +27,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>const _cw=console.warn;console.warn=function(...a){if(a[0]&&typeof a[0]==='string'&&a[0].includes('in-browser Babel'))return;_cw.apply(console,a);}</script>
+<script>
+const _cw=console.warn;console.warn=function(...a){if(a[0]&&typeof a[0]==='string'&&a[0].includes('in-browser Babel'))return;_cw.apply(console,a);};
+// Capture Supabase before Babel overwrites it
+window.__supabaseLib = window.supabase;
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script type="text/babel">
 const { useState, useEffect, useCallback, useMemo, useRef } = React;
@@ -38,10 +42,14 @@ const SUPABASE_URL = 'https://xsnwsxhdqfcbhwujwgmr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_GoNVy0V0T4F3hStcjXL3CQ_GvPqj4Vm';
 let supabase = null;
 try {
-  if (window.supabase && SUPABASE_URL !== 'https://YOUR_PROJECT.supabase.co') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sbLib = window.__supabaseLib;
+  if (sbLib && sbLib.createClient) {
+    supabase = sbLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase connected!');
+  } else {
+    console.log('Supabase lib not found', typeof sbLib, sbLib);
   }
-} catch(e) { console.log('Supabase not configured'); }
+} catch(e) { console.log('Supabase init error:', e); }
 
 // ===== AUTH MODAL COMPONENT =====
 const AuthModal = ({onClose, onAuth, supabaseClient}) => {
