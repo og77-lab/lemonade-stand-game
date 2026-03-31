@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFF8E7">
+  <title>🍋 דוכן הלימונדה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Heebo','Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#FFF8E7 0%,#FFE8B0 50%,#FFF0D4 100%);overflow-x:hidden;min-height:100vh}
+    #root{min-height:100vh}
+    ::selection{background:#FFD54F;color:#3E2723}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:#E8D5B0;border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:#D4A017}
+    input[type="range"]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:#E0E0E0;outline:none}
+    input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid #FFF}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>const _cw=console.warn;console.warn=function(...a){if(a[0]&&typeof a[0]==='string'&&a[0].includes('in-browser Babel'))return;_cw.apply(console,a);}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ===== SUPABASE CONFIG =====
+// Replace these with your Supabase project credentials
+const SUPABASE_URL = 'https://xsnwsxhdqfcbhwujwgmr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_GoNVy0V0T4F3hStcjXL3CQ_GvPqj4Vm';
+let supabase = null;
+try {
+  if (window.supabase && SUPABASE_URL !== 'https://YOUR_PROJECT.supabase.co') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e) { console.log('Supabase not configured'); }
+
+// ===== AUTH MODAL COMPONENT =====
+const AuthModal = ({onClose, onAuth, supabaseClient}) => {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const [name, setName] = useState('');
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleEmail = async () => {
+    if (!supabaseClient) { setErr('Supabase לא מוגדר'); return; }
+    setLoading(true); setErr('');
+    try {
+      if (mode === 'register') {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email, password: pass, options: { data: { display_name: name || email.split('@')[0] } }
+        });
+        if (error) throw error;
+        if (data.user) {
+          await supabaseClient.from('profiles').upsert({
+            id: data.user.id, username: name || email.split('@')[0], created_at: new Date().toISOString()
+          });
+          onAuth(data.user, name || email.split('@')[0]);
+        }
+      } else {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+        const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', data.user.id).single();
+        onAuth(data.user, profile?.username || email.split('@')[0]);
+      }
+    } catch(e) { setErr(e.message || 'שגיאה'); }
+    setLoading(false);
+  };
+
+  const handleGoogle = async () => {
+    if (!supabaseClient) { setErr('Supabase לא מוגדר'); return; }
+    try {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google', options: { redirectTo: window.location.origin }
+      });
+      if (error) throw error;
+    } catch(e) { setErr(e.message); }
+  };
+
+  const inputStyle = {width:'100%',padding:'10px 14px',borderRadius:10,border:'1px solid #E0D5C0',fontSize:14,
+    fontFamily:'inherit',outline:'none',background:'rgba(255,255,255,.7)',transition:'border .2s'};
+
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:100,background:'rgba(0,0,0,.5)',backdropFilter:'blur(4px)',
+      display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:'linear-gradient(135deg,#FFF8E7,#FFF0D4)',borderRadius:20,padding:'28px 24px',
+        maxWidth:380,width:'100%',boxShadow:'0 20px 60px rgba(0,0,0,.2)',border:'1px solid rgba(255,215,0,.3)'}}>
+        <div style={{textAlign:'center',marginBottom:20}}>
+          <div style={{fontSize:40,marginBottom:4}}>🍋</div>
+          <h2 style={{fontSize:20,fontWeight:800,color:'#3E2723',margin:0}}>
+            {mode==='login'?'התחברות':'הרשמה'}</h2>
+          <p style={{fontSize:12,color:'#9E8E80',margin:'4px 0 0'}}>שמור את התוצאות שלך והתחרה עם כולם!</p>
+        </div>
+
+        {supabaseClient && <button onClick={handleGoogle} style={{width:'100%',padding:'10px 16px',borderRadius:12,
+          border:'1px solid #E0E0E0',background:'#FFF',cursor:'pointer',fontSize:14,fontWeight:600,
+          fontFamily:'inherit',display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:14,
+          boxShadow:'0 2px 8px rgba(0,0,0,.06)',transition:'transform .2s'}}
+          onMouseEnter={e=>e.target.style.transform='scale(1.02)'} onMouseLeave={e=>e.target.style.transform='scale(1)'}>
+          <span style={{fontSize:18}}>G</span> התחבר עם Google
+        </button>}
+
+        {supabaseClient && <div style={{display:'flex',alignItems:'center',gap:10,margin:'14px 0'}}>
+          <div style={{flex:1,height:1,background:'#E0D5C0'}}/><span style={{fontSize:11,color:'#9E8E80'}}>או</span>
+          <div style={{flex:1,height:1,background:'#E0D5C0'}}/></div>}
+
+        {mode==='register' && <input value={name} onChange={e=>setName(e.target.value)}
+          placeholder="שם תצוגה" style={{...inputStyle,marginBottom:8}} />}
+        <input value={email} onChange={e=>setEmail(e.target.value)} type="email"
+          placeholder="אימייל" style={{...inputStyle,marginBottom:8}} />
+        <input value={pass} onChange={e=>setPass(e.target.value)} type="password"
+          placeholder="סיסמה" style={{...inputStyle,marginBottom:12}}
+          onKeyDown={e=>{if(e.key==='Enter')handleEmail();}} />
+
+        {err && <div style={{color:'#E53935',fontSize:11,marginBottom:8,textAlign:'center'}}>{err}</div>}
+
+        <button onClick={handleEmail} disabled={loading||!email||!pass}
+          style={{width:'100%',padding:'12px',borderRadius:12,border:'none',
+            background:loading?'#CCC':'linear-gradient(135deg,#FF6F00,#F57C00)',
+            color:'#FFF',fontSize:15,fontWeight:700,cursor:loading?'wait':'pointer',
+            fontFamily:'inherit',boxShadow:'0 4px 14px rgba(255,111,0,.3)'}}>
+          {loading?'...':mode==='login'?'התחבר':'הירשם'}
+        </button>
+
+        <div style={{textAlign:'center',marginTop:12,fontSize:12}}>
+          <span style={{color:'#9E8E80'}}>{mode==='login'?'אין חשבון? ':'כבר יש חשבון? '}</span>
+          <span onClick={()=>{setMode(mode==='login'?'register':'login');setErr('');}}
+            style={{color:'#FF6F00',fontWeight:700,cursor:'pointer'}}>
+            {mode==='login'?'הירשם':'התחבר'}</span>
+        </div>
+
+        <button onClick={onClose} style={{display:'block',margin:'14px auto 0',background:'none',border:'none',
+          color:'#9E8E80',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>המשך כאורח</button>
+      </div>
+    </div>
+  );
+};
+
+// ===== LEADERBOARD COMPONENT =====
+const Leaderboard = ({onClose, supabaseClient, currentUser, currentUsername}) => {
+  const [scores, setScores] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [myBest, setMyBest] = useState(null);
+
+  useEffect(() => {
+    loadScores();
+  }, [filter]);
+
+  const loadScores = async () => {
+    setLoading(true);
+    if (!supabaseClient) {
+      const local = JSON.parse(localStorage.getItem('lem-hi') || '[]');
+      setScores(local.map((s,i) => ({rank:i+1, username:'אורח', score:s.sc, stars:s.stars, difficulty:s.cl, date:null})));
+      setLoading(false); return;
+    }
+    try {
+      let query = supabaseClient.from('game_results').select('id,score,difficulty,stars,reputation_final,cups_sold,competitors,created_at,profiles(username)')
+        .order('score', {ascending: false}).limit(50);
+      if (filter !== 'all') query = query.eq('difficulty', filter);
+      const { data, error } = await query;
+      if (error) throw error;
+      const mapped = (data||[]).map((r,i) => ({
+        rank: i+1, username: r.profiles?.username || 'שחקן', score: r.score,
+        stars: r.stars, difficulty: r.difficulty, cups: r.cups_sold, rep: r.reputation_final,
+        competitors: r.competitors, date: r.created_at, userId: r.id,
+        isMe: currentUser && r.profiles?.username === currentUsername
+      }));
+      setScores(mapped);
+      if (currentUser) {
+        const mine = mapped.find(s => s.isMe);
+        setMyBest(mine || null);
+      }
+    } catch(e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const diffLabel = d => d==='easy'?'קלה':d==='medium'?'בינונית':d==='hard'?'קשה':'?';
+  const diffColor = d => d==='easy'?'#43A047':d==='medium'?'#FF6F00':'#E53935';
+
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,.5)',backdropFilter:'blur(4px)',overflowY:'auto'}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{maxWidth:500,margin:'20px auto',background:'linear-gradient(180deg,#FFF8E7,#FFF0D4)',
+        borderRadius:20,padding:'20px 16px',minHeight:'60vh',boxShadow:'0 20px 60px rgba(0,0,0,.2)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div style={{fontWeight:800,fontSize:20}}>🏆 טבלת שיאים</div>
+          <button onClick={onClose} style={{background:'#E53935',color:'#FFF',border:'none',borderRadius:10,
+            padding:'6px 14px',fontSize:14,fontWeight:700,cursor:'pointer'}}>✕</button>
+        </div>
+
+        {myBest && <div style={{background:'linear-gradient(135deg,#E8F5E9,#C8E6C9)',borderRadius:12,padding:'10px 14px',
+          marginBottom:12,border:'1px solid #A5D6A7'}}>
+          <div style={{fontSize:11,color:'#2E7D32',fontWeight:700}}>הציון הטוב שלך</div>
+          <div style={{fontSize:22,fontWeight:800,color:'#2E7D32'}}>#{myBest.rank} — ₪{myBest.score}</div>
+        </div>}
+
+        <div style={{display:'flex',gap:4,marginBottom:14}}>
+          {['all','easy','medium','hard'].map(f => (
+            <button key={f} onClick={()=>setFilter(f)}
+              style={{flex:1,padding:'6px 4px',borderRadius:10,border:'none',fontSize:12,fontWeight:700,
+                cursor:'pointer',fontFamily:'inherit',
+                background:filter===f?'linear-gradient(135deg,#FF6F00,#F57C00)':'rgba(255,255,255,.6)',
+                color:filter===f?'#FFF':'#6D4C41'}}>
+              {f==='all'?'הכל':diffLabel(f)}</button>
+          ))}
+        </div>
+
+        {loading ? <div style={{textAlign:'center',padding:40,color:'#9E8E80'}}>
+          <div style={{fontSize:32,animation:'pulse 1.5s infinite'}}>🍋</div>טוען...</div>
+        : scores.length === 0 ? <div style={{textAlign:'center',padding:40,color:'#9E8E80'}}>
+          <div style={{fontSize:32}}>📭</div>אין תוצאות עדיין. היה הראשון!</div>
+        : <div>
+          {scores.map((s,i) => (
+            <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',marginBottom:4,
+              borderRadius:12,background:s.isMe?'linear-gradient(135deg,#E8F5E9,#C8E6C9)':'rgba(255,255,255,.6)',
+              border:s.isMe?'2px solid #66BB6A':'1px solid rgba(232,213,176,.3)',
+              transition:'transform .15s',cursor:'default'}}
+              onMouseEnter={e=>e.currentTarget.style.transform='translateX(-2px)'}
+              onMouseLeave={e=>e.currentTarget.style.transform='translateX(0)'}>
+              <div style={{fontSize:18,fontWeight:800,minWidth:32,textAlign:'center',
+                color:i===0?'#FFD700':i===1?'#90A4AE':i===2?'#8D6E63':'#9E8E80'}}>
+                {i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:s.isMe?800:600,fontSize:14}}>{s.username}{s.isMe?' (אתה)':''}</div>
+                <div style={{fontSize:10,color:'#9E8E80'}}>
+                  {'⭐'.repeat(s.stars||1)}
+                  {s.difficulty && <span style={{marginRight:6,padding:'1px 6px',borderRadius:4,fontSize:9,
+                    background:diffColor(s.difficulty)+'18',color:diffColor(s.difficulty),fontWeight:700}}>
+                    {diffLabel(s.difficulty)}</span>}
+                  {s.date && <span style={{marginRight:4}}>{new Date(s.date).toLocaleDateString('he-IL')}</span>}
+                </div>
+              </div>
+              <div style={{textAlign:'left'}}>
+                <div style={{fontSize:18,fontWeight:800,color:s.score>=0?'#43A047':'#E53935'}}>₪{s.score}</div>
+              </div>
+            </div>
+          ))}
+        </div>}
+      </div>
+    </div>
+  );
+};
+
+const DAYS=10,CUP=6,CAP_BASE=30,CAP_STATION=70,CAP_TEAM=999,HELPER_B=20,HELPER_C=8,LOAN_MAX=40,LOAN_INT=0.08,REP0=50,REPMAX=100;
+const TP=[0,10,22,34,44,50,54],SR=[0,0,1,3,6,12,20],SW=[0,0,14,22,27,28,28];
+const ITP=[0,0,-1,-3,-6,-12,-20],WTP=[0,0,-4,-10,-20,-32,-46],HFR=[0,-2,3,0,-3,-5,-5];
+const crP=r=>r<=0.33?0:r<=0.5?0.05:r<=0.75?0.15:r<=1?0.3:0.5;
+const CT={
+ child:{nm:"ילד",em:"👦",tW:0.55,fW:0.45,sTh:8,sP:1.5,swI:[18,28],swP:0.5,pM:5,rI:[1,-1],pct:0.25,sG:"!וואו טעים",sO:"בסדר...",sB:"חמוץ! 😝",sN:"יקר לי"},
+ adult:{nm:"מבוגר",em:"🧑",tW:0.65,fW:0.35,sTh:15,sP:1,swI:[10,22],swP:1,pM:8,rI:[2,-2],pct:0.4,sG:"לימונדה מצוינת!",sO:"סבירה",sB:"חלשה...",sN:"לא שווה"},
+ athlete:{nm:"ספורטאי",em:"🏃",tW:0.5,fW:0.5,sTh:12,sP:1,swI:[5,18],swP:1,pM:10,rI:[2,-2],pct:0.2,sG:"בדיוק מה שצריך!",sO:"לא רע",sB:"צריך יותר קרח",sN:"אמצא אחר"},
+ foodie:{nm:"שף",em:"🧑‍🍳",tW:0.75,fW:0.25,sTh:25,sP:0.5,swI:[8,18],swP:1.5,pM:12,rI:[4,-5],pct:0.15,sG:"איזה איכות!",sO:"לא רע",sB:"מימית מדי",sN:"יש פה טעם?"},
+};
+const WE=[
+ {id:"sunny",n:"☀️ שמש",fm:1.1,bg:"linear-gradient(180deg,#87CEEB,#E0F7FA)"},
+ {id:"nice",n:"🌤️ נעים",fm:1.2,bg:"linear-gradient(180deg,#90CAF9,#E8F5E9)"},
+ {id:"cloudy",n:"☁️ עננים",fm:0.8,bg:"linear-gradient(180deg,#B0BEC5,#CFD8DC)"},
+ {id:"lRain",n:"🌦️ גשם קל",fm:0.5,bg:"linear-gradient(180deg,#78909C,#B0BEC5)"},
+ {id:"hRain",n:"🌧️ גשם חזק",fm:0.2,bg:"linear-gradient(180deg,#546E7A,#78909C)"},
+ {id:"hot",n:"🥵 חם",fm:1.0,bg:"linear-gradient(180deg,#FFCC80,#FFE0B2)"},
+ {id:"heat",n:"🔥 שרב",fm:0.6,bg:"linear-gradient(180deg,#FF8A65,#FFCC80)"},
+ {id:"cold",n:"🥶 קר",fm:0.3,bg:"linear-gradient(180deg,#90A4AE,#B0BEC5)"},
+];
+const tM=t=>{
+ if(t<15)return 0.25;
+ if(t<18)return 0.4;
+ if(t<21)return 0.65;
+ if(t<25)return 0.9;
+ if(t<29)return 1.2;
+ if(t<32)return 1.1;
+ if(t<35)return 0.85;
+ return 0.6;
+};
+const iFr=(ic,t)=>{const tb=t>=33?[0,0,12,22,30,35,38]:t>=28?[0,5,15,24,30,32,33]:t>=20?[0,15,22,27,28,28,28]:[0,25,27,24,18,12,8];return tb[Math.min(ic,5)];};
+const EVT_POS=[
+ {id:"fest",n:"🎪 פסטיבל שכונתי",d:"הרבה אנשים ברחוב! ×1.8 תנועה",dm:1.8},
+ {id:"strike",n:"🏫 שביתת מורים",d:"ילדים בחוץ! ×1.6 תנועה",dm:1.6},
+ {id:"concert",n:"🎵 הופעה בפארק",d:"קהל צעיר ×1.7",dm:1.7},
+ {id:"market",n:"🛍️ יום שוק",d:"תנועה מוגברת ×1.5",dm:1.5},
+ {id:"marathon",n:"🏃 מרתון עירוני",d:"ספורטאים צמאים! ×1.9",dm:1.9},
+ {id:"holiday",n:"🎉 חופשת בתי ספר",d:"ילדים ומשפחות ×1.6",dm:1.6},
+ {id:"tourist",n:"🗺️ קבוצת תיירים",d:"תיירים רוצים לטעום ×1.4",dm:1.4},
+ {id:"viral",n:"📱 פוסט ויראלי",d:"כולם מדברים על לימונדה! ×2.0 +5 מוניטין",dm:2.0,rb:5},
+ {id:"lday",n:"🍋 יום הלימון הארצי",d:"חגיגות! ×1.8",dm:1.8},
+ {id:"heatday",n:"☀️ אירוע ספורט חוצות",d:"צמאים! ×1.7",dm:1.7},
+ {id:"openday",n:"🏢 יום פתוח במשרדים",d:"עובדים בהפסקה ×1.4",dm:1.4},
+];
+const EVT_NEG=[
+ {id:"demo",n:"📢 הפגנה ברחוב",d:"הרחוב חסום! ×0.3 תנועה",dm:0.3},
+ {id:"roadwork",n:"🚧 עבודות כביש",d:"סגירת רחוב ×0.5",dm:0.5},
+ {id:"power",n:"⚡ הפסקת חשמל",d:"חנויות סגורות ×0.4",dm:0.4},
+ {id:"siren",n:"🚨 אזעקת תרגיל",d:"אנשים בבית ×0.3",dm:0.3},
+ {id:"flood",n:"🌊 הצפה קלה",d:"רחובות מוצפים ×0.35",dm:0.35},
+ {id:"bug",n:"🐛 לימונים פגומים בשוק",d:"30% מהלימונים מקולקלים",dm:1,ll:0.3},
+ {id:"insp",n:"🏛️ פיקוח עירוני",d:"שלם ₪8 או סגור ליום",dm:1,fee:8},
+ {id:"comp_sale",n:"🏪 מבצע בסופר",d:"אנשים קונים בסופר ×0.6",dm:0.6},
+ {id:"noise",n:"🔨 רעש בנייה ליד הדוכן",d:"לקוחות נרתעים ×0.55",dm:0.55},
+ {id:"parking",n:"🅿️ ביטול חנייה ברחוב",d:"פחות תנועה ×0.65",dm:0.65},
+ {id:"flu",n:"😷 התפרצות שפעת",d:"אנשים נמנעים ×0.45",dm:0.45},
+];
+const EVT=[...EVT_POS,...EVT_NEG];
+const UPG=[
+ {id:"sign",n:"🪧 שלט גדול",c:15,d:"+15% חשיפה",ad:1},{id:"shade",n:"⛱️ סוכך",c:20,d:"+20% בימים חמים",ad:1},
+ {id:"cups",n:"🥤 כוסות ממותגות",c:12,d:"+1 מוניטין/יום",ad:1},{id:"juicer",n:"🔧 מסחטה",c:25,d:"חוסך לימון/10 כוסות",ad:2},
+ {id:"cooler",n:"❄️ מיכל קירור",c:18,d:"50% קרח שורד",ad:2},{id:"station",n:"🏪 עמדה נוספת",c:30,d:"קיבולת 70 (במקום 30)",ad:3},
+ {id:"team",n:"👥 צוות מלא",c:50,d:"ללא הגבלת כוסות!",ad:4},
+];
+const INTL=[{lv:1,n:"שמועות",c:2,ac:0.7},{lv:2,n:"מקורות",c:5,ac:0.85},{lv:3,n:"סוכן",c:10,ac:0.95}];
+const CINTL=[{lv:1,n:"מבט מהיר",c:2,d:"מחיר"},{lv:2,n:"ריגול",c:5,d:"מחיר+מתכון+פעולות"},{lv:3,n:"ניתוח מלא",c:8,d:"הכל+סיכול"}];
+const MKTG_ACT=[
+ {id:"flyer",n:"📄 פליירים",c:5,desc:"+10% לקוחות",dm:1.10},
+ {id:"banner",n:"🎈 בלונים ושלטים",c:10,desc:"+18% לקוחות",dm:1.18},
+ {id:"social",n:"📱 פוסט ברשתות",c:7,desc:"+8% לקוחות + 40% סיכוי ל-+2 מוניטין",dm:1.08,repChance:0.4,repB:2},
+ {id:"taste",n:"🎁 טעימות חינם",c:3,desc:"+3 מוניטין אם הטעם טוב (5 כוסות חינם)",freeCups:5},
+];
+const COMP_ACT=[
+ {id:"ads",n:"📢 קמפיין תחרותי",costs:[5,10,15],labels:["בסיסי (10%)","חזק (18%)","מסיבי (25%)"],steal:[0.10,0.18,0.25],
+  desc:"גונב לקוחות מהמתחרים ישירות אליך",risk:0},
+ {id:"rumor",n:"🗣️ הפצת שמועות",c:4,repHit:5,catchPct:0.3,selfRepHit:8,selfFine:10,
+  desc:"-5 מוניטין למתחרה. ⚠️ 30% סיכוי להיתפס: -8 מוניטין +₪10 קנס!",risk:1,counterable:true},
+ {id:"signs",n:"🚫 הסרת שלטים",c:6,catchPct:0.4,selfRepHit:15,selfFine:15,
+  desc:"-20% חשיפה למתחרה. ⚠️ 40% סיכוי להיתפס: -15 מוניטין +₪15 קנס!",risk:1,counterable:true},
+];
+const rng=s=>{
+ let x=((s%2147483647)+2147483647)%2147483647;
+ if(x===0)x=1;
+ x=(x*16807)%2147483647;x=(x*16807)%2147483647;x=(x*16807)%2147483647;
+ return()=>{x=(x*16807)%2147483647;return(x-1)/2147483646;};
+};
+const genW=r=>{const t=Math.round(12+r()*28);
+ let pos;
+ if(t>=35)      pos=[WE[6]];
+ else if(t>=30) pos=[WE[0],WE[5]];
+ else if(t>=25) pos=[WE[0],WE[1]];
+ else if(t>=21) pos=[WE[0],WE[1],WE[2]];
+ else if(t>=18) pos=[WE[2],WE[3]];
+ else if(t>=15) pos=[WE[2],WE[3],WE[4]];
+ else           pos=[WE[3],WE[4],WE[7]];
+ return{temp:t,w:pos[Math.floor(r()*pos.length)]};};
+const genP=(pp,ppp,r)=>{
+ const d=(p,p2,b,mn,mx)=>{
+  let dir=0;
+  if(p2!==undefined){
+   if(p>p2) dir=r()<0.6?1:-1;
+   else if(p<p2) dir=r()<0.6?-1:1;
+   else dir=r()<0.5?1:-1;
+  } else { dir=r()<0.5?1:-1; }
+  const change=dir*r()*0.15*b;
+  return Math.round(Math.max(mn,Math.min(mx,p+change))*100)/100;
+ };
+ return{
+  lemon:d(pp?.lemon||0.5,ppp?.lemon,0.5,0.3,0.8),
+  honey:d(pp?.honey||0.8,ppp?.honey,0.8,0.6,1.2),
+  ice:d(pp?.ice||0.1,ppp?.ice,0.1,0.05,0.2)
+ };
+};
+const genE=r=>{if(r()>0.5)return null;const v=r(),tot=EVT.length;let c=0;for(const e of EVT){c+=1/tot;if(v<c)return e;}return EVT[tot-1];};
+const tSc=(l,h,ic,wa,ct)=>{let tp=TP[l]*(1-crP(l>0?h/l:99))+ITP[ic]+WTP[wa];
+ return Math.max(0,Math.min(60,tp-Math.max(0,SR[l]-ct.sTh)*ct.sP-(SW[h]>ct.swI[1]?(SW[h]-ct.swI[1])*ct.swP:0)));};
+const fSc=(ic,h,t)=>Math.min(40,Math.max(0,iFr(ic,t)+HFR[h]));
+const cSc=(l,h,ic,wa,t,ct)=>{const ts=tSc(l,h,ic,wa,ct),fr=fSc(ic,h,t);return{sc:Math.round((ts*ct.tW+fr*ct.fW)/(60*ct.tW+40*ct.fW)*100),ts,fr};};
+const wBuy=(sc,pr,rep,ct,rand,db=0)=>{
+ let pricePen=(pr/ct.pM)*0.2;
+ if(pr>ct.pM){const over=(pr-ct.pM)/ct.pM;pricePen+=over*0.6;}
+ const prob=Math.min(0.95,Math.max(0.03,(sc/100)*0.6+(rep/100)*0.15+0.35-pricePen+db));
+ return rand()<prob;
+};
+const cCost=(l,h,ic,p)=>l*p.lemon+h*p.honey+ic*p.ice;
+const C={bg:"#FFF8E7",cd:"rgba(255,255,255,.85)",bd:"rgba(232,213,176,.5)",lm:"#FFD700",lD:"#D4A017",hn:"#D4920B",ic:"#87CEEB",iD:"#5BA3C9",
+ gn:"#43A047",rd:"#E53935",tx:"#3E2723",tL:"#6D4C41",tM:"#9E8E80",ac:"#FF6F00",pu:"#7B1FA2"};
+const Btn=({children,onClick,color=C.gn,disabled,small,style={}})=>(
+ <button onClick={onClick} disabled={disabled} style={{padding:small?"7px 14px":"12px 26px",borderRadius:14,border:"none",
+  cursor:disabled?"not-allowed":"pointer",
+  background:disabled?"#CCC":`linear-gradient(135deg,${color},${color}DD)`,
+  color:"#FFF",fontWeight:700,letterSpacing:0.3,
+  fontSize:small?12:15,opacity:disabled?0.5:1,
+  boxShadow:disabled?"none":`0 4px 14px ${color}40`,
+  fontFamily:"inherit",transition:"all .2s ease",transform:"scale(1)",...style}}
+  onMouseEnter={e=>{if(!disabled){e.target.style.transform="scale(1.03)";e.target.style.boxShadow=`0 6px 20px ${color}55`;}}}
+  onMouseLeave={e=>{e.target.style.transform="scale(1)";e.target.style.boxShadow=disabled?"none":`0 4px 14px ${color}40`;}}>
+  {children}</button>);
+const Card=({children,style={}})=>(<div style={{background:C.cd,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderRadius:16,padding:16,border:`1px solid ${C.bd}`,boxShadow:"0 4px 20px rgba(0,0,0,.06)",marginBottom:12,transition:"transform .2s ease, box-shadow .2s ease",...style}}>{children}</div>);
+const SBar=({cash,lemons,honey,ice,rep,day,loan,onDash})=>{
+ const cashColor=cash>=0?"#43A047":"#E53935";const repColor=rep>=65?"#43A047":rep<=35?"#E53935":"#3E2723";
+ const hasLoan=loan>0;
+ return(<div style={{position:"sticky",top:0,zIndex:20,
+  background:"rgba(255,253,231,.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+  borderRadius:"0 0 16px 16px",padding:"8px 14px",marginBottom:10,
+  boxShadow:"0 4px 20px rgba(0,0,0,.08)",border:"1px solid rgba(232,213,176,.4)"}}>
+  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+   <div style={{display:"flex",gap:10,alignItems:"center",fontSize:13}}>
+    <span style={{fontWeight:800,color:cashColor,background:cash>=0?"rgba(67,160,71,.08)":"rgba(229,57,53,.08)",padding:"2px 8px",borderRadius:8}}>{"💰₪"+cash.toFixed(0)}</span>
+    <span style={{color:"#D4A017"}}>{"🍋"+lemons}</span>
+    <span style={{color:"#D4920B"}}>{"🍯"+honey}</span>
+    <span style={{color:"#5BA3C9"}}>{"🧊"+ice}</span></div>
+   <div style={{display:"flex",gap:8,alignItems:"center",fontSize:12}}>
+    <span style={{fontWeight:700,color:repColor}}>{"⭐"+rep}</span>
+    {hasLoan&&<span style={{color:"#E53935",fontSize:10}}>{"🏦₪"+loan.toFixed(0)}</span>}
+    <span style={{color:"#9E8E80",fontWeight:500}}>{"יום "+day+"/10"}</span>
+    {onDash&&<button onClick={onDash} style={{background:"linear-gradient(135deg,#FF6F00,#F57C00)",color:"#FFF",border:"none",borderRadius:8,
+     padding:"4px 10px",fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:"0 2px 8px rgba(255,111,0,.3)",transition:"transform .2s"}}
+     onMouseEnter={e=>e.target.style.transform="scale(1.05)"} onMouseLeave={e=>e.target.style.transform="scale(1)"}>📊</button>}
+   </div>
+  </div></div>);};
+const PrCh=({prices,color,emoji})=>{if(!prices||prices.length<2)return null;
+ const mn=Math.min(...prices),mx=Math.max(...prices),rg=mx-mn||0.01,last=prices[prices.length-1],prev=prices[prices.length-2];
+ const dir=last>prev?"📈":last<prev?"📉":"➡️",pct=prev>0?Math.round((last-prev)/prev*100):0;
+ const pctStr=" "+dir+(pct>0?"+":"")+pct+"%";
+ const w=200,h=32,pad=2;
+ const pts=prices.map((p,i)=>{const x=pad+i*(w-2*pad)/(prices.length-1);const y=h-pad-(((p-mn)/rg)*(h-2*pad));return x+","+y;}).join(" ");
+ return(<div style={{display:"flex",alignItems:"center",gap:6,padding:"4px 0"}}>
+  <span style={{fontSize:14}}>{emoji}</span>
+  <div style={{flex:1,position:"relative"}}>
+   <svg viewBox={"0 0 "+w+" "+h} style={{width:"100%",height:36}}>
+    <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+    {prices.map((p,i)=>{const x=pad+i*(w-2*pad)/(prices.length-1);const y=h-pad-(((p-mn)/rg)*(h-2*pad));
+     return <circle key={i} cx={x} cy={y} r={i===prices.length-1?3:1.5} fill={i===prices.length-1?color:color+"88"}/>;
+    })}
+   </svg>
+   <div style={{display:"flex",justifyContent:"space-between",fontSize:7,color:C.tM,marginTop:-2}}>
+    {prices.map((p,i)=><span key={i}>{i===0?"י1":i===prices.length-1?"מחר":""}</span>)}</div>
+  </div>
+  <div style={{minWidth:65,textAlign:"left",fontSize:11}}>
+   <span style={{fontWeight:700,color}}>{"₪"+last.toFixed(2)}</span>
+   <span style={{fontSize:9,color:pct>0?C.rd:pct<0?C.gn:C.tM}}>{pctStr}</span></div></div>);};
+const CupVis=({l,h,ic})=>{const w=CUP-l-h-ic,tot=CUP;
+ const layers=[{n:l,e:"🍋",bg:"linear-gradient(180deg,#FFE082,#FFD54F)",bd:"#F9A825"},
+  {n:h,e:"🍯",bg:"linear-gradient(180deg,#FFCC80,#FFB74D)",bd:"#E65100"},
+  {n:ic,e:"🧊",bg:"linear-gradient(180deg,#B3E5FC,#81D4FA)",bd:"#0288D1"},
+  {n:Math.max(0,w),e:"💧",bg:"linear-gradient(180deg,#E3F2FD,#BBDEFB)",bd:"#64B5F6"}].filter(x=>x.n>0);
+ const rev=[...layers].reverse();
+ return(<div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:16,padding:"8px 0"}}>
+  <div style={{position:"relative",width:80,height:150}}>
+   <div style={{position:"absolute",bottom:0,left:4,right:4,height:140,borderRadius:"0 0 12px 12px",
+    border:"3px solid #B0BEC5",borderTop:"none",background:"rgba(255,255,255,.3)",overflow:"hidden"}}>
+    {rev.map((la,i)=>{const pH=rev.slice(0,i).reduce((s,x)=>s+x.n,0);
+     return(<div key={i} style={{position:"absolute",bottom:`${(pH/tot)*100}%`,left:0,right:0,
+      height:`${(la.n/tot)*100}%`,background:la.bg,display:"flex",alignItems:"center",justifyContent:"center",
+      transition:"all .5s cubic-bezier(.4,0,.2,1)"}}>
+      <span style={{fontSize:la.n/tot>0.14?18:12}}>{la.e}</span></div>);})}</div>
+   <div style={{position:"absolute",top:4,left:0,right:0,height:6,borderRadius:4,background:"linear-gradient(180deg,#CFD8DC,#B0BEC5)"}}/>
+   <div style={{position:"absolute",right:-14,top:28,width:14,height:50,borderRadius:"0 8px 8px 0",border:"3px solid #B0BEC5",borderLeft:"none"}}/></div>
+  <div style={{display:"flex",flexDirection:"column",gap:3,fontSize:12}}>
+   {[{n:l,e:"🍋",lb:"לימון",c:"#F9A825"},{n:h,e:"🍯",lb:"דבש",c:"#E65100"},{n:ic,e:"🧊",lb:"קרח",c:"#0288D1"},
+    {n:Math.max(0,w),e:"💧",lb:"מים",c:"#64B5F6"}].map((x,i)=>(
+    <div key={i} style={{display:"flex",alignItems:"center",gap:4,opacity:x.n>0?1:0.3}}>
+     <span style={{fontSize:16}}>{x.e}</span><span style={{fontWeight:700,color:x.c,minWidth:14,textAlign:"center"}}>{x.n}</span>
+     <span style={{color:C.tL,fontSize:11}}>{x.lb}</span></div>))}
+   <div style={{borderTop:"1px solid #E0E0E0",paddingTop:3,fontWeight:700,fontSize:11}}>{"סה\"כ: "+(l+h+ic+Math.max(0,w))+"/"+CUP}</div></div></div>);};
+const TUT=[
+ {ph:"setup",t:"ברוכים הבאים לדוכן הלימונדה! 🍋",tx:"המטרה: להרוויח כמה שיותר כסף ב-10 ימים של מכירת לימונדה. תתחיל עם ₪80 ו-40 לימונים. בכל יום תקבע מתכון, מחיר, וכמות — ובערב תקנה חומרי גלם למחר. בחר מספר מתחרים (0 = לבד, קל יותר) ורמת קושי.\n\n🎯 מטרות יומיות (toggle): אתגר יומי אקראי עם בונוס דינמי.\n🔊 אפקטי קול: צלילים קצרים בסימולציה."},
+ {ph:"setup2",t:"רמות קושי — מה ההבדל? ⚙️",tx:"קלה: 30% יותר לקוחות, סיכויי קנייה גבוהים, מתחרים חלשים.\nבינונית: כלכלה מאוזנת.\nקשה: 20% פחות לקוחות, קשה למכור, מתחרים עם מתכונים טובים.\nטיפ: בפעם הראשונה? בחר 0 מתחרים + קלה."},
+ {ph:"eveIntel",t:"שלב 1: מודיעין ערב 🔍",tx:"לפני שתקנה חומרים, תוכל לקנות מודיעין. שים לב: המודיעין לא תמיד מדויק!\n\n🔮 שמועות (₪2, ~70% דיוק): מזג אוויר כללי — עלול לטעות!\n📡 מקורות (₪5, ~85%): מזג אוויר + כיוון מחירים + רמז על אירועים\n🕵️ סוכן (₪10, ~95%): הכל כולל מחירים, פרטי אירוע מדויקים\n\nאם יש מתחרים, אפשר גם לקנות ניתוח מתחרים. המידע יוצג בבוקר *לפני* שתקבע מחיר ותבחר פעולות — כדי שתוכל להתאים את האסטרטגיה שלך!"},
+ {ph:"eveIntel2",t:"גרפי מחירים — איך לקרוא? 📊",tx:"כל מרכיב (לימון, דבש, קרח) מציג גרף קו של המחיר לאורך ימי המשחק. הנקודה האחרונה = מחיר מחר.\n\n📈 עולה = כדאי לקנות היום לפני שהמחיר עולה עוד\n📉 יורד = אולי לחכות ליום הבא\n➡️ יציב = מחיר דומה\n\nמגמות נוטות להמשיך (60% סיכוי) — אם מחיר עלה אתמול, סביר שימשיך לעלות. זה עוזר לתכנן רכישות!"},
+ {ph:"evening",t:"שלב 2: השוק 🛒",tx:"כאן קונים חומרי גלם למחר. שלושה סוגים:\n\n🍋 לימונים (₪0.30-0.80): המרכיב המרכזי! מתקלקלים אחרי 3 ימים — אל תקנה יותר מדי.\n🍯 דבש (₪0.60-1.20): יקר אבל נשמר לנצח! מספיק 1-2 לכוס. מאזן חמיצות.\n🧊 קרח (₪0.05-0.20): זול אבל נמס בסוף כל יום! קנה מחדש כל ערב.\n\nלמעלה תראה כמה כסף יש, כמה מוציא, וכמה נשאר."},
+ {ph:"evening2",t:"שדרוגים והלוואות 💡",tx:"⬆️ שדרוגים קבועים: נרכשים פעם אחת ופעילים לשאר המשחק (שלט, סוכך, מסחטה, עמדה נוספת...)\n\n🏦 הלוואה: עד ₪40, אבל 8% ריבית ליום! רק למצבי חירום.\n🥤 תחזית כוסות: בתחתית השוק תראה כמה כוסות תוכל להכין (מינימום/מאוזן/פרמיום).\n\nכלל אצבע: קנה מספיק ל-20-25 כוסות מאוזנות (3🍋+1🍯+1🧊)."},
+ {ph:"morning",t:"בוקר — מזג אוויר ואירועים ☀️",tx:"בבוקר תראה את מזג האוויר ומה קורה היום:\n\n🥶 קר (מתחת 18°C): כמעט אף אחד לא רוצה לימונדה.\n🌡️ קריר (18-20°C): ביקוש נמוך.\n😊 נעים (21-24°C): ביקוש סביר.\n☀️ מושלם (25-29°C): שיא הביקוש! ❄️ קרח חשוב.\n🥵 חם (30-34°C): צמאים אבל חלק נשארים בבית.\n🔥 שרב (35°C+): רוב האנשים בבית — מי שבחוץ מת מצמא.\n\n50% סיכוי לאירוע מיוחד! אירועים חיוביים (🎪 פסטיבל ×1.8) ושליליים (📢 הפגנה ×0.3) — משפיע על כולם.\n\n📍 מיקום: בתחתית המסך תבחר איפה להציב את הדוכן היום:\n🏚️ פינת רחוב — שקט (×0.65 לקוחות), ללא שכירות\n🏠 צד הרחוב — רגיל, ₪3/יום\n🏙️ מרכז הרחוב — הרבה תנועה (×1.4!), ₪8/יום\nביום גשום? אולי כדאי לחסוך שכירות. ביום פסטיבל? שווה לשלם על מרכז!\n\n🎯 אם הפעלת מטרות: תראה את מטרת היום למעלה עם הבונוס. היעד והבונוס משתנים כל יום."},
+ {ph:"morning2",t:"המתכון — 6 סלוטים בכוס 🥤",tx:"כל כוס = 6 יחידות. מה שלא מלאת = מים (💧) שפוגעים בטעם!\n\n🍋 לימון (חובה לפחות 1): יותר = יותר טעם! 3-4 = מצוין.\n🍯 דבש (0-2 מומלץ): מאזן חמיצות. יותר מ-2 = מתוק מדי!\n🧊 קרח (0-2): רעננות ביום חם. מדלל טעם. ביום קר — מיותר.\n💧 מים (אוטומטי): כל סלוט ריק = מים. מדלל טעם!\n\nדוגמה מומלצת: 3🍋+1🍯+1🧊+1💧 = כוס מאוזנת."},
+ {ph:"morning3",t:"מחיר, כמות, ומוניטין ⭐",tx:"💰 מחיר: אין מחיר \"נכון\" אחד — תלוי באיכות הכוס, מזג האוויר, והקהל. מחיר נמוך מדי = מפסיד כסף. גבוה מדי = פחות קונים. נסה למצוא את הנקודה המתוקה!\n🥤 כמות: המערכת מראה צפי לקוחות — הכן קצת פחות כדי שלא תבזבז.\n\n⭐ מוניטין (0-100): מתחיל ב-50. משפיע על שני דברים:\n1) כמות לקוחות שמגיעים — מוניטין גבוה מושך יותר אנשים לדוכן\n2) סיכויי קנייה — לקוחות סומכים יותר על דוכן מוכר\n\nמה משפיע על מוניטין? בסיכום יום תראה פירוט מלא:\n• 😊 איכות הלימונדה (הגורם המרכזי)\n• 💰 תמורה למחיר — כוס מעולה בזול = בונוס, בינונית ביוקר = פגיעה\n• 💨 אזילת מלאי — לקוחות שרצו ולא קיבלו\n• 📰 אירועים, 🗣️ שמועות מתחרים, 📊 נטייה טבעית למרכז\n\nחשוב: ההשפעה לא מדויקת! יש אלמנט של מזל — מוניטין 70 לא מבטיח יותר לקוחות מ-65, אבל לאורך זמן ההבדל מורגש."},
+ {ph:"morning4",t:"⚡ פעולות יום — שיווק ותחרות",tx:"בבוקר תוכל לבחור פעולות שישפיעו על היום:\n\n📣 שיווק (תמיד זמין):\n📄 פליירים (₪5) — +10% לקוחות\n🎈 בלונים (₪10) — +18% לקוחות\n📱 פוסט ברשתות (₪7) — +8% + סיכוי למוניטין\n🎁 טעימות חינם (₪3) — +3 מוניטין אם הטעם טוב\n\n⚔️ נגד מתחרים (כשיש):\n📢 קמפיין תחרותי: בסיסי ₪5 (10%) / חזק ₪10 (18%) / מסיבי ₪15 (25%) — גונב לקוחות\n🗣️ שמועות ₪4 ⚠️ — -5 מוניטין למתחרה (30% סיכוי להיתפס!)\n🚫 הסרת שלטים ₪6 ⚠️ — -20% חשיפה (40% סיכוי להיתפס!)\n\n🕵️ חשוב: אם קנית ניתוח מתחרים (בשלב המודיעין בערב), תראה את כל המידע הזה בבוקר *לפני* שאתה קובע מחיר ובוחר פעולות!\n\nרמה 1: מחיר המתחרים בלבד\nרמה 2: + מתכון + כמות + פעולות שלהם\nרמה 3: + סיכול פעולות מלוכלכות (שמועות/שלטים) שלהם נגדך\n\n🛡️ גם המתחרים פועלים נגדך! בלי מודיעין לא תדע מה הם עושים."},
+ {ph:"morning5",t:"דשבורד ושדרוגים 🛠️",tx:"📊 כפתור הדשבורד: מופיע ב-StatusBar אחרי יום 1. לחץ עליו בכל רגע כדי לראות:\n• היסטוריית מזג אוויר ואירועים\n• גרפי מחירים לאורך המשחק\n• הכנסות, רווח ומוניטין שלך לאורך זמן\n• טבלת החלטות (מתכון/מחיר/תוצאות כל יום)\n• השוואה למתחרים (אם קנית ניתוח)\n\nבדשבורד גם:\n🏆 הכוס הטובה ביותר — איזה מתכון ויום נתנו את הציון הגבוה ביותר\n⚡ היסטוריית פעולות — מה אתה והמתחרים עשיתם (בעברית)\n\nבדשבורד גם:\n🏆 הכוס הטובה ביותר שלך\n⚡ היסטוריית פעולות — מה אתה והמתחרים עשיתם\n\n👤 עוזר (₪8 ליום): מגבלת הגשה: 30 כוסות לבד, 50 עם עוזר (₪8/יום), 70 עם עמדה נוספת (₪30, מיום 3), ללא הגבלה עם צוות מלא (₪50, מיום 4)."},
+ {ph:"sim",t:"הסימולציה — מה קורה? 🎬",tx:"צפה בלקוחות מגיעים לדוכן. כל אחד טועם ומגיב:\n\n😊 מרוצה מאוד — קנה + מוניטין עולה!\n🙂 סביר — קנה\n😐 בסדר — קנה, אדיש\n😕 מאוכזב — קנה אבל מוניטין יורד\n🚶 לא קנה — מחיר גבוה או איכות נמוכה\n💨 רצה לקנות אבל אזל! — מוניטין נפגע!\n\nליד כל לקוח תראה מה אמר.\n\n🔊 אם הפעלת סאונד: צליל קצ׳ינג על כל מכירה, וצליל עצוב כשלקוח עוזב.\n⏱️ מהירות: ביום שקט (מעט לקוחות) — אנימציה איטית. ביום עמוס — מהירה.\n\n🎩 לפעמים יגיע מבקר אוכל VIP! אם ירשם — +8 מוניטין + כתבה בעיתון שמביאה ×1.3 לקוחות למחרת. אם מאוכזב — -6 מוניטין.\n\nבסוף: כפתור 📊 סיכום יום — לא עובר אוטומטית, אפשר להתעכב על המסך."},
+ {ph:"sim2",t:"סוגי לקוחות + VIP 👥",tx:"ארבעה סוגים עם העדפות שונות:\n\n👦 ילדים (25%): אוהבים מתוק, רגישים לחמיצות. תקציב נמוך.\n🧑 מבוגרים (40%): הקהל העיקרי. מאוזנים, תקציב בינוני.\n🏃 ספורטאים (20%): אוהבים רעננות+טעם. מוכנים לשלם יותר.\n🧑‍🍳 שפים (15%): מומחים! מוכנים להשקיע אבל מאוכזבים קשות מאיכות ירודה.\n\nחשוב: אין מחיר מקסימום קשיח! מחיר גבוה מדי פשוט מקטין את הסיכוי שיקנו. גם תמורה למחיר משנה — כוס מצוינת במחיר נמוך = בונוס מוניטין, כוס בינונית במחיר גבוה = פגיעה במוניטין."},
+];
+const TutBubble=({step,onNext,onSkip,current,total})=>{if(!step)return null;return(
+ <div style={{position:"fixed",bottom:14,left:"50%",transform:"translateX(-50%)",background:"#FFFDE7",
+  borderRadius:16,padding:"14px 18px",boxShadow:"0 8px 30px rgba(0,0,0,.25)",border:"3px solid #FFD700",
+  zIndex:1000,maxWidth:440,width:"92%",animation:"fadeUp .4s ease"}}>
+  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+   <div style={{fontWeight:800,fontSize:15}}>{step.t}</div>
+   <div style={{fontSize:10,color:"#9E8E80",whiteSpace:"nowrap"}}>{current+"/"+total}</div></div>
+  <div style={{fontSize:12,color:"#795548",lineHeight:1.7,marginBottom:10,maxHeight:180,overflowY:"auto",
+   whiteSpace:"pre-line"}}>{step.tx}</div>
+  <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
+   <Btn onClick={onSkip} color="#9E8E80" small>דלג על הדרכה</Btn>
+   <Btn onClick={onNext} color="#FF6F00" small>{"הבנתי! ←"}</Btn></div></div>);};
+function LemonadeGame(){
+ const [authUser, setAuthUser] = useState(null);
+ const [authName, setAuthName] = useState('');
+ const [showAuth, setShowAuth] = useState(false);
+ const [showLB, setShowLB] = useState(false);
+ const [saveStatus, setSaveStatus] = useState(null);
+
+ useEffect(() => {
+   if (!supabase) return;
+   supabase.auth.getSession().then(({data:{session}}) => {
+     if (session?.user) {
+       setAuthUser(session.user);
+       supabase.from('profiles').select('username').eq('id', session.user.id).single()
+         .then(({data}) => setAuthName(data?.username || session.user.email?.split('@')[0] || 'שחקן'));
+     }
+   });
+   const {data:{subscription}} = supabase.auth.onAuthStateChange((ev, session) => {
+     if (session?.user) { setAuthUser(session.user); }
+     else { setAuthUser(null); setAuthName(''); }
+   });
+   return () => subscription?.unsubscribe();
+ }, []);
+
+ const handleAuth = (user, name) => { setAuthUser(user); setAuthName(name); setShowAuth(false); };
+ const handleLogout = async () => { if(supabase) await supabase.auth.signOut(); setAuthUser(null); setAuthName(''); };
+
+ const saveGameResult = async (finalProfit, difficulty, competitors, stars, repFinal, cupsSold) => {
+   if (!supabase || !authUser) return;
+   setSaveStatus('saving');
+   try {
+     const { error } = await supabase.from('game_results').insert({
+       user_id: authUser.id, score: Math.round(finalProfit), difficulty,
+       competitors, stars, reputation_final: repFinal, cups_sold: cupsSold,
+       created_at: new Date().toISOString()
+     });
+     if (error) throw error;
+     setSaveStatus('saved');
+   } catch(e) { console.error(e); setSaveStatus('error'); }
+   setTimeout(() => setSaveStatus(null), 3000);
+ };
+
+ const [ph,setPh]=useState("title"),[dy,setDy]=useState(0),[ca,setCa]=useState(80),[lm,setLm]=useState(40);
+ const [la,setLa]=useState([]),[hn,setHn]=useState(0),[ic,setIc]=useState(0),[rp,setRp]=useState(REP0);
+ const [up,setUp]=useState([]),[ln,setLn]=useState(0),[res,setRes]=useState([]),[cm,setCm]=useState(0);
+ const [cl,setCl]=useState("easy"),[sd,setSd]=useState(Date.now()),[hi,setHi]=useState([]);
+ const [dW,setDW]=useState(null),[dP,setDP]=useState(null),[dE,setDE]=useState(null),[tP,setTP2]=useState(null);
+ const [iD,setID]=useState(null),[rL,setRL]=useState(3),[rH,setRH]=useState(0),[rI,setRI]=useState(0);
+ const [pr,setPr]=useState(5),[cu,setCu]=useState(20),[hlp,setHlp]=useState(false);
+ const [bL,setBL]=useState(0),[bH,setBH]=useState(0),[bI,setBI]=useState(0),[bIn,setBIn]=useState(0),[bCI,setBCI]=useState(0);
+ const [sP,setSP]=useState(0),[sC,setSC]=useState([]),[sS,setSS]=useState(0),[sR,setSR]=useState(0),[sNB,setSNB]=useState(0);
+ const [sDn,setSDn]=useState(false),[smD,setSmD]=useState(null),[iPd,setIPd]=useState(false),[pD,setPD]=useState(0);
+ const [tOn,setTOn]=useState(false),[tSt,setTSt]=useState(0),[shT,setShT]=useState(false),[cIL,setCIL]=useState(0);
+ const [actionsToday,setActionsToday]=useState([]);
+ const [showDash,setShowDash]=useState(false);
+ const [dayLog,setDayLog]=useState([]);
+ const [npcActions,setNpcActions]=useState([]);
+ const [pendSum,setPendSum]=useState(null);
+ const [npcState,setNpcState]=useState([]);
+ const [loc,setLoc]=useState(0);
+ const [goalsOn,setGoalsOn]=useState(false);
+ const [dayGoal,setDayGoal]=useState(null);
+ const [sfxOn,setSfxOn]=useState(true);
+ const [bestCup,setBestCup]=useState(null);
+ const [vipBonus,setVipBonus]=useState(false);
+ const [lastVip,setLastVip]=useState(-3);
+ const [showExpD,setShowExpD]=useState(false);
+ const LOC=[{n:"\u{1F3DA}\uFE0F פינת רחוב",dm:0.65,rent:0,d:"שקט, ללא שכירות"},{n:"\u{1F3E0} צד הרחוב",dm:1.0,rent:3,d:"תנועה רגילה, ₪3/יום"},{n:"\u{1F3D9}\uFE0F מרכז הרחוב",dm:1.4,rent:8,d:"הרבה תנועה! ₪8/יום"}];
+ const sfx=useCallback((type)=>{if(!sfxOn)return;try{const AC=window.AudioContext||window.webkitAudioContext;const ac=new AC();
+  const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);g.gain.value=0.08;
+  if(type==="sell"){o.frequency.value=880;o.type="sine";}
+  else if(type==="miss"){o.frequency.value=220;o.type="triangle";}
+  else if(type==="bell"){o.frequency.value=660;o.type="sine";}
+  else if(type==="vip"){o.frequency.value=1200;o.type="sine";}
+  const dur=type==="bell"?0.5:type==="miss"?0.25:0.12;
+  g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);o.start();o.stop(ac.currentTime+dur);}catch(e){}},[sfxOn]);
+ const GOAL_DEFS=[
+  {t:"מכירת {n}+ כוסות",mk:r=>{const n=Math.round(12+r()*12);return{n,rw:Math.round(n*0.25+r()*2),rr:Math.round(1+n/15+r()*0.5)};},chk:(p,g)=>p.sold>=g.n},
+  {t:"רווח של ₪{n}+",mk:r=>{const n=Math.round(15+r()*25);return{n,rw:Math.round(n*0.15+r()*2),rr:Math.round(1+n/20+r()*0.5)};},chk:(p,g)=>p.profit>=g.n},
+  {t:"מוניטין מעל {n} בסוף היום",mk:r=>{const n=Math.round(48+r()*22);return{n,rw:Math.round(2+(n-48)*0.2+r()*2),rr:Math.round(1+(n-48)/15+r()*0.5)};},chk:(p,g,nr)=>nr>=g.n},
+  {t:"אפס אזילת מלאי",mk:r=>({n:0,rw:Math.round(5+r()*3),rr:Math.round(1+r()*2)}),chk:(p,g,nr,cs)=>!cs.some(c=>c.rx==="\u{1F4A8}")},
+  {t:"מכירה ל-{n}+ שפים",mk:r=>{const n=Math.max(1,Math.round(r()*3));return{n,rw:Math.round(n*3+r()*3),rr:Math.round(1+n*0.7+r()*0.5)};},chk:(p,g,nr,cs)=>cs.filter(c=>c.type==="foodie"&&c.buys).length>=g.n},
+ ];
+ const gd=useMemo(()=>{const r=rng(sd);const d=[];let pp=null,ppp=null;
+  for(let i=0;i<=DAYS+1;i++){const w=genW(r),p=genP(pp,ppp,r),e=i>0?genE(r):null;d.push({...w,p,e});ppp=pp;pp=p;}return d;},[sd]);
+ const pH=useMemo(()=>{const mx=Math.min(dy+2,gd.length);
+  return{l:gd.slice(0,mx).map(d=>d.p.lemon),h:gd.slice(0,mx).map(d=>d.p.honey),i:gd.slice(0,mx).map(d=>d.p.ice)};},[gd,dy]);
+ useEffect(()=>{try{const v=Promise.resolve(localStorage.getItem("lem-hi")?{value:localStorage.getItem("lem-hi")}:null);if(v&&v.then)v.then(r=>{if(r&&r.value)setHi(JSON.parse(r.value));});else if(v&&v.value)setHi(JSON.parse(v.value));}catch(e){}},[]);
+ const saveHi=(sc,tS,repFinal)=>{const st=sc<0?1:sc<30?2:sc<70?3:sc<120?4:5;
+  const u=[...hi,{sc:Math.round(sc),cm,cl,stars:st}].sort((a,b)=>b.sc-a.sc).slice(0,10);setHi(u);
+  try{const p=Promise.resolve(localStorage.setItem("lem-hi",JSON.stringify(u)));if(p&&p.catch)p.catch(()=>{});}catch(e){}
+  if(authUser && supabase) saveGameResult(sc, cl, cm, st, repFinal||rp, tS||0);
+ };
+ const rW=Math.max(0,CUP-rL-rH-rI);
+ const cap=up.includes("team")?CAP_TEAM:(up.includes("station")?CAP_STATION:CAP_BASE)+(hlp?HELPER_B:0);
+ const mxFromIng=Math.min(rL>0?Math.floor(lm/rL):9999,rH>0?Math.floor(hn/rH):9999,rI>0?Math.floor(ic/rI):9999);
+ const mxC=Math.min(mxFromIng,cap);
+ const npcA=cl==="hard"?0.85:cl==="medium"?0.65:0.45;
+ const dDM=cl==="easy"?1.3:cl==="medium"?1:0.8;
+ const dBB=cl==="easy"?0.1:cl==="medium"?0:-0.05;
+ const startG=()=>{setDy(0);setCa(80);setLm(40);setLa([{q:40,d:0}]);setHn(0);setIc(0);setRp(REP0);
+  setUp([]);setLn(0);setRes([]);setID(null);setIPd(false);setSd(Date.now());
+  setActionsToday([]);setDayLog([]);setShowDash(false);setNpcActions([]);
+  setDayGoal(null);setBestCup(null);setVipBonus(false);setLastVip(-3);setLoc(0);setShowExpD(false);
+  setPh("initEve");};
+ useEffect(()=>{if(ph==="initEve"){setTP2(gd[1]?.p||{lemon:0.5,honey:0.8,ice:0.1});
+  setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");if(tOn){setTSt(2);setShT(true);}}},[ph,gd,tOn]);
+ const setupM=useCallback(d=>{const data=gd[d];if(!data)return;setDW({temp:data.temp,w:data.w});setDP(data.p);setDE(data.e);
+  setPr(5);setCu(20);setHlp(false);setActionsToday([]);setVipBonus(false);
+  if(goalsOn){const gr=rng(sd+d*4321);const gi=Math.floor(gr()*GOAL_DEFS.length);const gdef=GOAL_DEFS[gi];
+   const params=gdef.mk(gr);const text=gdef.t.replace("{n}",params.n);
+   setDayGoal({text,chk:gdef.chk,params,rw:params.rw,rr:params.rr});}else setDayGoal(null);
+  setPh("morning");if(tOn&&d===1){setTSt(6);setShT(true);}},[gd,tOn,goalsOn,sd]);
+ useEffect(()=>{if(ph==="morning"){setRL(Math.min(3,Math.max(1,lm>0?3:1)));setRH(hn>0?1:0);setRI(ic>0?1:0);
+  if(cm>0&&npcState.length>0){const iq2=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
+   setNpcActions(npcState.map((npc,i)=>{const ri=rng(sd^(dy*8461+i*3571));const acts=[];
+    if(ri()<iq2*0.5&&npc.cash>5){const mkt=MKTG_ACT[Math.floor(ri()*MKTG_ACT.length)];acts.push(mkt.n);}
+    if(ri()<iq2*0.3&&npc.cash>6){
+     if(ri()<0.5)acts.push("📢 קמפיין תחרותי");
+     else if(ri()<0.7)acts.push("🗣️ שמועות");
+     else acts.push("🚫 הסרת שלטים");
+    }
+    return{n:npc.n,acts};
+   }));
+  }else setNpcActions([]);
+ }},[ph]);
+ useEffect(()=>{window.scrollTo({top:0,behavior:"smooth"});},[ph]);
+ useEffect(()=>{if(pD>0){setupM(pD);setPD(0);}},[pD,setupM]);
+ const expL=d=>{const v=la.filter(b=>d-b.d<3);const t=v.reduce((s,b)=>s+b.q,0);const ex=lm-t;setLa(v);setLm(t);return ex;};
+ const useL=cnt=>{let rem=cnt;const na=[];for(const b of la){if(rem<=0){na.push(b);continue;}if(b.q<=rem)rem-=b.q;else{na.push({...b,q:b.q-rem});rem=0;}}setLa(na);setLm(p=>p-cnt);};
+ const runSim=aC=>{if(!dW)return;const cupsPrepped=aC!==undefined?aC:Math.min(cu,mxC);
+  const cupsToUse=Math.min(cupsPrepped,cap);
+  if(dE?.id==="insp"&&!iPd){animSim([],0,0,0,[]);return;}
+  const repRand=rng(sd+dy*8888);
+  const repBase=0.7+(rp/100)*0.6;
+  const repNoise=(repRand()-0.5)*0.3;
+  const repMult=Math.max(0.5,Math.min(1.5,repBase+repNoise));
+  const mktgAct=actionsToday.find(a=>a.dm);
+  const boostDm=mktgAct?.dm||1;
+  const vipMult=vipBonus?1.3:1;
+  const dm=Math.max(5,Math.round(60*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM*boostDm*repMult*LOC[loc].dm*vipMult));
+  let tA=1;for(let i=0;i<cm;i++)tA+=npcA;
+  const adsAct=actionsToday.find(a=>a.id==="ads");
+  const stealPct=adsAct?adsAct.steal:0;
+  const baseMyD=Math.round(dm/tA);
+  const stolenFromComps=hasComps?Math.round(dm*(1-1/tA)*stealPct):0;
+  const myD=Math.max(3,baseMyD+stolenFromComps);
+  const tasteAct=actionsToday.find(a=>a.id==="taste");
+  const freeCups=tasteAct?5:0;
+  const custs=[],rand=rng(sd+dy*1000);let sold=0,rev=0,repD=0;const tK=Object.keys(CT);
+  const rR=[],rRneg=[];
+  const repBrk={taste:0,vfm:0,soldOut:0,actions:0};
+  for(let i=0;i<myD;i++){let cum=0,ct="adult",roll=rand();
+   for(const k of tK){cum+=CT[k].pct;if(roll<cum){ct=k;break;}}
+   const c=CT[ct],sc=cSc(rL,rH,rI,rW,dW.temp,c);
+   const buys=sold<cupsToUse&&wBuy(sc.sc,pr,rp,c,rand,dBB);
+   let rx="😐",rc=0,rcVfm=0,sp="";
+   if(buys){sold++;rev+=pr;if(sc.ts>35){rx="😊";rc=c.rI[0];sp=c.sG;}else if(sc.ts>20){rx="🙂";rc=1;sp=c.sO;}
+    else if(sc.ts>10){rx="😐";sp=c.sO;}else{rx="😕";rc=-1;sp=c.sB;}
+    const vfm=pr/c.pM;
+    if(rc>0&&vfm<0.6){rcVfm=1;rc+=1;}
+    if(rc>0&&vfm>1){rcVfm=-1;rc=Math.max(0,rc-1);}
+    if(rc<0&&vfm>0.8){rcVfm=-1;rc-=1;}
+    if(rc===0&&vfm>1){rcVfm=-1;rc=-1;}
+    repBrk.taste+=rc-rcVfm;repBrk.vfm+=rcVfm;
+   }
+   else if(sold>=cupsToUse){rx="💨";rc=-2;sp="רציתי לקנות אבל אזל!";repBrk.soldOut+=rc;
+    rRneg.push("💨 "+c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");}
+   else{rx="🚶";sp=c.sN;}
+   if(rc>0)rR.push(c.em+" "+c.nm+": \""+sp+"\" (+"+rc+")");
+   if(rc<0)rRneg.push(c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");
+   repD+=rc;custs.push({type:ct,em:c.em,buys,rx,sc:sc.sc,ts:sc.ts,sp});}
+  if(freeCups>0){const avgTaste=cSc(rL,rH,rI,rW,dW.temp,CT.adult).ts;
+   const tBonus=avgTaste>25?3:avgTaste>15?1:-1;repD+=tBonus;repBrk.actions+=tBonus;
+   rR.push("🎁 טעימות חינם: "+(tBonus>0?"+"+tBonus+" מוניטין!":"טעם חלש... "+tBonus+" מוניטין"));}
+  const vipRng=rng(sd+dy*9999);
+  const vipAppears=dy>0&&(dy-lastVip)>=3&&vipRng()<0.5;
+  if(vipAppears){
+   const vipTaste=cSc(rL,rH,rI,rW,dW.temp,CT.foodie).ts;
+   const vipHappy=vipTaste>30;
+   if(vipHappy){repD+=8;repBrk.actions+=8;rR.unshift("\u{1F3A9} מבקר אוכל VIP: מעולה! +8 מוניטין + כתבה מחר!");}
+   else{repD-=6;repBrk.actions-=6;rRneg.unshift("\u{1F3A9} מבקר אוכל VIP: מאכזב. -6 מוניטין");}
+   custs.push({type:"foodie",em:"\u{1F3A9}",buys:true,rx:vipHappy?"\u{1F31F}":"\u{1F624}",sc:vipTaste,ts:vipTaste,sp:vipHappy?"מעולה!":"ציפיתי ליותר...",isVip:true});
+  }
+  const mixedRR=[...rR.slice(0,3),...rRneg.slice(0,3)];
+  animSim(custs,sold,rev,repD,mixedRR,repBrk);};
+ const animSim=(custs,sold,rev,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0})=>{setSS(0);setSR(0);setSC([]);setSP(0);setSDn(false);setPendSum(null);setSNB(0);setPh("sim");
+  if(tOn&&dy===1){setTSt(11);setShT(true);}
+  if(!custs.length){setSDn(true);setSP(100);setPendSum({sold:0,rev:0,custs:[],repD:0,rR,repBrk});return;}
+  let idx=0;
+  const spd=custs.length<=5?800:custs.length<=10?600:custs.length<=20?400:Math.max(200,Math.min(400,8000/custs.length));
+  const iv=setInterval(()=>{if(idx>=custs.length){clearInterval(iv);setSP(100);setSDn(true);sfx("bell");
+   setPendSum({sold,rev,custs,repD,rR,repBrk});return;}
+   setSC(p=>[...p.slice(-9),{...custs[idx],done:true,id:idx}]);
+   if(custs[idx].buys){setSS(p=>p+1);setSR(p=>p+pr);sfx(custs[idx].isVip?"vip":"sell");}
+   else if(custs[idx].rx==="🚶"){setSNB(p=>p+1);sfx("miss");}
+   setSP(Math.round(idx/custs.length*100));idx++;},spd);};
+ const doSum=(sold,rev,custs,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0})=>{
+  const mc=cu*cCost(rL,rH,rI,dP),hc=hlp?HELPER_C:0,fc=dE?.id==="insp"&&iPd?dE.fee:0;
+  let actCost=0;const actResults=[];
+  actionsToday.forEach(a=>{actCost+=a.cost||0;});
+  const rumorAct=actionsToday.find(a=>a.id==="rumor");
+  if(rumorAct&&hasComps){const ri=rng(sd^(dy*4447));const caught=ri()<0.3;
+   if(caught){actResults.push("🗣️ שמועות: נתפסת! -8 מוניטין, ₪10 קנס");repD-=8;actCost+=10;}
+   else{actResults.push("🗣️ שמועות: הצלחה! -5 מוניטין למתחרים");}}
+  const signsAct=actionsToday.find(a=>a.id==="signs");
+  if(signsAct&&hasComps){const ri=rng(sd^(dy*5557));const caught=ri()<0.4;
+   if(caught){actResults.push("🚫 הסרת שלטים: נתפסת! -15 מוניטין, ₪15 קנס");repD-=15;actCost+=15;}
+   else{actResults.push("🚫 הסרת שלטים: הצלחה! -20% חשיפה למתחרים");}}
+  const socialAct=actionsToday.find(a=>a.id==="social");
+  if(socialAct?.repChance){const ri=rng(sd^(dy*6661));
+   if(ri()<socialAct.repChance){repD+=socialAct.repB||0;rR.push("📱 פוסט ברשתות: +"+socialAct.repB+" מוניטין!");}}
+  npcActions.forEach((na,ni)=>{
+   const hasCounter=cIL>=3;
+   na.acts.forEach(a=>{
+    if(a.includes("שמועות")){
+     if(hasCounter){actResults.push("🛡️ סיכלת שמועות של "+na.n+"!");}
+     else{repD-=3;actResults.push("🗣️ "+na.n+" הפיץ שמועות עליך! -3 מוניטין");}
+    }
+    if(a.includes("שלטים")){
+     if(hasCounter){actResults.push("🛡️ תפסת את "+na.n+" מסיר שלטים!");}
+     else{actResults.push("🚫 "+na.n+" הסיר שלטים שלך! -10% חשיפה");}
+    }
+    if(a.includes("קמפיין")){
+     actResults.push("📢 "+na.n+" הריץ קמפיין — חלק מהלקוחות הלכו אליו");
+    }
+   });
+  });
+  const rentC=LOC[loc].rent;
+  const dExp=mc+hc+fc+actCost+rentC,profit=rev-dExp;
+  const expBreak={mc,hc,fc,actCost,rentC,fines:0};
+  if(rumorAct&&actResults.some(a=>a.includes("נתפסת")))expBreak.fines+=10;
+  if(signsAct&&actResults.some(a=>a.includes("נתפסת")))expBreak.fines+=15;
+  if(dE?.rb)repBrk.actions+=(dE.rb);
+  if(up.includes("cups"))repBrk.actions+=1;
+  let nr=rp+repD;if(dE?.rb)nr+=dE.rb;if(up.includes("cups"))nr+=1;
+  const regress=nr>50?-1:nr<50?1:0;nr+=regress;
+  nr=Math.max(0,Math.min(REPMAX,nr));
+  const nl=ln>0?Math.round(ln*(1+LOAN_INT)*100)/100:0;
+  const js=up.includes("juicer")?Math.floor(cu/10):0;useL(Math.min(Math.max(0,cu*rL-js),lm));
+  setHn(p=>Math.max(0,p-cu*rH));setIc(p=>Math.max(0,p-cu*rI));setCa(p=>p+rev-dExp);setRp(nr);setLn(nl);
+  if(!up.includes("cooler"))setIc(0);else setIc(p=>Math.floor(p*0.5));const ex=expL(dy);
+  const rEx=[...actResults];
+  if(repBrk.taste>0)rEx.push("😊 איכות לימונדה: +"+repBrk.taste);
+  if(repBrk.taste<0)rEx.push("😕 איכות לימונדה: "+repBrk.taste);
+  if(repBrk.vfm>0)rEx.push("💰 תמורה טובה למחיר: +"+repBrk.vfm);
+  if(repBrk.vfm<0)rEx.push("💸 מחיר גבוה ביחס לאיכות: "+repBrk.vfm);
+  if(repBrk.soldOut<0)rEx.push("💨 אזילת מלאי ("+Math.abs(repBrk.soldOut/2)+" לקוחות נפגעו): "+repBrk.soldOut);
+  if(dE?.rb)rEx.push("📰 אירוע: +"+(dE.rb));
+  if(up.includes("cups"))rEx.push("🥤 כוסות ממותגות: +1");
+  if(regress!==0)rEx.push("📊 נטייה למרכז: "+(regress>0?"+1":"-1"));
+  const totalRepChange=nr-rp;
+  rEx.push(totalRepChange>=0?"📈 סה\"כ: +"+totalRepChange+" ("+rp+"→"+nr+") — "+(nr>=65?"מצוין! יותר לקוחות מחר":nr>=50?"טוב":"נמוך — פחות לקוחות מחר")
+   :"📉 סה\"כ: "+totalRepChange+" ("+rp+"→"+nr+") — "+(nr>=50?"עדיין סביר":nr>=35?"בינוני — פחות לקוחות":"נמוך! הרבה פחות לקוחות מחר"));
+  const cSnap=compD.map(c=>({n:c.n,pr:c.pr,sold:c.sold,rev:c.rev,exp:c.exp,profit:c.profit,rep:c.repA,cash:c.cashAfter,prep:c.prep}));
+  setDayLog(p=>[...p,{dy,temp:dW.temp,weather:dW.w.n,event:dE?.n||null,prices:{...dP},
+   myRev:rev,myExp:mc+hc+fc+actCost,myProfit:profit,mySold:sold,myPrep:cu,rep:nr,repPrev:rp,
+   recipe:{l:rL,h:rH,i:rI},price:pr,compSnap:cSnap,actions:actionsToday.map(a=>a.id),npcActs:npcActions}]);
+  setRes(p=>[...p,{dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,compSnap:cSnap}]);
+  const hadVip=custs.some(c=>c.isVip);
+  if(hadVip){setLastVip(dy);if(custs.some(c=>c.isVip&&c.rx==="🌟"))setVipBonus(true);}
+  const cupScore=cSc(rL,rH,rI,rW,dW.temp,CT.adult).sc;
+  if(!bestCup||cupScore>bestCup.score)setBestCup({day:dy,recipe:{l:rL,h:rH,i:rI},score:cupScore});
+  if(goalsOn&&dayGoal){
+   const met=dayGoal.chk({sold,profit,rev},dayGoal.params,nr,custs);
+   if(met){setCa(p=>p+dayGoal.rw);setRp(p=>Math.min(REPMAX,p+dayGoal.rr));
+    rEx.push("\u{1F3AF} מטרה הושגה! +"+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":""));}
+   else rEx.push("\u{1F3AF} מטרה לא הושגה: "+dayGoal.text);}
+  if(rentC>0)rEx.push("🏠 שכירות מיקום: -₪"+rentC);
+  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak});
+  setPh("summary");};
+ const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0)-ln;const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);setPh("gameover");return;}
+  setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");};
+ const confIntel=()=>{let tc=0;
+  if(bIn>0){tc+=INTL[bIn-1].c;const td=gd[dy+1],ac=INTL[bIn-1].ac;
+   const r1=rng(sd^(dy*7919)),r2=rng(sd^(dy*6271)),r3=rng(sd^(dy*5381));
+   const tempOk=r1()<ac, wOk=r2()<ac, prOk=r3()<ac;
+   const wrongTemp=Math.max(12,Math.min(40,td.temp+Math.round((r1()-0.5)*14)));
+   const shownTemp=tempOk?td.temp:wrongTemp;
+   const plausibleW=shownTemp>=35?[WE[6]]:shownTemp>=30?[WE[0],WE[5]]:shownTemp>=25?[WE[0],WE[1]]:
+    shownTemp>=21?[WE[0],WE[1],WE[2]]:shownTemp>=18?[WE[2],WE[3]]:shownTemp>=15?[WE[2],WE[3],WE[4]]:[WE[3],WE[4],WE[7]];
+   const wrongW=plausibleW[Math.floor(r2()*plausibleW.length)].n;
+   const iData={lv:bIn, temp:shownTemp, w:wOk?td.w.n:wrongW, accurate:tempOk&&wOk};
+   if(bIn>=2){const dp=gd[dy]?.p||gd[0].p,tp=td.p;
+    const trendOk=prOk;
+    iData.pT={
+     l:trendOk?(tp.lemon>dp.lemon?"📈":tp.lemon<dp.lemon?"📉":"➡️"):["📈","📉","➡️"][Math.floor(r3()*3)],
+     h:trendOk?(tp.honey>dp.honey?"📈":tp.honey<dp.honey?"📉":"➡️"):["📈","📉","➡️"][Math.floor(r3()*3)],
+     i:trendOk?(tp.ice>dp.ice?"📈":tp.ice<dp.ice?"📉":"➡️"):["📈","📉","➡️"][Math.floor(r3()*3)]};
+    const tmrEvent=td.e;
+    if(tmrEvent){
+     const evOk=r2()<ac;
+     iData.evHint=evOk?(tmrEvent.dm>1?"📣 שמועה: אירוע חיובי צפוי מחר — כדאי להתכונן!":"⚠️ שמועה: אירוע שלילי צפוי — היזהר"):
+      (r2()<0.5?"📣 שמועה: אירוע חיובי צפוי":"⚠️ שמועה: אירוע שלילי צפוי");
+    }else{iData.evHint=r2()<ac?"✅ לא צפוי אירוע מיוחד מחר":"📣 שמועה: יום רגיל כנראה";}
+   }
+   if(bIn>=3){
+    const tmrEvent=td.e;
+    if(tmrEvent){
+     const evOk=r3()<ac;
+     iData.evDetail=evOk?("📋 "+tmrEvent.n+" — "+tmrEvent.d):("📋 אירוע צפוי (פרטים לא ברורים)");
+    }else{iData.evDetail="✅ לא צפוי אירוע מיוחד מחר";}
+   }
+   setID(iData);}else setID(null);
+  if(bCI>0&&cm>0){tc+=CINTL[bCI-1].c;setCIL(bCI);}else setCIL(0);
+  if(tc>0)setCa(p=>p-tc);setPh("evening");if(tOn&&dy===0){setTSt(4);setShT(true);}};
+ const confEve=()=>{
+  const tc=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
+  setCa(p=>p-tc);if(bL>0){setLm(p=>p+bL);setLa(p=>[...p,{q:bL,d:dy}]);}setHn(p=>p+bH);setIc(p=>p+bI);
+  setDy(p=>p+1);setIPd(false);setPD(dy+1);};
+ const eveT=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
+ const totP=res.reduce((s,r)=>s+r.profit,0);
+ useEffect(()=>{if(ph==="initEve"&&cm>0){
+  setNpcState(Array.from({length:cm}).map((_,i)=>({
+   n:"מתחרה "+(i+1),cash:80,lm:40,hn:0,ic:0,rep:REP0,totRev:0,totExp:0,ups:[],ln:0,
+  })));
+ }},[ph,cm]);
+ const compD=useMemo(()=>{
+  if(!dW||cm===0||npcState.length===0)return[];
+  const r=rng(sd^(dy*2017));
+  const iq=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
+  return npcState.map((npc,i)=>{
+   const ri=rng(sd^(dy*3037+i*1013));
+   const npcHasTeam=npc.ups.includes("team");
+   const npcHasStation=npc.ups.includes("station");
+   const npcBaseCap=npcHasTeam?CAP_TEAM:npcHasStation?CAP_STATION:CAP_BASE;
+   const expectBusy=dW.w.fm>=0.8&&dW.temp>=22&&(dE?.dm||1)>=1;
+   const npcHiresHelper=!npcHasTeam&&expectBusy&&iq>0.4&&ri()<iq&&npc.cash>20;
+   const npcCap=npcBaseCap+(npcHiresHelper?HELPER_B:0);
+   const helperCost=npcHiresHelper?HELPER_C:0;
+   let upgCost=0;
+   const wantUpg=ri()<iq*0.3&&npc.cash>40&&dy>=2;
+   const availUpgs=UPG.filter(u=>u.ad<=dy&&!npc.ups.includes(u.id));
+   const boughtUpg=wantUpg&&availUpgs.length>0?availUpgs[Math.floor(ri()*availUpgs.length)]:null;
+   if(boughtUpg)upgCost=boughtUpg.c;
+   const prices=gd[dy]?.p||{lemon:0.5,honey:0.8,ice:0.1};
+   const buyIntel=ri()<iq*0.7;
+   const intelCost=buyIntel?(iq>0.7?10:iq>0.5?5:2):0;
+   const knowWeather=buyIntel&&ri()<(iq*0.9);
+   const expectHot=knowWeather?dW.temp>=28:ri()<0.5;
+   const nL=iq>0.7?Math.round(3+ri()*0.5):iq>0.5?Math.round(2+ri()*2):Math.round(1+ri()*3);
+   const nH=Math.min(CUP-nL, iq>0.6?1:Math.round(ri()*2));
+   const nI=Math.min(CUP-nL-nH, expectHot?(iq>0.5?2:Math.round(ri()*3)):Math.round(ri()));
+   const nW=CUP-nL-nH-nI;
+   const npcRepBase=0.7+(npc.rep/100)*0.6;
+   const npcRepNoise=(ri()-0.5)*0.3;
+   const npcRepMult=Math.max(0.5,Math.min(1.5,npcRepBase+npcRepNoise));
+   const estDem=Math.round(60*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*npcRepMult/(1+cm));
+   const prepTarget=iq>0.6?Math.round(estDem*(0.7+ri()*0.3)):Math.round(10+ri()*40);
+   const needL=Math.max(0,prepTarget*nL-npc.lm);
+   const needH=Math.max(0,prepTarget*nH-npc.hn);
+   const needI=prepTarget*nI;
+   const matCost=needL*prices.lemon+needH*prices.honey+needI*prices.ice+intelCost;
+   let npcLoan=npc.ln;
+   let budget=npc.cash;
+   if(matCost>budget&&npcLoan===0&&budget<15){
+    const loanAmt=Math.min(LOAN_MAX,Math.round(20+ri()*20));
+    npcLoan=loanAmt;budget+=loanAmt;
+   }
+   const canAfford=matCost<=budget;
+   const rawPrep=canAfford?prepTarget:Math.max(0,Math.floor(Math.min(npc.lm/Math.max(nL,1),npc.hn/Math.max(nH,1)||999,budget/prices.ice/Math.max(nI,1)||999)));
+   const actualPrep=Math.min(rawPrep,npcCap);
+   const actualMatCost=canAfford?matCost:actualPrep*cCost(nL,nH,nI,prices)+intelCost;
+   const nP=iq>0.7?Math.round(4+ri()*2):iq>0.5?Math.round(3+ri()*4):Math.round(2+ri()*5);
+   const sc=cSc(nL,nH,nI,nW,dW.temp,CT.adult);
+   const myDem=Math.max(2,Math.round(estDem));
+   let sold=0,rev=0,npcRepD=0;
+   for(let j=0;j<myDem;j++){
+    if(sold>=actualPrep)break;
+    const buys=wBuy(sc.sc,nP,npc.rep,CT.adult,()=>ri(),0);
+    if(buys){
+     sold++;rev+=nP;
+     let rc=0;
+     if(sc.ts>35)rc=2; else if(sc.ts>20)rc=1; else if(sc.ts>10)rc=0; else rc=-1;
+     const vfm=nP/CT.adult.pM;
+     if(rc>0&&vfm<0.6)rc+=1;
+     if(rc>0&&vfm>1)rc=Math.max(0,rc-1);
+     if(rc<0&&vfm>0.8)rc-=1;
+     if(rc===0&&vfm>1)rc=-1;
+     npcRepD+=rc;
+    }
+   }
+   const totalExp=Math.min(actualMatCost,budget)+helperCost+upgCost;
+   const profit=rev-totalExp;
+   const soldOutPenalty=myDem>actualPrep?Math.min(3,myDem-actualPrep):0;
+   let repDelta=npcRepD-soldOutPenalty;
+   const newRep=Math.max(0,Math.min(100,npc.rep+repDelta));
+   return{
+    n:npc.n, sold, pr:nP, rev, exp:totalExp, profit,
+    rec:{l:nL,h:nH,i:nI,w:nW}, prep:actualPrep,
+    repB:npc.rep, repA:newRep, repD:repDelta,
+    cash:budget, cashAfter:budget+profit,
+    boughtIntel:buyIntel, intelCost, boughtUpg:boughtUpg?.id||null, npcCap, hiredHelper:npcHiresHelper,
+    hasStation:npcHasStation, hasTeam:npcHasTeam, hasHelper:npcHiresHelper,
+    npcLoan,
+   };
+  });
+ },[dW,cm,sd,dy,dE,cl,npcState,gd]);
+ useEffect(()=>{
+  if(ph==="summary"&&compD.length>0&&npcState.length>0){
+   setNpcState(prev=>prev.map((npc,i)=>{
+    const cd=compD[i];if(!cd)return npc;
+    const prices=gd[dy]?.p||{lemon:0.5,honey:0.8,ice:0.1};
+    return{
+     ...npc,
+     cash:cd.cashAfter,
+     lm:Math.max(0,npc.lm+cd.rec.l*cd.prep-cd.sold*cd.rec.l),
+     hn:Math.max(0,npc.hn-cd.sold*cd.rec.h),
+     ic:0,
+     rep:cd.repA,
+     totRev:npc.totRev+cd.rev,
+     totExp:npc.totExp+cd.exp,
+     ups:cd.boughtUpg?[...npc.ups,cd.boughtUpg]:npc.ups,
+     ln:(()=>{let l=cd.npcLoan;if(l>0)l=Math.round(l*(1+LOAN_INT)*100)/100;
+      if(l>0&&cd.cashAfter>l*1.5){l=0;}return l;})(),
+    };
+   }));
+  }
+ },[ph]);
+ const hasLoan=ln>0,hasCash=ca>=0,isHot=dW?.temp>=30,isHeat=dW?.temp>=35,isCold=dW?.temp<18,isWarm=dW?.temp>=25;
+ const hasIntel=!!iD,hasCompIntel=cIL>0,hasComps=cm>0,hasUps=up.length>0;
+ const isLastDay=dy>=DAYS,hasRes=res.length>1,hasHi=hi.length>0;
+ const canAffordEve=eveT<=ca||(eveT===0);
+ return(
+  <div dir="rtl" style={{fontFamily:"'Heebo','Segoe UI',Arial,sans-serif",
+   background:`linear-gradient(180deg,#FFF8E7 0%,#FFF0D4 40%,#FFE8B0 100%)`,
+   minHeight:"100vh",maxWidth:680,margin:"0 auto",padding:"12px clamp(10px,3vw,24px) 90px",color:C.tx,position:"relative"}}>
+   <style>{`@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+    @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(-3deg)}75%{transform:translateY(-4px) rotate(3deg)}}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    @keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(400px) rotate(720deg);opacity:0}}
+    @keyframes cloudDr{0%,100%{transform:translateX(0)}50%{transform:translateX(25px)}}
+    @keyframes rainDr{0%{transform:translateY(-10px);opacity:0}50%{opacity:.6}100%{transform:translateY(60px);opacity:0}}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+    @keyframes compPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+    @keyframes walkComp{0%,100%{transform:translateX(0)}30%{transform:translateX(8px)}70%{transform:translateX(-8px)}}
+    @keyframes walkIn{0%{transform:translateX(60px);opacity:0}30%{opacity:1}70%{transform:translateX(0)}100%{transform:translateX(-30px);opacity:0}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    @media(min-width:600px){.gg{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}}`}</style>
+   {}
+   {ph==="title"&&<div style={{textAlign:"center",paddingTop:20}}>
+    {/* Auth bar */}
+    <div style={{display:"flex",justifyContent:"flex-start",alignItems:"center",marginBottom:16,gap:8}}>
+     {authUser ? (
+       <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,.7)",
+         backdropFilter:"blur(8px)",borderRadius:12,padding:"6px 14px",border:"1px solid rgba(232,213,176,.4)"}}>
+         <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FFD54F,#FF6F00)",
+           display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#FFF",fontWeight:800}}>
+           {authName.charAt(0).toUpperCase()}</div>
+         <span style={{fontSize:13,fontWeight:600,color:C.tx}}>{authName}</span>
+         <button onClick={handleLogout} style={{background:"none",border:"none",color:C.tM,fontSize:11,
+           cursor:"pointer",fontFamily:"inherit"}}>יציאה</button>
+       </div>
+     ) : (
+       <button onClick={()=>setShowAuth(true)} style={{background:"rgba(255,255,255,.7)",backdropFilter:"blur(8px)",
+         border:"1px solid rgba(232,213,176,.4)",borderRadius:12,padding:"6px 14px",fontSize:13,fontWeight:600,
+         cursor:"pointer",fontFamily:"inherit",color:C.tx,display:"flex",alignItems:"center",gap:6}}>
+         👤 התחבר</button>
+     )}
+    </div>
+
+    {/* Hero */}
+    <div style={{position:"relative",marginBottom:24}}>
+      <div style={{fontSize:72,animation:"float 4s ease-in-out infinite",filter:"drop-shadow(0 8px 16px rgba(255,215,0,.3))"}}>🍋</div>
+      <h1 style={{fontSize:32,fontWeight:900,margin:"8px 0 4px",color:"#3E2723",
+        letterSpacing:-0.5}}>דוכן הלימונדה</h1>
+      <p style={{color:C.tL,fontSize:15,margin:0,fontWeight:400}}>משחק אסטרטגיה כלכלי • 10 ימים</p>
+      <div style={{margin:"12px auto",width:60,height:3,borderRadius:2,
+        background:"linear-gradient(90deg,transparent,#FFD700,transparent)"}} />
+    </div>
+
+    {/* Action buttons */}
+    <div style={{display:"flex",flexDirection:"column",gap:10,alignItems:"center",marginBottom:20}}>
+     <Btn onClick={()=>{setTOn(true);setTSt(0);setShT(true);setPh("setup");}} color={C.ac}
+       style={{width:240,fontSize:16,padding:"14px 28px"}}>🎓 עם הדרכה</Btn>
+     <Btn onClick={()=>{setTOn(false);setShT(false);setPh("setup");}} color={C.gn}
+       style={{width:240,fontSize:16,padding:"14px 28px"}}>🚀 התחל משחק</Btn>
+     <button onClick={()=>setShowLB(true)} style={{width:240,padding:"12px 28px",borderRadius:14,
+       border:"2px solid #FFD700",background:"rgba(255,255,255,.6)",backdropFilter:"blur(8px)",
+       cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit",color:"#D4A017",
+       boxShadow:"0 4px 14px rgba(255,215,0,.15)",transition:"all .2s"}}
+       onMouseEnter={e=>{e.target.style.background="rgba(255,215,0,.15)";e.target.style.transform="scale(1.03)";}}
+       onMouseLeave={e=>{e.target.style.background="rgba(255,255,255,.6)";e.target.style.transform="scale(1)";}}>
+       🏆 טבלת שיאים</button>
+     {!authUser && <p style={{fontSize:11,color:C.tM,margin:0}}>התחבר כדי לשמור תוצאות ולהתחרות!</p>}
+    </div>
+
+    {/* Local high scores */}
+    {hasHi&&<Card style={{textAlign:"right",background:"rgba(255,255,255,.6)"}}>
+      <div style={{fontWeight:800,marginBottom:6,fontSize:14}}>🏆 השיאים שלך</div>
+     {hi.slice(0,5).map((h,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",
+       borderBottom:"1px solid rgba(0,0,0,.05)",fontSize:13,alignItems:"center"}}>
+      <span style={{letterSpacing:2}}>{"⭐".repeat(h.stars)+"☆".repeat(5-h.stars)}</span>
+      <span style={{fontWeight:700,color:h.sc>=0?C.gn:C.rd,fontSize:15}}>{"₪"+h.sc}</span></div>)}</Card>}
+
+    {/* Auth & Leaderboard modals */}
+    {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase} />}
+    {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName} />}
+   </div>}
+   {}
+   {ph==="setup"&&<div style={{paddingTop:16}}>
+    <h2 style={{textAlign:"center",fontSize:20,margin:"0 0 14px"}}>⚙️ הגדרות</h2>
+    <Card>
+     <div style={{fontWeight:700,marginBottom:6}}>מספר מתחרים</div>
+     <div style={{display:"flex",gap:6,marginBottom:8}}>{[0,1,2,3].map(n=><Btn key={n} onClick={()=>setCm(n)} color={cm===n?C.ac:C.tM} small style={{flex:1}}>{n===0?"ללא":n}</Btn>)}</div>
+     <div style={{fontWeight:700,marginBottom:6}}>רמת קושי</div>
+     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:12}}>
+      {[["easy","😊 קלה","יותר לקוחות, קל למכור"],["medium","😐 בינונית","כלכלה מאוזנת"],["hard","😈 קשה","פחות לקוחות, קשה למכור"]].map(([v,l,d])=>(
+       <div key={v} onClick={()=>setCl(v)} style={{cursor:"pointer",padding:"10px 6px",borderRadius:10,textAlign:"center",
+        background:cl===v?"linear-gradient(135deg,"+C.ac+",#F57C00)":"#F5F5F5",
+        color:cl===v?"#FFF":C.tx,border:"2px solid "+(cl===v?C.ac:"#E0E0E0")}}>
+        <div style={{fontSize:14,fontWeight:700}}>{l}</div><div style={{fontSize:9,opacity:0.8}}>{d}</div></div>))}
+     </div>
+     <div style={{display:"flex",gap:12,marginBottom:12}}>
+      <div onClick={()=>setGoalsOn(p=>!p)} style={{display:"flex",alignItems:"center",gap:8,flex:1,padding:"8px 10px",
+       background:goalsOn?"#E8F5E9":"#F5F5F5",borderRadius:8,cursor:"pointer",border:"1px solid "+(goalsOn?"#A5D6A7":"#E0E0E0")}}>
+       <div style={{width:36,height:20,borderRadius:10,background:goalsOn?"#4CAF50":"#CCC",position:"relative",transition:"background 0.2s"}}>
+        <div style={{width:16,height:16,borderRadius:8,background:"#FFF",position:"absolute",top:2,
+         left:goalsOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,.3)"}}/></div>
+       <div><div style={{fontSize:12,fontWeight:700}}>🎯 מטרות יומיות</div><div style={{fontSize:9,color:C.tL}}>אתגרים + בונוסים</div></div></div>
+      <div onClick={()=>setSfxOn(p=>!p)} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",
+       background:sfxOn?"#E3F2FD":"#F5F5F5",borderRadius:8,cursor:"pointer",border:"1px solid "+(sfxOn?"#90CAF9":"#E0E0E0")}}>
+       <div style={{width:28,height:16,borderRadius:8,background:sfxOn?"#1976D2":"#CCC",position:"relative",transition:"background 0.2s"}}>
+        <div style={{width:12,height:12,borderRadius:6,background:"#FFF",position:"absolute",top:2,
+         left:sfxOn?14:2,transition:"left 0.2s"}}/></div>
+       <div style={{fontSize:14}}>{sfxOn?"🔊":"🔇"}</div></div>
+     </div>
+     <Btn onClick={startG} color={C.gn} style={{width:"100%"}}>🍋 התחל!</Btn></Card>
+   </div>}
+   {}
+   {ph==="morning"&&dW&&<div>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <div style={{textAlign:"center",fontWeight:800,fontSize:17,marginBottom:6}}>{"☀️ בוקר יום "+dy+" | "+LOC[loc].n}</div>
+    {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return(
+     <div style={{fontSize:10,color:C.tL,textAlign:"center",marginBottom:6,padding:"4px 8px",background:"#F5F5F5",borderRadius:6}}>
+      {"📋 אתמול: "+(y.profit>=0?"✅":"❌")+" ₪"+y.profit.toFixed(0)+" רווח | "+y.sold+" כוסות | מוניטין "+y.rB+"→"+y.rA}</div>);})()}
+    {vipBonus&&<div style={{padding:"6px 10px",background:"linear-gradient(135deg,#FFF9C4,#FFF176)",borderRadius:8,marginBottom:6,
+     border:"1px solid #FFD600",fontSize:11,textAlign:"center",fontWeight:700}}>
+     📰 כתבה בעיתון מאתמול! מבקר האוכל המליץ עליך — ×1.3 לקוחות היום!</div>}
+    {goalsOn&&dayGoal&&<div style={{padding:"6px 10px",background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",borderRadius:8,marginBottom:6,
+     border:"1px solid #64B5F6",fontSize:11,textAlign:"center"}}>
+     {"🎯 מטרת היום: "+dayGoal.text}
+     <span style={{color:C.gn,fontWeight:700}}>{" (בונוס: "+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":"")+")"}</span></div>}
+    <Card>
+     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+      <span style={{fontSize:22}}>{dW.w.n.split(" ")[0]}</span>
+      <span style={{fontWeight:700,fontSize:15,color:isHeat?C.rd:isHot?"#E65100":isCold?C.iD:C.tx}}>{dW.temp+"°C"}</span>
+      <span style={{fontSize:11,color:C.tM}}>{dW.w.n.split(" ").slice(1).join(" ")}</span></div>
+     <div style={{fontSize:10,color:C.tL,padding:"3px 8px",background:"#F5F5F5",borderRadius:6}}>
+      {isHeat?"🔥 שרב — רוב האנשים בבית! מי שבחוץ מת מצמא. קרח קריטי!":
+       isHot?"🥵 חם — אנשים צמאים אבל חלק נשארים בבית. קרח חשוב!":
+       isWarm?"☀️ מושלם! — הרבה ביקוש ללימונדה קרה!":
+       dW.temp>=21?"😊 נעים — ביקוש סביר":
+       isCold?"🥶 קר — מעט מאוד ביקוש ללימונדה":
+       "🌡️ קריר — ביקוש נמוך"}
+      {dW.w.id.includes("Rain")?" | 🌧️ גשם — פחות אנשים ברחוב!":""}</div>
+     {hasIntel&&<div style={{padding:"4px 8px",borderRadius:8,background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",
+      fontSize:11,border:"1px solid #A5D6A7",marginTop:4}}>
+      <b>{"🔍 תחזית למחר (רמה "+iD.lv+"):"}</b>{" "+iD.w+", "+iD.temp+"°C"}
+      {iD.pT&&<span>{" | 🍋"+iD.pT.l+" 🍯"+iD.pT.h+" 🧊"+iD.pT.i}</span>}
+      {iD.evDetail&&<div style={{fontSize:10,marginTop:2,color:"#2E7D32"}}>{iD.evDetail}</div>}
+      {iD.evHint&&!iD.evDetail&&<div style={{fontSize:10,marginTop:2,color:C.ac}}>{iD.evHint}</div>}
+      <div style={{fontSize:9,color:C.tM,marginTop:2}}>{"⚠️ דיוק ~"+(iD.lv===1?"70%":iD.lv===2?"85%":"95%")+" — המידע לא בהכרח מדויק!"}</div></div>}
+    </Card>
+    {dE&&<div style={{borderRadius:14,overflow:"hidden",marginBottom:10,
+     background:dE.dm>1?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":dE.dm&&dE.dm<1?"linear-gradient(135deg,#FFEBEE,#FFCDD2)":"linear-gradient(135deg,#E3F2FD,#BBDEFB)",
+     border:"2px solid "+(dE.dm>1?"#66BB6A":dE.dm<1?"#EF9A9A":"#90CAF9"),
+     padding:"12px 14px",animation:"slideIn .5s ease"}}>
+     <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <div style={{fontSize:32,animation:"pop .5s ease"}}>{dE.n.split(" ")[0]}</div>
+      <div style={{flex:1}}>
+       <div style={{fontSize:15,fontWeight:800}}>{dE.n.split(" ").slice(1).join(" ")}</div>
+       <div style={{fontSize:12,color:C.tL}}>{dE.d}</div>
+      </div>
+      <div style={{fontSize:11,fontWeight:800,padding:"3px 8px",borderRadius:6,
+       background:dE.dm>1?"#4CAF50":dE.dm<1?"#E53935":"#1976D2",color:"#FFF"}}>
+       {(dE.dm>1)?("+"+(Math.round((dE.dm-1)*100))+"%"):(dE.dm<1)?(Math.round((dE.dm-1)*100)+"%"):dE.fee?("₪"+dE.fee):dE.ll?"-30% לימונים":"מיוחד"}</div>
+     </div></div>}
+    {dE?.id==="insp"&&!iPd&&<Card style={{background:"#FFF3E0"}}>
+     <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>🏛️ פיקוח!</div>
+     <div style={{display:"flex",gap:6}}>
+      <Btn onClick={()=>{setCa(p=>p-8);setIPd(true);}} color={C.rd} small disabled={ca<8}>שלם ₪8</Btn>
+      <Btn onClick={()=>{setIPd(false);runSim(0);}} color={C.tM} small>סגור ליום</Btn></div></Card>}
+    {(dy>1)&&<Card style={{padding:8}}><div style={{fontSize:10,fontWeight:700,color:C.tM,marginBottom:2}}>📊 מגמות מחירים</div>
+     <PrCh prices={pH.l} color={C.lD} emoji="🍋"/><PrCh prices={pH.h} color={C.hn} emoji="🍯"/><PrCh prices={pH.i} color={C.iD} emoji="🧊"/></Card>}
+    {}
+    {hasCompIntel&&hasComps&&compD.length>0&&<Card style={{background:"linear-gradient(135deg,#F3E5F5,#EDE7F6)",border:"2px solid #CE93D8"}}>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:6,color:C.pu}}>🕵️ מודיעין מתחרים — מה הם מתכננים היום</div>
+     {compD.map((c,i)=><div key={i} style={{padding:"6px 8px",background:"#FFF",borderRadius:8,marginBottom:4,border:"1px solid #E1BEE7"}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+       <b style={{fontSize:12}}>{c.n}</b>
+       <span style={{fontSize:10,color:C.tM}}>{"⭐"+c.repB+" | 💰₪"+c.cash.toFixed(0)}</span></div>
+      <div style={{fontSize:11,color:C.tL}}>
+       {"💲 מחיר: ₪"+c.pr}
+       {cIL>=2&&<span>{" | 🥤 "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊"+(c.rec.w>0?" +"+c.rec.w+"💧":"")}</span>}
+       {cIL>=2&&" | 📦 "+c.prep+" כוסות"}
+      </div>
+      {cIL>=2&&npcActions[i]&&npcActions[i].acts.length>0&&
+       <div style={{fontSize:10,color:C.ac,marginTop:2}}>{"⚡ פעולות: "+npcActions[i].acts.join(", ")}</div>}
+      {cIL>=3&&<div style={{fontSize:9,color:C.gn,marginTop:2}}>{"🛡️ סיכול פעולות מלוכלכות פעיל"}</div>}
+     </div>)}
+     <div style={{fontSize:9,color:C.tM,textAlign:"center",marginTop:2}}>
+      {"💡 השתמש במידע הזה כדי לקבוע מחיר תחרותי ולתכנן את הפעולות שלך!"}</div>
+    </Card>}
+    <div className="gg">
+    <Card>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:3}}>{"🥤 מתכון הכוס ("+CUP+" יחידות)"}</div>
+     <CupVis l={rL} h={rH} ic={rI}/>
+     {[{e:"🍋",lb:"לימון",v:rL,s:setRL,mn:1,mx:5,c:C.lD,bg:"#FFF9C4",st:lm,tip:"⬆️ טעם + חמיצות קלה"},
+      {e:"🍯",lb:"דבש",v:rH,s:setRH,mn:0,mx:5,c:C.hn,bg:"#FFF3E0",st:hn,tip:"מתיקות — מאזן חמיצות, יותר מדי דורס לימון"},
+      {e:"🧊",lb:"קרח",v:rI,s:setRI,mn:0,mx:5,c:C.iD,bg:"#E1F5FE",st:ic,tip:"רעננות"+(isWarm?" (חשוב היום!)":"")+" — מדלל טעם"},
+     ].map(ing=>{const canA=rL+rH+rI<CUP&&ing.v<ing.mx,canS=ing.v>ing.mn;return(
+      <div key={ing.lb} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:ing.bg,borderRadius:10,marginBottom:5}}>
+       <span style={{fontSize:22,width:30,textAlign:"center"}}>{ing.e}</span>
+       <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{ing.lb}</div>
+        <div style={{fontSize:9,color:C.tM}}>{"מלאי: "+ing.st+" | "+ing.tip}</div></div>
+       <div style={{display:"flex",alignItems:"center",gap:4}}>
+        <button onClick={()=>{if(canS)ing.s(ing.v-1);}} disabled={!canS} style={{width:32,height:32,borderRadius:8,border:"none",fontSize:18,fontWeight:800,cursor:canS?"pointer":"not-allowed",background:canS?"#FFF":"#EEE",color:canS?C.rd:"#CCC"}}>−</button>
+        <span style={{fontSize:20,fontWeight:800,width:28,textAlign:"center",color:ing.c}}>{ing.v}</span>
+        <button onClick={()=>{if(canA)ing.s(ing.v+1);}} disabled={!canA} style={{width:32,height:32,borderRadius:8,border:"none",fontSize:18,fontWeight:800,cursor:canA?"pointer":"not-allowed",background:canA?"#FFF":"#EEE",color:canA?C.gn:"#CCC"}}>+</button></div></div>);})}
+     {(rW>0)&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:"#E3F2FD",borderRadius:10,marginBottom:5}}>
+      <span style={{fontSize:22,width:30,textAlign:"center"}}>💧</span>
+      <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.tL}}>מים</div><div style={{fontSize:10,color:C.rd}}>מדלל טעם!</div></div>
+      <span style={{fontSize:20,fontWeight:800,color:"#1976D2"}}>{rW}</span></div>}
+    </Card>
+    <Card>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>💰 תמחור</div>
+     <div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:1}}>
+      <span>💰 מחיר לכוס</span><span style={{fontWeight:700,color:C.gn}}>{"₪"+pr}</span></div>
+      <input type="range" min={1} max={15} value={pr} onChange={e=>setPr(+e.target.value)} style={{width:"100%",accentColor:C.gn,height:5}}/></div>
+     {(()=>{const estD=Math.max(5,Math.round(100*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM/(1+cm*npcA)));
+      const rec=Math.min(mxC,Math.round(estD*0.7));return(
+      <div style={{background:"#E3F2FD",borderRadius:8,padding:"8px 10px",marginBottom:8,border:"1px solid #90CAF9"}}>
+       <div style={{display:"flex",gap:6,marginBottom:4}}>
+        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>👥 צפי לקוחות</div><div style={{fontSize:18,fontWeight:800,color:"#1976D2"}}>{"~"+estD}</div></div>
+        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>📊 צפי מכירה</div><div style={{fontSize:18,fontWeight:800,color:C.gn}}>{"~"+rec}</div></div>
+        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>🥤 מהמלאי</div><div style={{fontSize:18,fontWeight:800,color:C.ac}}>{mxC}</div></div>
+        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>🏪 הגשה מקס׳</div><div style={{fontSize:18,fontWeight:800,color:cap>=CAP_TEAM?C.gn:cap<mxFromIng?C.rd:C.tM}}>{cap>=CAP_TEAM?"∞":cap}</div></div></div>
+       <div style={{fontSize:9,color:C.tL,textAlign:"center"}}>{"💡 מומלץ ~"+rec+" כוסות"}</div></div>);})()}
+     <div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:1}}>
+      <span>{"🥤 כוסות להכנה"}</span><span style={{fontWeight:700,color:C.ac}}>{Math.min(cu,mxC)}</span></div>
+      {!up.includes("team")&&mxFromIng>cap&&<div style={{fontSize:9,color:C.rd,marginBottom:2}}>
+       {"⚠️ מלאי מספיק ל-"+mxFromIng+" אבל מגבלת הגשה: "+cap}
+       {!hlp&&" (עם עוזר: "+(cap+HELPER_B)+")"}
+       {!up.includes("station")&&dy>=3&&" | 🏪 עמדה נוספת ("+CAP_STATION+") — קנה בשוק הערב ₪30!"}
+       {!up.includes("station")&&dy<3&&" | 🏪 עמדה נוספת ("+CAP_STATION+") — זמינה מיום 3"}
+       {up.includes("station")&&!up.includes("team")&&dy>=4&&" | 👥 צוות מלא (∞) — קנה בשוק הערב ₪50!"}
+       {up.includes("station")&&!up.includes("team")&&dy<4&&" | 👥 צוות מלא (∞) — זמין מיום 4"}
+      </div>}
+      <input type="range" min={0} max={mxC} value={Math.min(cu,mxC)} onChange={e=>setCu(Math.min(+e.target.value,mxC))} style={{width:"100%",accentColor:C.ac,height:5}}/>
+     </div>
+     {!up.includes("team")&&(()=>{const baseCap=up.includes("station")?CAP_STATION:CAP_BASE;const withHelp=baseCap+HELPER_B;return(
+     <label style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",
+      background:hlp?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":"#F3E5F5",borderRadius:10,fontSize:11,cursor:"pointer",
+      border:"2px solid "+(hlp?"#66BB6A":"transparent")}}>
+      <input type="checkbox" checked={hlp} onChange={e=>setHlp(e.target.checked)}/>
+      <div style={{flex:1}}>
+       <div style={{fontWeight:700,fontSize:12}}>{"👤 שכור עוזר — ₪"+HELPER_C+" להיום"}</div>
+       <div style={{fontSize:10,color:C.tL,lineHeight:1.5,marginTop:2}}>
+        {"בלי עוזר: עד "+baseCap+" כוסות ליום."}
+        {"\nעם עוזר: "+withHelp+" כוסות."}
+        {(mxC>baseCap)&&!hlp?"\n⚠️ יש לך מלאי ל-"+mxFromIng+" אבל בלי עוזר רק "+baseCap+"!":""}
+        {(mxC<=baseCap)&&!hlp?"\n💡 מלאי ל-"+mxC+" — העוזר לא הכרחי.":""}
+       </div>
+      </div></label>);})()}
+    </Card></div>
+    {}
+    {}
+    <Card>
+     <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>⚡ פעולות יום</div>
+     <div style={{fontSize:10,color:C.tL,marginBottom:8}}>בחר פעולות שיווק ותחרות. עלות מנוכה בסוף היום.</div>
+     {}
+     <div style={{fontWeight:700,fontSize:12,marginBottom:4,color:"#1976D2"}}>📣 שיווק</div>
+     {MKTG_ACT.map(act=>{const isActive=actionsToday.some(a=>a.id===act.id);return(
+      <div key={act.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+       padding:"6px 8px",marginBottom:4,borderRadius:8,
+       background:isActive?"#E8F5E9":"#F5F5F5",border:"1px solid "+(isActive?"#A5D6A7":"#E0E0E0")}}>
+       <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700}}>{act.n}</div>
+        <div style={{fontSize:9,color:C.tL}}>{act.desc}</div></div>
+       <Btn onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
+        else setActionsToday(p=>[...p,{id:act.id,cost:act.c,dm:act.dm,repChance:act.repChance,repB:act.repB,freeCups:act.freeCups}]);}}
+        color={isActive?C.rd:C.gn} small disabled={!isActive&&ca<act.c}>
+        {isActive?"בטל":("₪"+act.c)}</Btn></div>);})}
+     {}
+     {hasComps&&<div>
+      <div style={{fontWeight:700,fontSize:12,marginTop:8,marginBottom:4,color:C.pu}}>⚔️ נגד מתחרים</div>
+      {COMP_ACT.map(act=>{
+       const isActive=actionsToday.some(a=>a.id===act.id);
+       const isRisky=act.risk>0;
+       if(act.id==="ads"){
+        const curLvl=actionsToday.find(a=>a.id==="ads");
+        return <div key={act.id} style={{marginBottom:8}}>
+         <div style={{fontSize:12,fontWeight:700,marginBottom:2}}>{act.n}</div>
+         <div style={{fontSize:9,color:C.tL,marginBottom:4}}>{act.desc}</div>
+         <div style={{display:"flex",gap:3}}>
+          <Btn onClick={()=>setActionsToday(p=>p.filter(a=>a.id!=="ads"))} color={!curLvl?C.ac:C.tM} small style={{flex:1}}>ללא</Btn>
+          {act.costs.map((c,i)=><Btn key={i} onClick={()=>setActionsToday(p=>[...p.filter(a=>a.id!=="ads"),{id:"ads",cost:c,steal:act.steal[i],lvl:i}])}
+           color={curLvl?.lvl===i?C.ac:C.tM} small style={{flex:1}} disabled={ca<c}>
+           {act.labels[i]+"\n₪"+c}</Btn>)}</div></div>;
+       }
+       return <div key={act.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"6px 8px",marginBottom:4,borderRadius:8,
+        background:isActive?"#E8F5E9":isRisky?"#FFF3E0":"#F5F5F5",
+        border:"1px solid "+(isActive?"#A5D6A7":isRisky?"#FFB74D":"#E0E0E0")}}>
+        <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700}}>{act.n+" ⚠️"}</div>
+         <div style={{fontSize:9,color:C.ac}}>{act.desc}</div></div>
+        <Btn onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
+         else setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}}
+         color={isActive?C.rd:C.gn} small disabled={!isActive&&ca<act.c}>
+         {isActive?"בטל":("₪"+act.c)}</Btn></div>;
+      })}</div>}
+     {}
+     {hasComps&&cIL>=2&&npcActions.length>0&&<div style={{marginTop:8,padding:"6px 8px",background:"#F3E5F5",borderRadius:8,border:"1px solid #CE93D8"}}>
+      <div style={{fontSize:10,fontWeight:700,color:C.pu,marginBottom:3}}>🕵️ מודיעין: פעולות מתחרים</div>
+      {npcActions.map((na,i)=><div key={i} style={{fontSize:10,color:C.tL}}>
+       {na.n+": "+(na.acts.length>0?na.acts.join(", "):"אין פעולות מיוחדות")}
+       {cIL>=3&&na.acts.some(a=>a.includes("שמועות")||a.includes("שלטים"))&&
+        <span style={{color:C.gn,fontWeight:700}}> — ✅ סוכלה!</span>}
+      </div>)}</div>}
+     {(actionsToday.length>0)&&<div style={{fontSize:11,fontWeight:700,textAlign:"center",marginTop:8,padding:"4px 0",
+      background:"#FFF3E0",borderRadius:6,color:C.ac}}>
+      {"💰 עלות פעולות: ₪"+actionsToday.reduce((s,a)=>s+(a.cost||0),0)}</div>}
+    </Card>
+    <Card>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📍 מיקום הדוכן היום</div>
+     <div style={{display:"flex",gap:4}}>
+      {LOC.map((l,i)=>(
+       <div key={i} onClick={()=>setLoc(i)} style={{flex:1,cursor:"pointer",padding:"8px 4px",borderRadius:8,textAlign:"center",
+        background:loc===i?"linear-gradient(135deg,#1976D2,#1565C0)":"#F5F5F5",
+        color:loc===i?"#FFF":C.tx,border:"2px solid "+(loc===i?"#1565C0":"#E0E0E0")}}>
+        <div style={{fontSize:12,fontWeight:700}}>{l.n}</div>
+        <div style={{fontSize:9,opacity:0.8}}>{l.d}</div></div>))}
+     </div>
+    </Card>
+    <Btn onClick={()=>{const c=Math.min(cu,mxC);setCu(c);runSim(c);}} color={C.gn} style={{width:"100%"}}>
+     {(cu>0)?("🚀 פתח! ("+Math.min(cu,mxC)+" כוסות × ₪"+pr+")"):"⏭️ דלג (אין מלאי)"}</Btn>
+   </div>}
+   {}
+   {ph==="sim"&&<div>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    {(()=>{
+     const sunX=10+sP*0.8, sunY=15+Math.sin(sP/100*Math.PI)*-12;
+     const isRain=dW?.w.id?.includes("Rain");const isCld=dW?.w.id==="cloudy";
+     const nComps=Math.min(cm,3);
+     const recentBuyers=sC.filter(c=>c.buys).length;
+     const recentSoldOut=sC.filter(c=>c.rx==="💨").length;
+     const compEmojis=["🧑","👩","👨"];
+     const compColors=["#7B1FA2","#1565C0","#E65100"];
+     const compPos=nComps===1?[{left:"15%"}]:nComps===2?[{left:"12%"},{right:"12%"}]:[{left:"8%"},{right:"8%"},{left:"28%"}];
+     return(
+     <div style={{position:"relative",width:"100%",height:"clamp(220px,40vw,300px)",borderRadius:16,overflow:"hidden",
+      background:dW?.w.bg||"#87CEEB",border:"2px solid "+C.bd,marginBottom:10}}>
+      {}
+      <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg,transparent ${60+sP*0.3}%,rgba(255,140,0,${sP>80?0.15:0}) 100%)`,pointerEvents:"none"}}/>
+      {}
+      {!isRain&&<div style={{position:"absolute",left:sunX+"%",top:sunY+"%",fontSize:sP>90?28:36,
+       transition:"left 2s linear, top 2s ease",filter:`brightness(${sP>85?0.7:1})`,zIndex:1}}>
+       {isHeat?"🔥":"☀️"}</div>}
+      {}
+      {(isCld||isRain)&&<>
+       <div style={{position:"absolute",top:8,left:"15%",fontSize:28,opacity:0.6,animation:"cloudDr 8s ease-in-out infinite"}}>☁️</div>
+       <div style={{position:"absolute",top:18,left:"55%",fontSize:20,opacity:0.4,animation:"cloudDr 12s ease-in-out infinite reverse"}}>☁️</div>
+       <div style={{position:"absolute",top:5,left:"80%",fontSize:24,opacity:0.5,animation:"cloudDr 10s ease-in-out infinite"}}>☁️</div></>}
+      {}
+      {isRain&&Array.from({length:12}).map((_,i)=>(
+       <div key={i} style={{position:"absolute",top:-8,left:(5+i*8)+"%",fontSize:10,opacity:0.5,
+        animation:`rainDr ${0.6+i*0.08}s linear infinite`,animationDelay:(i*0.1)+"s"}}>💧</div>))}
+      {}
+      <div style={{position:"absolute",bottom:0,width:"100%",height:65,background:"linear-gradient(180deg,#A5D6A7,#81C784)"}}/>
+      <div style={{position:"absolute",bottom:0,width:"100%",height:22,background:"linear-gradient(180deg,#BDBDBD,#9E9E9E)"}}/>
+      {}
+      <div style={{position:"absolute",bottom:45,left:"5%",fontSize:24}}>🌳</div>
+      <div style={{position:"absolute",bottom:45,right:"8%",fontSize:20}}>🌴</div>
+      {}
+      <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",textAlign:"center",zIndex:5}}>
+       <div style={{fontSize:8,fontWeight:800,color:"#FFF",background:C.ac,borderRadius:5,padding:"1px 8px",
+        animation:"bob 2s ease-in-out infinite"}}>{"🍋 לימונדה ₪"+pr}</div>
+       <div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:1}}>
+        {up.includes("station")&&<div style={{fontSize:22,opacity:0.7}}>🏪</div>}
+        <div style={{fontSize:38}}>🏪</div>
+        {hlp&&!up.includes("team")&&<div style={{fontSize:14,position:"relative",bottom:2}}>👤</div>}
+        {up.includes("team")&&<div style={{fontSize:14,position:"relative",bottom:2}}>👥</div>}
+       </div>
+       {up.includes("sign")&&<div style={{fontSize:10,position:"absolute",top:-6,right:-12}}>🪧</div>}
+       {up.includes("shade")&&<div style={{fontSize:12,position:"absolute",top:-12,left:-8}}>⛱️</div>}
+       {(recentSoldOut>0)&&<div style={{fontSize:8,color:C.rd,fontWeight:800,background:"#FFF",borderRadius:4,padding:"1px 4px"}}>🚫 אזל!</div>}
+      </div>
+      {}
+      {compD.slice(0,nComps).map((cd,ci)=>(
+       <div key={ci} style={{position:"absolute",bottom:18,...compPos[ci],textAlign:"center",zIndex:2,
+        animation:`compPulse ${3+ci*0.5}s ease-in-out infinite ${ci*0.3}s`}}>
+        <div style={{fontSize:7,color:"#333",background:"rgba(255,255,255,.85)",borderRadius:4,padding:"1px 4px",
+         border:"1px solid "+compColors[ci%3]}}>
+         {cd.n+" ₪"+cd.pr}</div>
+        <div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:0}}>
+         {cd.hasStation&&<div style={{fontSize:16,opacity:0.6}}>🏪</div>}
+         <div style={{fontSize:26}}>🏪</div>
+         {cd.hasHelper&&<div style={{fontSize:9}}>👤</div>}
+         {cd.hasTeam&&<div style={{fontSize:9}}>👥</div>}
+        </div>
+        <div style={{fontSize:10,animation:`walkComp ${4+ci}s ease-in-out infinite ${ci*0.5}s`}}>{compEmojis[ci%3]}</div>
+        {cIL>=3&&<div style={{fontSize:7,color:compColors[ci%3],fontWeight:700}}>{"⭐"+cd.repA}</div>}
+       </div>))}
+      {}
+      {sC.slice(-4).map((c,i)=>{const bought=c.buys;return(
+       <div key={c.id||i} style={{position:"absolute",bottom:3,fontSize:18,zIndex:10,
+        left:(25+i*12)+"%",animation:"walkIn 3s ease forwards",opacity:bought?1:0.5}}>
+        {c.em}{bought&&<span style={{fontSize:10}}>🥤</span>}</div>);})}
+      {}
+      <div style={{position:"absolute",top:6,left:6,background:"rgba(255,255,255,.9)",borderRadius:6,padding:"3px 7px",fontSize:11,fontWeight:700}}>
+       {dW?.w.n.split(" ")[0]+" "+dW?.temp+"°C"}</div>
+      <div style={{position:"absolute",top:6,right:6,display:"flex",gap:4}}>
+       <div style={{background:"rgba(76,175,80,.9)",borderRadius:6,padding:"3px 8px",fontSize:12,color:"#FFF",fontWeight:800}}>{"₪"+sR}</div>
+       <div style={{background:"rgba(255,111,0,.9)",borderRadius:6,padding:"3px 8px",fontSize:12,color:"#FFF"}}>{"🥤"+sS+"/"+cu}</div></div>
+      {}
+      <div style={{position:"absolute",bottom:0,left:0,width:"100%",height:4,background:"rgba(0,0,0,.15)"}}>
+       <div style={{height:"100%",background:C.ac,width:sP+"%",transition:"width 0.5s"}}/></div>
+      <div style={{position:"absolute",bottom:5,left:"50%",transform:"translateX(-50%)",fontSize:8,color:"#FFF",fontWeight:700,
+       background:"rgba(0,0,0,.3)",borderRadius:4,padding:"0 6px"}}>
+       {(()=>{if(sP<25)return "🌅 בוקר";if(sP<50)return "☀️ צהריים";if(sP<75)return "🌤️ אחה\"צ";return "🌅 ערב";})()}</div>
+     </div>);})()}
+    {hasCompIntel&&hasComps&&<Card style={{background:"#F3E5F5",border:"1px solid #CE93D8",padding:10}}>
+     <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>🕵️ מתחרים בזמן אמת:</div>
+     {compD.map((c,i)=><div key={i} style={{fontSize:11,padding:"4px 0",borderBottom:"1px solid #E1BEE7"}}>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+       <b>{c.n}</b>
+       <span style={{fontSize:10,color:C.tM}}>{"⭐"+c.repA+" 💰₪"+c.cashAfter.toFixed(0)}</span></div>
+      <div style={{color:C.tL}}>
+       {"💰 מחיר: ₪"+c.pr+" | הכין "+c.prep+" כוסות"}
+       {cIL>=2&&(" | מתכון: "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊")}
+       {cIL>=3&&(" | מכר "+c.sold+" = ₪"+c.rev)}
+       {c.boughtIntel&&" | 🔍 קנה מודיעין"}</div></div>)}</Card>}
+    <Card style={{maxHeight:260,overflowY:"auto"}}>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 לקוחות</div>
+     {sC.length===0&&<div style={{textAlign:"center",color:C.tM,padding:16}}>⏳ ממתינים...</div>}
+     {[...sC].reverse().map((c,i)=>{const bought=c.buys,soldOut=c.rx==="💨";return(
+      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",marginBottom:4,borderRadius:10,
+       animation:i===0?"slideIn .4s":"none",background:bought?"#E8F5E9":soldOut?"#FFEBEE":"#F5F5F5",
+       border:"1px solid "+(bought?"#A5D6A7":soldOut?"#EF9A9A":"#E0E0E0")}}>
+       <span style={{fontSize:24}}>{c.em}</span>
+       <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{(CT[c.type]||CT.adult).nm}</div>
+        <div style={{fontSize:11,color:bought?C.gn:soldOut?C.rd:C.tL,fontStyle:"italic"}}>
+         {'"'+(c.sp||"...")+'"'}</div></div>
+       <div style={{textAlign:"center",minWidth:50}}>
+        <div style={{fontSize:22}}>{c.rx}</div>
+        <div style={{fontSize:10,fontWeight:700,color:bought?C.gn:soldOut?C.rd:C.tM}}>
+         {bought?("קנה ₪"+pr):soldOut?"אזל!":"לא קנה"}</div></div></div>);})}
+    </Card>
+    <div style={{display:"flex",gap:6,marginBottom:6}}>
+     <div style={{flex:1,background:"#E8F5E9",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
+      <div style={{fontSize:10,color:C.tM}}>🥤 נמכרו</div><div style={{fontSize:20,fontWeight:800,color:C.gn}}>{sS+"/"+cu}</div></div>
+     <div style={{flex:1,background:"#E3F2FD",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
+      <div style={{fontSize:10,color:C.tM}}>💰 הכנסות</div><div style={{fontSize:20,fontWeight:800,color:"#1976D2"}}>{"₪"+sR}</div></div>
+     <div style={{flex:1,background:"#FFF3E0",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
+      <div style={{fontSize:10,color:C.tM}}>🚶 לא קנו</div><div style={{fontSize:20,fontWeight:800,color:C.ac}}>{sNB}</div></div></div>
+    {sC.filter(c=>c.rx==="💨").length>0&&<div style={{textAlign:"center",fontSize:11,color:C.rd,marginBottom:4}}>
+     {"💨 "+sC.filter(c=>c.rx==="💨").length+" לקוחות רצו לקנות — אזל!"}</div>}
+    {sDn&&<Btn onClick={()=>{if(pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk);}} color={C.gn} style={{width:"100%"}}>📊 סיכום יום →</Btn>}
+   </div>}
+   {}
+   {ph==="summary"&&smD&&<div>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <h2 style={{textAlign:"center",fontSize:17,margin:"0 0 6px"}}>{"📊 יום "+smD.dy}</h2>
+    <Card>
+     <div style={{textAlign:"center",marginBottom:8}}><span style={{fontSize:12,color:C.tM}}>{"🥤 נמכרו "}</span>
+      <span style={{fontSize:22,fontWeight:800}}>{smD.sold}</span><span style={{fontSize:12,color:C.tM}}>{" / "+smD.prep}</span></div>
+     <div style={{display:"flex",gap:8,marginBottom:8}}>
+      <div style={{flex:1,background:"#E8F5E9",borderRadius:10,padding:"8px 6px",textAlign:"center"}}>
+       <div style={{fontSize:10,color:C.tM}}>💰 הכנסות</div><div style={{fontSize:22,fontWeight:800,color:C.gn}}>{"₪"+smD.rev.toFixed(0)}</div></div>
+      <div style={{display:"flex",alignItems:"center",fontSize:20,color:C.tM}}>−</div>
+      <div onClick={()=>setShowExpD(p=>!p)} style={{flex:1,background:"#FFEBEE",borderRadius:10,padding:"8px 6px",textAlign:"center",cursor:"pointer"}}>
+       <div style={{fontSize:10,color:C.tM}}>{"💸 הוצאות"+(showExpD?" ▲":" ▼")}</div><div style={{fontSize:22,fontWeight:800,color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</div></div>
+      <div style={{display:"flex",alignItems:"center",fontSize:20,color:C.tM}}>=</div>
+      <div style={{flex:1,background:smD.profit>=0?"#E8F5E9":"#FFEBEE",borderRadius:10,padding:"8px 6px",textAlign:"center",
+       border:"2px solid "+(smD.profit>=0?C.gn:C.rd)}}>
+       <div style={{fontSize:10,color:C.tM}}>{smD.profit>=0?"📈 רווח":"📉 הפסד"}</div>
+       <div style={{fontSize:22,fontWeight:800,color:smD.profit>=0?C.gn:C.rd}}>{"₪"+smD.profit.toFixed(0)}</div></div></div>
+     {showExpD&&smD.expBreak&&<div style={{background:"#FFF5F5",borderRadius:8,padding:"8px 10px",marginBottom:6,fontSize:11}}>
+      <div style={{fontWeight:700,marginBottom:4,color:C.rd}}>📋 פירוט הוצאות:</div>
+      {smD.expBreak.mc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
+       <span>🍋 חומרי גלם ({smD.prep} כוסות)</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.mc.toFixed(1)}</span></div>}
+      {smD.expBreak.hc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
+       <span>👤 עוזר</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.hc}</span></div>}
+      {smD.expBreak.rentC>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
+       <span>{"🏠 שכירות ("+LOC[loc].n+")"}</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.rentC}</span></div>}
+      {smD.expBreak.actCost>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
+       <span>⚡ פעולות</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.actCost}</span></div>}
+      {smD.expBreak.fc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
+       <span>🏛️ פיקוח</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.fc}</span></div>}
+      <div style={{borderTop:"1px solid #EEB",marginTop:4,paddingTop:4,display:"flex",justifyContent:"space-between",fontWeight:700}}>
+       <span>סה״כ</span><span style={{color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</span></div>
+     </div>}
+    </Card>
+    <Card style={{border:"2px solid "+(smD.rA>=smD.rB?"#A5D6A7":"#EF9A9A")}}>
+     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+      <span style={{fontWeight:700,fontSize:14}}>⭐ מוניטין</span>
+      <span style={{fontSize:18,fontWeight:800}}>{smD.rB+" → "}<span style={{color:smD.rA>=smD.rB?C.gn:C.rd}}>{smD.rA}</span></span></div>
+     {smD.rEx&&smD.rEx.length>0&&<div style={{background:"#F5F5F5",borderRadius:8,padding:"6px 8px",marginBottom:6}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.tL,marginBottom:3}}>למה?</div>
+      {smD.rEx.map((r,i)=><div key={i} style={{fontSize:11,padding:"1px 0"}}>{r}</div>)}</div>}
+     <div style={{fontSize:10,color:C.tL,padding:"4px 8px",background:"#FFFDE7",borderRadius:6}}>
+      {"💡 מוניטין "+smD.rA+": "+(smD.rA>=75?"מצוין! לקוחות מוכנים לשלם יותר":smD.rA>=60?"טוב — שומעים עליך":smD.rA>=45?"סביר — המשך לשפר":smD.rA>=30?"נמוך — פחות לקוחות מחר":"בבעיה! שפר איכות")}</div>
+     {smD.rR&&smD.rR.length>0&&<details style={{marginTop:6}}>
+      <summary style={{fontSize:10,color:C.tM,cursor:"pointer"}}>{"🗣️ ציטוטים ("+smD.rR.length+")"}</summary>
+      <div style={{maxHeight:80,overflowY:"auto",marginTop:4}}>{smD.rR.map((r,i)=><div key={i} style={{fontSize:10,color:C.tL}}>{r}</div>)}</div></details>}
+    </Card>
+    {hasComps&&compD.length>0&&(()=>{
+     const myDayRev=smD.rev;const myDaySold=smD.sold;
+     const myCumRev=res.reduce((s,r)=>s+r.rev,0);
+     const compCumRevs=compD.map((c,ci)=>{
+      return res.reduce((s,r)=>{const snap=r.compSnap?.[ci];return s+(snap?.rev||0);},0);
+     });
+     return <Card>
+      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>🏪 דוח תחרות — יום {smD.dy}</div>
+      {}
+      <table style={{width:"100%",fontSize:10,borderCollapse:"collapse",textAlign:"center",marginBottom:10}}>
+       <thead><tr style={{background:"#F5F5F5"}}>
+        <th style={{padding:3,borderBottom:"2px solid #DDD",textAlign:"right"}}>שם</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>מחיר</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הכנו</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>מכרו</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הכנסות</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הוצאות</th>
+        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>רווח</th>
+       </tr></thead>
+       <tbody>
+        <tr style={{background:"#E8F5E9",fontWeight:700}}>
+         <td style={{padding:3,textAlign:"right"}}>🍋 אתה</td>
+         <td>{"₪"+pr}</td>
+         <td>{smD.prep}</td>
+         <td>{myDaySold}</td>
+         <td style={{color:C.gn}}>{"₪"+myDayRev.toFixed(0)}</td>
+         <td style={{color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</td>
+         <td style={{color:smD.profit>=0?C.gn:C.rd,fontWeight:800}}>{"₪"+smD.profit.toFixed(0)}</td>
+        </tr>
+        {compD.map((c,i)=>(<tr key={i} style={{borderBottom:"1px solid #EEE"}}>
+          <td style={{padding:3,textAlign:"right"}}>{c.n}</td>
+          <td>{"₪"+c.pr}</td>
+          <td>{cIL>=3?c.prep:"?"}</td>
+          <td>{cIL>=3?c.sold:"?"}</td>
+          <td>{"₪"+c.rev}</td>
+          <td>{cIL>=3?"₪"+c.exp.toFixed(0):"?"}</td>
+          <td style={{fontWeight:700,color:c.profit>=0?C.gn:C.rd}}>{cIL>=3?"₪"+c.profit.toFixed(0):"?"}</td>
+         </tr>))}
+       </tbody>
+      </table>
+      {}
+      {cIL>=2&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6,fontSize:9}}>
+       {compD.map((c,i)=><div key={i} style={{background:"#F5F5F5",borderRadius:6,padding:"3px 6px"}}>
+        {c.n+": ⭐"+c.repA+" 💰₪"+c.cashAfter.toFixed(0)+(c.boughtIntel?" 🔍":"")}</div>)}</div>}
+      {}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+       {compD.map((c,i)=>{const diff=myDayRev-c.rev;const cumDiff=myCumRev-compCumRevs[i];return(
+        <div key={i} style={{flex:1,minWidth:120,background:diff>=0?"#E8F5E9":"#FFEBEE",borderRadius:8,padding:"6px 8px",textAlign:"center",
+         border:"1px solid "+(diff>=0?"#A5D6A7":"#EF9A9A")}}>
+         <div style={{fontSize:10,color:C.tM}}>{"vs "+c.n}</div>
+         <div style={{fontSize:14,fontWeight:800,color:diff>=0?C.gn:C.rd}}>{(diff>=0?"+":"")+"₪"+diff.toFixed(0)+" היום"}</div>
+         <div style={{fontSize:10,color:cumDiff>=0?C.gn:C.rd}}>{(cumDiff>=0?"+":"")+"₪"+cumDiff.toFixed(0)+" מצטבר"}</div>
+        </div>);})}
+      </div>
+      {}
+      {res.length>=2&&(()=>{
+       const allRevs=[res.map(r=>r.rev),...compD.map((c,ci)=>res.map(r=>r.compSnap?.[ci]?.rev||0))];
+       const cumAll=allRevs.map(arr=>{let s=0;return arr.map(v=>{s+=v;return s;});});
+       const maxVal=Math.max(...cumAll.flat(),1);const w=240,h=70,pad=4;
+       const colors=[C.gn,"#7B1FA2","#1976D2","#E65100"];
+       const labels=["אתה",...compD.map(c=>c.n)];
+       return <div>
+        <div style={{fontSize:11,fontWeight:700,marginBottom:4}}>📈 הכנסות מצטברות</div>
+        <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:90}}>
+         {cumAll.map((pts,si)=>{
+          const line=pts.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(pts.length-1,1));const y=h-pad-(v/maxVal)*(h-2*pad);return x+","+y;}).join(" ");
+          return <polyline key={si} points={line} fill="none" stroke={colors[si%colors.length]} strokeWidth={si===0?"2.5":"1.5"} strokeLinejoin="round" strokeDasharray={si===0?"":"4,3"}/>;
+         })}
+         {}
+         {res.map((r,j)=>{const x=pad+j*((w-2*pad)/Math.max(res.length-1,1));return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="#999">{"י"+r.dy}</text>;})}
+        </svg>
+        <div style={{display:"flex",gap:8,justifyContent:"center",fontSize:9}}>
+         {labels.map((l,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
+          <span style={{width:10,height:3,background:colors[i%colors.length],borderRadius:2,display:"inline-block"}}/>{l}</span>)}
+        </div>
+       </div>;})()}
+      {cIL>=2&&<div style={{marginTop:8,fontSize:10,color:C.tL}}>
+       <b>מתכונים:</b> {compD.map(c=>c.n+": "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊").join(" | ")}</div>}
+      {cIL===0&&<div style={{fontSize:10,color:C.tM,marginTop:6,fontStyle:"italic"}}>💡 קנה ניתוח מתחרים בשלב המודיעין כדי לראות מכירות ומתכונים</div>}
+     </Card>;})()}
+    {hasRes&&<Card>
+     <div style={{fontWeight:700,fontSize:12,marginBottom:6}}>📈 רווח יומי</div>
+     <div style={{position:"relative",height:100,display:"flex",alignItems:"center"}}>
+      <div style={{position:"absolute",left:0,right:0,top:"50%",height:1,background:"#999"}}/>
+      <div style={{display:"flex",alignItems:"center",gap:2,width:"100%",height:"100%"}}>
+       {res.map((r,i)=>{const mx=Math.max(...res.map(x=>Math.abs(x.profit)),1),h=Math.abs(r.profit)/mx*42,pos=r.profit>=0;
+        return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",justifyContent:"center"}}>
+         {pos?<><div style={{fontSize:8,fontWeight:700,color:C.gn}}>{"₪"+r.profit.toFixed(0)}</div>
+          <div style={{width:"75%",height:h,borderRadius:"3px 3px 0 0",background:C.gn}}/><div style={{height:42}}/></>
+         :<><div style={{height:42}}/><div style={{width:"75%",height:h,borderRadius:"0 0 3px 3px",background:C.rd}}/>
+          <div style={{fontSize:8,fontWeight:700,color:C.rd}}>{"₪"+r.profit.toFixed(0)}</div></>}</div>);})}</div></div></Card>}
+    <div style={{textAlign:"center",fontWeight:700,fontSize:13,marginBottom:6,color:totP>=0?C.gn:C.rd}}>{"סה\"כ: ₪"+totP.toFixed(0)}</div>
+    <Btn onClick={goEve} color={isLastDay?C.pu:C.ac} style={{width:"100%"}}>{isLastDay?"🏆 סיום!":"🌙 ערב — קניות →"}</Btn>
+   </div>}
+   {}
+   {ph==="eveIntel"&&tP&&<div>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🌙 לפני יום 1":"🌙 ערב — שלב 1: מודיעין"}</div>
+    {dy===0&&<Card style={{background:"#E8F5E9"}}><div style={{fontSize:13,fontWeight:700}}>🎉 ברוכים הבאים!</div>
+     <div style={{fontSize:11,color:C.tL}}>יש לך 40 לימונים ו-₪80. קנה מודיעין, ואז דבש וקרח בשוק.</div></Card>}
+    <Card><div style={{fontWeight:700,marginBottom:4,fontSize:13}}>📊 מגמות מחירים</div>
+     <PrCh prices={pH.l} color={C.lD} emoji="🍋"/><PrCh prices={pH.h} color={C.hn} emoji="🍯"/><PrCh prices={pH.i} color={C.iD} emoji="🧊"/>
+     <div style={{fontSize:9,color:C.tM,marginTop:2,textAlign:"center"}}>📈 עולה = קנה עכשיו | 📉 יורד = אולי לחכות</div></Card>
+    <Card style={{background:"linear-gradient(135deg,#FFFDE7,#FFF8E1)",border:"2px solid "+C.lm}}>
+     <div style={{fontWeight:800,fontSize:15,marginBottom:4,textAlign:"center"}}>🔍 תחזית מזג אוויר</div>
+     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+      {[{v:0,e:"🙈",n:"ללא",d:"חינם",sub:"בלי מידע"},
+       ...INTL.map(il=>({v:il.lv,e:il.lv===1?"👂":il.lv===2?"📡":"🕵️",n:il.n,d:"₪"+il.c+" ~"+il.ac*100+"%",
+        sub:il.lv===1?"☁️ מזג אוויר":il.lv===2?"☁️+💲 מגמות":"☁️💲🎯 הכל"}))
+      ].map(o=>{const sel=bIn===o.v,canA=o.v===0||ca>=INTL[o.v-1]?.c;return(
+       <div key={o.v} onClick={()=>{if(canA)setBIn(o.v);}} style={{cursor:canA?"pointer":"not-allowed",
+        padding:"10px 6px",borderRadius:12,textAlign:"center",opacity:canA?1:0.35,
+        background:sel?"linear-gradient(135deg,#FF6F00,#F57C00)":"#F5F5F5",color:sel?"#FFF":C.tx,
+        border:"2px solid "+(sel?C.ac:"#E0E0E0")}}>
+        <div style={{fontSize:24}}>{o.e}</div><div style={{fontSize:12,fontWeight:700}}>{o.n}</div>
+        <div style={{fontSize:9,opacity:0.8}}>{o.d}</div><div style={{fontSize:8,marginTop:1,opacity:0.7}}>{o.sub}</div></div>);})}</div>
+    </Card>
+    {hasComps&&<Card style={{background:"linear-gradient(135deg,#F3E5F5,#E1BEE7)",border:"2px solid #CE93D8"}}>
+     <div style={{fontWeight:800,fontSize:14,marginBottom:4,textAlign:"center"}}>🕵️ ניתוח מתחרים</div>
+     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
+      {[{v:0,n:"ללא",d:"חינם"},...CINTL.map(c=>({v:c.lv,n:c.n,d:"₪"+c.c+" — "+c.d}))].map(o=>{
+       const sel=bCI===o.v;return(
+       <div key={o.v} onClick={()=>setBCI(o.v)} style={{cursor:"pointer",padding:"8px 4px",borderRadius:10,textAlign:"center",
+        background:sel?"linear-gradient(135deg,#7B1FA2,#6A1B9A)":"#F5F5F5",color:sel?"#FFF":C.tx,
+        border:"2px solid "+(sel?C.pu:"#E0E0E0")}}>
+        <div style={{fontSize:11,fontWeight:700}}>{o.n}</div><div style={{fontSize:9,opacity:0.8}}>{o.d}</div></div>);})}</div>
+    </Card>}
+    {(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const canGo=tc===0||tc<=ca;return(
+     <Btn onClick={confIntel} color={C.gn} disabled={!canGo} style={{width:"100%"}}>
+      {(tc>0)?("🔍 קנה מודיעין (₪"+tc+") → לשוק"):("🛒 המשך לשוק →")}</Btn>);})()}
+   </div>}
+   {}
+   {ph==="evening"&&tP&&(()=>{const sp=eveT,rem=ca-sp;const tmL=lm+bL,tmH=hn+bH,tmI=ic+bI;
+    const cupsBare=tmL,cupsB=Math.min(Math.floor(tmL/3),tmH>0?tmH:9999,tmI>0?tmI:9999);
+    const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
+    const remOk=rem>=0;const canGo=sp===0||remOk;
+    return <div>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)}/>
+    <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🏪 שוק ליום 1":"🏪 שוק — ערב יום "+dy}</div>
+    <div style={{position:"sticky",top:42,zIndex:15,background:"linear-gradient(135deg,#FFF8E1,#FFFDE7)",
+     borderRadius:12,padding:"10px 14px",marginBottom:10,border:"2px solid "+(remOk?"#66BB6A":"#E53935"),boxShadow:"0 4px 16px rgba(0,0,0,.12)"}}>
+     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>💰 קופה</div><div style={{fontSize:18,fontWeight:800}}>{"₪"+ca.toFixed(0)}</div></div>
+      <div style={{fontSize:18,color:C.tM}}>−</div>
+      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>🛒 הוצאות</div><div style={{fontSize:18,fontWeight:800,color:sp>0?C.rd:C.tM}}>{"₪"+sp.toFixed(0)}</div></div>
+      <div style={{fontSize:18,color:C.tM}}>=</div>
+      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>💵 נשאר</div><div style={{fontSize:18,fontWeight:800,color:remOk?C.gn:C.rd}}>{"₪"+rem.toFixed(0)}</div></div></div></div>
+    {hasIntel&&<Card style={{background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",border:"1px solid #66BB6A"}}>
+     <b>{"🔍 תחזית (רמה "+iD.lv+"): "+iD.w+", "+iD.temp+"°C"}</b>
+     {iD.pT&&<div style={{fontSize:11}}>{"💲 🍋"+iD.pT.l+" 🍯"+iD.pT.h+" 🧊"+iD.pT.i}</div>}
+     {iD.evDetail&&<div style={{fontSize:11,color:"#2E7D32",marginTop:2}}>{iD.evDetail}</div>}
+     {iD.evHint&&!iD.evDetail&&<div style={{fontSize:11,color:C.ac,marginTop:2}}>{iD.evHint}</div>}
+     <div style={{fontSize:9,color:C.tM}}>{"⚠️ דיוק ~"+(iD.lv===1?"70%":iD.lv===2?"85%":"95%")+" — קנה בהתאם"}</div></Card>}
+    {!hasIntel&&<Card style={{background:"#FFF3E0",padding:10}}><div style={{fontSize:11,color:C.ac,textAlign:"center"}}>🙈 אין מודיעין — קונים בעיוורון</div></Card>}
+    <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🏪 חומרי גלם</div>
+     {[{e:"🍋",lb:"לימונים",p:tP.lemon,v:bL,s:setBL,mx:100,st:lm,c:C.lD,bg:"#FFF9C4",note:"⏳ מתקלקלים 3 ימים",af:tmL},
+      {e:"🍯",lb:"דבש",p:tP.honey,v:bH,s:setBH,mx:100,st:hn,c:C.hn,bg:"#FFF3E0",note:"✅ יקר אבל נשמר לנצח!",af:tmH},
+      {e:"🧊",lb:"קרח",p:tP.ice,v:bI,s:setBI,mx:500,st:ic,c:C.iD,bg:"#E1F5FE",note:"❌ זול אבל נמס בסוף כל יום!",af:tmI},
+     ].map(p=>{const av=Math.min(p.mx,Math.floor((rem+p.v*p.p)/p.p));return(
+      <div key={p.lb} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:p.bg,borderRadius:10,marginBottom:6}}>
+       <div style={{textAlign:"center",width:38}}><div style={{fontSize:24}}>{p.e}</div><div style={{fontSize:8,fontWeight:700,color:p.c}}>{"₪"+p.p.toFixed(2)}</div></div>
+       <div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700}}>{p.lb}</div>
+        <div style={{fontSize:9,color:C.tM}}>{p.note}</div>
+        <div style={{fontSize:9,color:C.tL}}>{"מלאי: "+p.st+(p.v>0?" → "+p.af:"")}</div></div>
+       <div style={{display:"flex",alignItems:"center",gap:2}}>
+        <button onClick={()=>p.s(Math.max(0,p.v-5))} disabled={p.v===0} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:11,fontWeight:800,cursor:p.v>0?"pointer":"not-allowed",background:p.v>0?"#FFF":"#EEE",color:p.v>0?C.rd:"#CCC"}}>−5</button>
+        <button onClick={()=>p.s(Math.max(0,p.v-1))} disabled={p.v===0} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:13,fontWeight:800,cursor:p.v>0?"pointer":"not-allowed",background:p.v>0?"#FFF":"#EEE",color:p.v>0?C.rd:"#CCC"}}>−</button>
+        <span style={{fontSize:15,fontWeight:800,width:30,textAlign:"center",color:p.c}}>{p.v}</span>
+        <button onClick={()=>p.s(Math.min(av,p.v+1))} disabled={p.v>=av} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:13,fontWeight:800,cursor:p.v<av?"pointer":"not-allowed",background:p.v<av?"#FFF":"#EEE",color:p.v<av?C.gn:"#CCC"}}>+</button>
+        <button onClick={()=>p.s(Math.min(av,p.v+5))} disabled={p.v>=av} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:11,fontWeight:800,cursor:p.v<av?"pointer":"not-allowed",background:p.v<av?"#FFF":"#EEE",color:p.v<av?C.gn:"#CCC"}}>+5</button></div>
+       <div style={{fontSize:10,fontWeight:700,color:p.c,minWidth:42,textAlign:"center"}}>{(p.v>0)?"₪"+(p.v*p.p).toFixed(1):"—"}</div></div>);})}</Card>
+    <Card style={{background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",border:"1px solid #64B5F6"}}>
+     <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>🥤 כוסות מחר (לפי מלאי אחרי רכישה)</div>
+     {myCap<CAP_TEAM&&<div style={{fontSize:9,color:C.tL,marginBottom:4}}>
+      {"מגבלת הגשה: "+myCap+" כוסות"
+       +(myCap===CAP_BASE?" (עוזר: "+(myCap+HELPER_B)+", עמדה: "+CAP_STATION+", צוות: ללא הגבלה)":"")
+       +(myCap===CAP_STATION?" (עוזר: "+(myCap+HELPER_B)+", צוות: ללא הגבלה)":"")}</div>}
+     {myCap>=CAP_TEAM&&<div style={{fontSize:9,color:C.gn,marginBottom:4,fontWeight:700}}>👥 צוות מלא — ללא הגבלת כוסות!</div>}
+     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+      {[{n:"💧 מינימום",r:"1🍋+5💧",v:cupsBare,c:"#1976D2"},
+       {n:"⚖️ מאוזן",r:"3🍋+1🍯+1🧊",v:cupsB,c:C.gn},
+       {n:"⭐ פרמיום",r:"4🍋+1🍯+1🧊",v:cupsP,c:C.lD}
+      ].map((x,i)=>{const capped=Math.min(x.v,myCap);const overCap=x.v>myCap;return(
+       <div key={i} style={{background:"#FFF",borderRadius:8,padding:"8px 6px",textAlign:"center",border:i===1?"2px solid #43A047":"1px solid #E0E0E0"}}>
+       <div style={{fontSize:9,color:x.c,fontWeight:700}}>{x.n}</div><div style={{fontSize:8,color:C.tL}}>{x.r}</div>
+       <div style={{fontSize:20,fontWeight:800,color:x.c}}>{capped}</div>
+       {overCap&&<div style={{fontSize:8,color:C.rd}}>{"(מלאי: "+x.v+", מגבלה: "+myCap+")"}</div>}
+      </div>);})}</div></Card>
+    <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>{"⬆️ שדרוגים (קבועים)"}</div>
+     {hasUps&&<div style={{marginBottom:8}}>{up.map(uid=>{const u=UPG.find(x=>x.id===uid);return u?
+      <div key={uid} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 8px",background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",borderRadius:8,marginBottom:3,fontSize:12}}>
+       <span>{u.n}</span><span style={{fontSize:10,color:C.gn,fontWeight:700}}>✅</span></div>:null;})}</div>}
+     {UPG.filter(u=>u.ad<=dy+1&&!up.includes(u.id)).map(u=><div key={u.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:"#F5F5F5",borderRadius:10,marginBottom:4}}>
+      <div><div style={{fontSize:13,fontWeight:700}}>{u.n}</div><div style={{fontSize:10,color:C.tM}}>{u.d}</div></div>
+      <Btn onClick={()=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);}}} small color={C.pu} disabled={rem<u.c}>{"₪"+u.c}</Btn></div>)}
+     {UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).length>0&&<div style={{fontSize:9,color:C.tM,marginTop:4,padding:"4px 8px",background:"#FAFAFA",borderRadius:6}}>
+      {"🔒 בקרוב: "+UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).map(u=>u.n+" (מיום "+u.ad+")").join(", ")}</div>}
+    </Card>
+    <Card style={{border:!hasCash&&ln===0?"3px solid "+C.rd:"1px solid "+C.bd,background:!hasCash&&ln===0?"#FFF3E0":C.cd}}>
+     <div style={{fontWeight:700,fontSize:12,marginBottom:3}}>{"🏦 הלוואה (8%/יום!)"}</div>
+     {!hasCash&&ln===0&&<div style={{fontSize:11,color:C.rd,marginBottom:6,fontWeight:700}}>💡 אין כסף? קח הלוואה!</div>}
+     {ln===0?<div style={{display:"flex",gap:3}}>{[10,20,30,40].map(a=><Btn key={a} onClick={()=>{setLn(a);setCa(p=>p+a);}} small color={!hasCash?C.ac:C.tL} style={{flex:1}}>{"₪"+a}</Btn>)}</div>
+     :<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
+      <span>{"חוב: ₪"+ln.toFixed(1)+" (גדל 8%/יום!)"}</span>
+      <Btn onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} small color={C.gn} disabled={ca<ln}>החזר</Btn></div>}</Card>
+    {!remOk&&sp>0&&<div style={{background:"#FFEBEE",borderRadius:10,padding:"8px 12px",marginBottom:8,border:"1px solid #EF9A9A",fontSize:12,color:C.rd,textAlign:"center"}}>
+     ⚠️ אין מספיק כסף! הורד פריטים או קח הלוואה</div>}
+    {!hasCash&&sp===0&&<div style={{background:"#FFF3E0",borderRadius:10,padding:"8px 12px",marginBottom:8,fontSize:12,color:C.ac,textAlign:"center"}}>
+     💸 במינוס. אפשר להמשיך בלי לקנות, או לקחת הלוואה</div>}
+    <Btn onClick={confEve} color={C.gn} disabled={!canGo} style={{width:"100%"}}>{dy===0?"☀️ ליום 1! →":"☀️ יום "+(dy+1)+" →"}</Btn>
+   </div>})()}
+   {}
+   {ph==="gameover"&&(()=>{const tR=res.reduce((s,r)=>s+r.rev,0),tE=res.reduce((s,r)=>s+r.exp,0);
+    const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr-ln,st=fp<0?1:fp<30?2:fp<70?3:fp<120?4:5;
+    const tS=res.reduce((s,r)=>s+r.sold,0),tPp=res.reduce((s,r)=>s+r.prep,0);
+    const bD=res.length>0?res.reduce((b,r)=>r.profit>b.profit?r:b,res[0]):null;
+    const wD=res.length>0?res.reduce((w,r)=>r.profit<w.profit?r:w,res[0]):null;
+    const confettiColors=['#FFD700','#FF6F00','#4CAF50','#E53935','#1976D2','#7B1FA2','#FF4081'];
+    return <div style={{paddingTop:12,position:"relative",overflow:"hidden"}}>
+     {/* Confetti */}
+     {fp>=0 && Array.from({length:20}).map((_,i)=>(
+       <div key={i} style={{position:"absolute",top:-10,left:(5+i*4.7)+"%",width:8,height:8,
+         borderRadius:i%2===0?"50%":"2px",background:confettiColors[i%confettiColors.length],
+         animation:`confetti ${2+Math.random()*2}s ease-out forwards`,
+         animationDelay:(Math.random()*1.5)+"s",opacity:0.8,zIndex:0}} />
+     ))}
+     <div style={{textAlign:"center",marginBottom:16,position:"relative",zIndex:1}}>
+      <div style={{fontSize:56,animation:"pop .5s ease",filter:"drop-shadow(0 4px 12px rgba(255,215,0,.4))"}}>🏆</div>
+      <h2 style={{fontSize:24,margin:"6px 0",fontWeight:900}}>סוף המשחק!</h2>
+      <div style={{fontSize:36,fontWeight:900,color:fp>=0?C.gn:C.rd,
+        textShadow:fp>=0?"0 2px 12px rgba(67,160,71,.2)":"0 2px 12px rgba(229,57,53,.2)"}}>{"₪"+fp.toFixed(0)}</div>
+      <div style={{fontSize:30,margin:"8px 0",letterSpacing:4}}>{"⭐".repeat(st)+"☆".repeat(5-st)}</div>
+      {/* Save status */}
+      {saveStatus==='saving' && <div style={{fontSize:12,color:C.tM,animation:"pulse 1s infinite"}}>💾 שומר תוצאה...</div>}
+      {saveStatus==='saved' && <div style={{fontSize:12,color:C.gn,fontWeight:700}}>✅ התוצאה נשמרה בטבלת השיאים!</div>}
+      {saveStatus==='error' && <div style={{fontSize:12,color:C.rd}}>❌ שגיאה בשמירה</div>}
+      {!authUser && supabase && <div style={{marginTop:8}}>
+        <button onClick={()=>setShowAuth(true)} style={{background:"linear-gradient(135deg,#FF6F00,#F57C00)",
+          color:"#FFF",border:"none",borderRadius:10,padding:"8px 18px",fontSize:12,fontWeight:700,
+          cursor:"pointer",fontFamily:"inherit",boxShadow:"0 3px 10px rgba(255,111,0,.3)"}}>
+          👤 התחבר כדי לשמור את הציון!</button></div>}
+     </div>
+     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💰 סיכום כספי</div>
+      <div style={{display:"flex",gap:8,marginBottom:8}}>
+       <div style={{flex:1,background:"#E8F5E9",borderRadius:8,padding:8,textAlign:"center"}}><div style={{fontSize:10,color:C.tM}}>הכנסות</div><div style={{fontSize:20,fontWeight:800,color:C.gn}}>{"₪"+tR.toFixed(0)}</div></div>
+       <div style={{flex:1,background:"#FFEBEE",borderRadius:8,padding:8,textAlign:"center"}}><div style={{fontSize:10,color:C.tM}}>הוצאות</div><div style={{fontSize:20,fontWeight:800,color:C.rd}}>{"₪"+tE.toFixed(0)}</div></div></div>
+      {hasLoan&&<div style={{fontSize:12,color:C.rd}}>{"הלוואה: -₪"+ln.toFixed(0)}</div>}
+      <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderTop:"2px solid #333",marginTop:4,fontSize:16}}>
+       <b>רווח נקי:</b><span style={{fontWeight:800,color:fp>=0?C.gn:C.rd}}>{"₪"+fp.toFixed(0)}</span></div></Card>
+     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:6}}>📊 ניתוח יומי</div>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:11,borderCollapse:"collapse",textAlign:"center"}}>
+       <thead><tr style={{background:"#F5F5F5"}}>{["יום","נמכרו","הכנסות","הוצאות","רווח","מוניטין"].map(h=><th key={h} style={{padding:4,borderBottom:"2px solid #DDD"}}>{h}</th>)}</tr></thead>
+       <tbody>{res.map((r,i)=><tr key={i} style={{background:r.profit>=0?"#F9FFF9":"#FFF9F9",borderBottom:"1px solid #EEE"}}>
+        <td style={{padding:3,fontWeight:700}}>{"י"+r.dy}</td><td>{r.sold+"/"+r.prep}</td>
+        <td style={{color:C.gn}}>{"₪"+r.rev.toFixed(0)}</td><td style={{color:C.rd}}>{"₪"+r.exp.toFixed(0)}</td>
+        <td style={{fontWeight:700,color:r.profit>=0?C.gn:C.rd}}>{"₪"+r.profit.toFixed(0)}</td>
+        <td>{r.rA}</td></tr>)}</tbody></table></div></Card>
+     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:6}}>💡 תובנות</div>
+      <div style={{fontSize:12,lineHeight:1.8,color:C.tL}}>
+       {bD&&<div>{"🏆 היום הטוב: יום "+bD.dy+" — ₪"+bD.profit.toFixed(0)}</div>}
+       {wD&&wD.dy!==bD?.dy&&<div>{"📉 הקשה: יום "+wD.dy+" — ₪"+wD.profit.toFixed(0)}</div>}
+       <div>{"🥤 כוסות: "+tS+"/"+tPp+" ("+(tPp>0?Math.round(tS/tPp*100):0)+"%)"}</div>
+       <div>{"⭐ מוניטין סופי: "+rp+"/100"}</div></div></Card>
+     {}
+     {hasComps&&res.length>0&&res[0].compSnap&&(()=>{
+      const nC=res[0].compSnap.length;
+      const colors=[C.gn,"#7B1FA2","#1976D2","#E65100"];
+      const names=["🍋 אתה",...(res[0].compSnap||[]).map(c=>c.n)];
+      const myDailyRev=res.map(r=>r.rev);
+      const compDailyRevs=Array.from({length:nC}).map((_,ci)=>res.map(r=>r.compSnap?.[ci]?.rev||0));
+      const myDailyProfit=res.map(r=>r.profit);
+      const compDailyProfit=Array.from({length:nC}).map((_,ci)=>res.map(r=>r.compSnap?.[ci]?.profit||0));
+      const cumulate=arr=>{let s=0;return arr.map(v=>{s+=v;return s;});};
+      const myCumRev=cumulate(myDailyRev);
+      const compCumRevs=compDailyRevs.map(cumulate);
+      const myCumProfit=cumulate(myDailyProfit);
+      const compCumProfits=compDailyProfit.map(cumulate);
+      const myTotRev=myCumRev[myCumRev.length-1]||0;
+      const myTotProfit=(myCumProfit[myCumProfit.length-1]||0)-ln;
+      const compTotRevs=compCumRevs.map(c=>c[c.length-1]||0);
+      const compTotProfits=compCumProfits.map((c,i)=>(c[c.length-1]||0)-(npcState[i]?.ln||0));
+      const allRank=[{name:names[0],val:myTotProfit,isMe:true,loan:ln},...compTotProfits.map((r,i)=>({name:names[i+1],val:r,isMe:false,loan:npcState[i]?.ln||0}))];
+      allRank.sort((a,b)=>b.val-a.val);
+      const myRank=allRank.findIndex(x=>x.isMe)+1;
+      const w=260,h=75,pad=6;
+      const mkChart=(datasets,lbls)=>{
+       const allVals=datasets.flat();
+       const hasNeg=allVals.some(v=>v<0);
+       const maxV=Math.max(...allVals.map(Math.abs),1);
+       const zeroY=hasNeg?h/2:h-pad;
+       return <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:h+20}}>
+        {}
+        {hasNeg&&<line x1={pad} y1={zeroY} x2={w-pad} y2={zeroY} stroke="#999" strokeWidth="0.5" strokeDasharray="2,2"/>}
+        {!hasNeg&&[0.25,0.5,0.75].map(f=><line key={f} x1={pad} y1={h-pad-f*(h-2*pad)} x2={w-pad} y2={h-pad-f*(h-2*pad)} stroke="#EEE" strokeWidth="0.5"/>)}
+        {}
+        {datasets.map((pts,si)=>{
+         const line=pts.map((v,j)=>{
+          const x=pad+j*((w-2*pad)/Math.max(pts.length-1,1));
+          const y=hasNeg?zeroY-(v/maxV)*(h/2-pad):h-pad-(v/maxV)*(h-2*pad);
+          return x+","+y;}).join(" ");
+         return <polyline key={si} points={line} fill="none" stroke={colors[si%colors.length]}
+          strokeWidth={si===0?"2.5":"1.5"} strokeLinejoin="round" strokeDasharray={si===0?"":"4,3"}/>;
+        })}
+        {}
+        {datasets.map((pts,si)=>{
+         const v=pts[pts.length-1];const x=w-pad;
+         const y=hasNeg?zeroY-(v/maxV)*(h/2-pad):h-pad-(v/maxV)*(h-2*pad);
+         return <g key={si}><circle cx={x} cy={y} r={si===0?3.5:2.5} fill={colors[si%colors.length]}/>
+          <text x={x-4} y={y-5} textAnchor="end" fontSize="7" fontWeight="700" fill={colors[si%colors.length]}>{"₪"+v.toFixed(0)}</text></g>;})}
+        {}
+        {res.map((r,j)=>{const x=pad+j*((w-2*pad)/Math.max(res.length-1,1));
+         return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="#999">{"י"+r.dy}</text>;})}
+       </svg>;
+      };
+      const legend=<div style={{display:"flex",gap:8,justifyContent:"center",fontSize:9,marginTop:2,marginBottom:10}}>
+       {names.map((n,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
+        <span style={{width:12,height:3,background:colors[i%colors.length],borderRadius:2,display:"inline-block"}}/>{n}</span>)}</div>;
+      return <Card style={{padding:16}}>
+       <div style={{fontWeight:800,fontSize:16,marginBottom:12,textAlign:"center"}}>🏆 ניתוח מתחרים מלא</div>
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🥇 דירוג סופי — רווח</div>
+       {allRank.map((p,i)=>(
+        <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",marginBottom:4,borderRadius:10,
+         background:p.isMe?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":"#F5F5F5",
+         border:p.isMe?"2px solid #66BB6A":"1px solid #E0E0E0"}}>
+         <div style={{fontSize:20,fontWeight:800,color:i===0?"#FFD700":i===1?"#90A4AE":"#8D6E63",minWidth:30,textAlign:"center"}}>
+          {i===0?"🥇":i===1?"🥈":"🥉"}</div>
+         <div style={{flex:1}}>
+          <div style={{fontWeight:p.isMe?800:400,fontSize:14}}>{p.name}</div>
+         </div>
+         <div style={{textAlign:"left"}}>
+          <div style={{fontSize:16,fontWeight:800,color:p.val>=0?C.gn:C.rd}}>{"₪"+p.val.toFixed(0)}</div>
+          {p.loan>0&&<div style={{fontSize:8,color:C.rd}}>{"(🏦 חוב: ₪"+p.loan.toFixed(0)+")"}</div>}
+          {!p.isMe&&<div style={{fontSize:10,fontWeight:700,color:myTotProfit>p.val?C.gn:C.rd}}>
+           {(myTotProfit>p.val?"✅ +":"⚠️ ")+"₪"+Math.abs(myTotProfit-p.val).toFixed(0)}</div>}
+         </div>
+        </div>))}
+       <div style={{textAlign:"center",fontSize:13,fontWeight:800,margin:"10px 0",
+        color:myRank===1?C.gn:myRank<=2?C.ac:C.rd}}>
+        {myRank===1?"🏆 מקום ראשון! ניצחת את כולם!":myRank===2?"🥈 מקום שני — כמעט שם!":"מקום "+myRank+" מתוך "+(nC+1)+" — נסה שוב!"}</div>
+       <div style={{height:1,background:"#E0E0E0",margin:"14px 0"}}/>
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📊 הכנסות יומיות</div>
+       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>כמה כל אחד הרוויח כל יום</div>
+       {mkChart([myDailyRev,...compDailyRevs],names)}
+       {legend}
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📈 הכנסות מצטברות</div>
+       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>סך הכנסות לאורך כל המשחק — מי מוביל?</div>
+       {mkChart([myCumRev,...compCumRevs],names)}
+       {legend}
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💰 רווח יומי</div>
+       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>רווח (אחרי הוצאות) — אדום = הפסד</div>
+       {mkChart([myDailyProfit,...compDailyProfit],names)}
+       {legend}
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📈 רווח מצטבר</div>
+       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>המרוץ האמיתי — מי הרוויח הכי הרבה סך הכל?</div>
+       {mkChart([myCumProfit,...compCumProfits],names)}
+       {legend}
+       <div style={{height:1,background:"#E0E0E0",margin:"14px 0"}}/>
+       {}
+       <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 טבלת השוואה מלאה</div>
+       <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",fontSize:10,borderCollapse:"collapse",textAlign:"center"}}>
+         <thead><tr style={{background:"#F5F5F5"}}>
+          <th style={{padding:4,borderBottom:"2px solid #DDD"}}></th>
+          <th style={{padding:4,borderBottom:"2px solid #DDD",background:"#E8F5E9"}}>🍋 אתה</th>
+          {(res[0].compSnap||[]).map((c,i)=><th key={i} style={{padding:4,borderBottom:"2px solid #DDD"}}>{c.n}</th>)}
+         </tr></thead>
+         <tbody>
+          <tr style={{borderBottom:"1px solid #EEE"}}>
+           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ הכנסות</td>
+           <td style={{padding:3,fontWeight:700,color:C.gn,background:"#F9FFF9"}}>{"₪"+myTotRev.toFixed(0)}</td>
+           {compTotRevs.map((r,i)=><td key={i} style={{padding:3}}>{"₪"+r.toFixed(0)}</td>)}</tr>
+          <tr style={{borderBottom:"1px solid #EEE"}}>
+           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ רווח</td>
+           <td style={{padding:3,fontWeight:700,color:myTotProfit>=0?C.gn:C.rd,background:"#F9FFF9"}}>{"₪"+myTotProfit.toFixed(0)}</td>
+           {compTotProfits.map((r,i)=><td key={i} style={{padding:3,color:r>=0?C.gn:C.rd}}>{"₪"+r.toFixed(0)}</td>)}</tr>
+          <tr style={{borderBottom:"1px solid #EEE"}}>
+           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ כוסות</td>
+           <td style={{padding:3,background:"#F9FFF9"}}>{tS}</td>
+           {Array.from({length:nC}).map((_,ci)=><td key={ci}>{res.reduce((s,r)=>s+(r.compSnap?.[ci]?.sold||0),0)}</td>)}</tr>
+          <tr style={{borderBottom:"1px solid #EEE"}}>
+           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>ממוצע מחיר</td>
+           <td style={{padding:3,background:"#F9FFF9"}}>{"₪"+(tS>0?(myTotRev/tS).toFixed(1):"0")}</td>
+           {Array.from({length:nC}).map((_,ci)=>{const ts=res.reduce((s,r)=>s+(r.compSnap?.[ci]?.sold||0),0);const tr2=res.reduce((s,r)=>s+(r.compSnap?.[ci]?.rev||0),0);
+            return <td key={ci}>{"₪"+(ts>0?(tr2/ts).toFixed(1):"0")}</td>;})}</tr>
+          <tr>
+           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>היום הטוב ביותר</td>
+           <td style={{padding:3,background:"#F9FFF9"}}>{"י"+(bD?.dy||1)+" (₪"+(bD?.profit.toFixed(0)||0)+")"}</td>
+           {Array.from({length:nC}).map((_,ci)=>{const best=res.reduce((b,r)=>{const rv=r.compSnap?.[ci]?.rev||0;return rv>b.v?{d:r.dy,v:rv}:b;},{d:1,v:0});
+            return <td key={ci}>{"י"+best.d+" (₪"+best.v.toFixed(0)+")"}</td>;})}</tr>
+         </tbody>
+        </table>
+       </div>
+       {}
+       <div style={{marginTop:12,padding:"8px 10px",background:"#FFFDE7",borderRadius:8,fontSize:11,color:C.tL}}>
+        {"💡 "+(myRank===1?"השגת הכנסות גבוהות מכל המתחרים! האסטרטגיה שלך עבדה.":
+         myTotRev>compTotRevs[0]*0.9?"היית קרוב למוביל — נסה להוריד מחיר או לשפר מתכון.":
+         "המתחרים הצליחו יותר. נסה לבדוק מה הם עשו (קנה ניתוח מתחרים!) ולהתאים.")}
+       </div>
+      </Card>;})()}
+     <div style={{display:"flex",gap:8,marginTop:10}}>
+       <Btn onClick={()=>setShowLB(true)} color="#D4A017" style={{flex:1}}>🏆 טבלת שיאים</Btn>
+       <Btn onClick={()=>setPh("title")} color={C.ac} style={{flex:1}}>🔄 משחק חדש</Btn>
+     </div>
+     {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase} />}
+     {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName} />}
+    </div>;})()}
+   {}
+   {showDash&&<div style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.5)",overflowY:"auto"}}
+    onClick={e=>{if(e.target===e.currentTarget)setShowDash(false);}}>
+    <div style={{maxWidth:600,margin:"20px auto",background:C.bg,borderRadius:16,padding:"16px 14px",minHeight:"80vh"}}>
+     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <div style={{fontWeight:800,fontSize:18}}>📊 דשבורד ניתוח</div>
+      <button onClick={()=>setShowDash(false)} style={{background:C.rd,color:"#FFF",border:"none",borderRadius:8,
+       padding:"4px 12px",fontSize:14,fontWeight:700,cursor:"pointer"}}>✕</button></div>
+     {dayLog.length===0?<div style={{textAlign:"center",color:C.tM,padding:40}}>אין נתונים עדיין — שחק יום אחד לפחות</div>:(()=>{
+      const w=240,h=65,pad=5;const colors=[C.gn,"#7B1FA2","#1976D2","#E65100"];
+      const mkLine=(data,color,sw="2")=>{if(!data||data.length<1)return null;
+       const mn=Math.min(...data),mx=Math.max(...data),rg=mx-mn||1;
+       return <polyline points={data.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(data.length-1,1));
+        const y=h-pad-((v-mn)/rg)*(h-2*pad);return x+","+y;}).join(" ")}
+        fill="none" stroke={color} strokeWidth={sw} strokeLinejoin="round"/>;};
+      const mkDots=(data,color)=>{if(!data||data.length<1)return null;
+       const mn=Math.min(...data),mx=Math.max(...data),rg=mx-mn||1;
+       return data.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(data.length-1,1));
+        const y=h-pad-((v-mn)/rg)*(h-2*pad);
+        return <circle key={j} cx={x} cy={y} r={2} fill={color}/>;});};
+      const dayLabels=dayLog.map((d,j)=>{const x=pad+j*((w-2*pad)/Math.max(dayLog.length-1,1));
+       return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="#999">{"י"+d.dy}</text>;});
+      const chartWrap=(title,children)=><div style={{marginBottom:14}}>
+       <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>{title}</div>
+       <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:h+18}}>{children}{dayLabels}</svg></div>;
+      return <div>
+       {}
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🌤️ היסטוריית מזג אוויר</div>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap",fontSize:10}}>
+         {dayLog.map((d,i)=><div key={i} style={{background:"#F5F5F5",borderRadius:6,padding:"3px 6px",textAlign:"center",minWidth:50}}>
+          <div style={{fontWeight:700}}>{"י"+d.dy}</div>
+          <div>{d.weather.split(" ")[0]+" "+d.temp+"°"}</div>
+          {d.event&&<div style={{fontSize:8,color:C.ac}}>{d.event.split(" ")[0]}</div>}
+         </div>)}</div></Card>
+       {}
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💲 היסטוריית מחירים</div>
+        {chartWrap("🍋 לימון",<>{mkLine(dayLog.map(d=>d.prices.lemon),C.lD)}{mkDots(dayLog.map(d=>d.prices.lemon),C.lD)}</>)}
+        {chartWrap("🍯 דבש",<>{mkLine(dayLog.map(d=>d.prices.honey),C.hn)}{mkDots(dayLog.map(d=>d.prices.honey),C.hn)}</>)}
+        {chartWrap("🧊 קרח",<>{mkLine(dayLog.map(d=>d.prices.ice),C.iD)}{mkDots(dayLog.map(d=>d.prices.ice),C.iD)}</>)}
+       </Card>
+       {}
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💰 הביצועים שלי</div>
+        {chartWrap("הכנסות יומיות",<>{mkLine(dayLog.map(d=>d.myRev),C.gn)}{mkDots(dayLog.map(d=>d.myRev),C.gn)}</>)}
+        {chartWrap("רווח יומי",<>{mkLine(dayLog.map(d=>d.myProfit),C.gn)}{mkDots(dayLog.map(d=>d.myProfit),C.gn)}</>)}
+        {chartWrap("⭐ מוניטין",<>{mkLine(dayLog.map(d=>d.rep),"#FF6F00")}{mkDots(dayLog.map(d=>d.rep),"#FF6F00")}</>)}
+       </Card>
+       {}
+       {bestCup&&<Card style={{background:"linear-gradient(135deg,#FFF9C4,#FFF8E1)",border:"1px solid #FFD600"}}>
+        <div style={{fontWeight:700,fontSize:13}}>🏆 הכוס הטובה ביותר שלך</div>
+        <div style={{fontSize:12,marginTop:4}}>{"יום "+bestCup.day+": "+bestCup.recipe.l+"🍋"+bestCup.recipe.h+"🍯"+bestCup.recipe.i+"🧊 — ציון "+bestCup.score+"/100"}</div></Card>}
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 היסטוריית החלטות</div>
+        <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:9,borderCollapse:"collapse",textAlign:"center"}}>
+         <thead><tr style={{background:"#F5F5F5"}}>
+          {["יום","מתכון","מחיר","הכנו","מכרנו","הכנסות","רווח","⭐"].map(h2=><th key={h2} style={{padding:3,borderBottom:"1px solid #DDD"}}>{h2}</th>)}
+         </tr></thead>
+         <tbody>{dayLog.map((d,i)=><tr key={i} style={{borderBottom:"1px solid #EEE"}}>
+          <td style={{padding:2,fontWeight:700}}>{"י"+d.dy}</td>
+          <td>{d.recipe.l+"🍋"+d.recipe.h+"🍯"+d.recipe.i+"🧊"}</td>
+          <td>{"₪"+d.price}</td><td>{d.myPrep}</td><td>{d.mySold}</td>
+          <td style={{color:C.gn}}>{"₪"+d.myRev}</td>
+          <td style={{fontWeight:700,color:d.myProfit>=0?C.gn:C.rd}}>{"₪"+d.myProfit.toFixed(0)}</td>
+          <td>{d.rep}</td>
+         </tr>)}</tbody></table></div></Card>
+       {}
+       {hasComps&&dayLog[0]?.compSnap&&dayLog[0].compSnap.length>0&&<Card>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>🏪 השוואה למתחרים</div>
+        {(()=>{const nC=dayLog[0].compSnap.length;
+         const names=["🍋 אתה",...dayLog[0].compSnap.map(c=>c.n)];
+         const myCum=[];let ms=0;dayLog.forEach(d=>{ms+=d.myRev;myCum.push(ms);});
+         const compCums=Array.from({length:nC}).map((_,ci)=>{let s=0;return dayLog.map(d=>{s+=(d.compSnap[ci]?.rev||0);return s;});});
+         return <div>
+          {chartWrap("📈 הכנסות מצטברות",<>
+           {mkLine(myCum,colors[0],"2.5")}
+           {compCums.map((c,ci)=>mkLine(c,colors[(ci+1)%colors.length],"1.5"))}
+          </>)}
+          <div style={{display:"flex",gap:6,justifyContent:"center",fontSize:9,marginTop:-8,marginBottom:8}}>
+           {names.map((n,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
+            <span style={{width:10,height:3,background:colors[i%colors.length],borderRadius:1,display:"inline-block"}}/>{n}</span>)}</div>
+          {}
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:9,borderCollapse:"collapse",textAlign:"center"}}>
+           <thead><tr style={{background:"#F5F5F5"}}>
+            <th style={{padding:2,borderBottom:"1px solid #DDD"}}>יום</th>
+            <th style={{padding:2,borderBottom:"1px solid #DDD",background:"#E8F5E9"}}>אני ₪</th>
+            {dayLog[0].compSnap.map((c,i)=><th key={i} style={{padding:2,borderBottom:"1px solid #DDD"}}>{c.n+" ₪"}</th>)}
+           </tr></thead>
+           <tbody>{dayLog.map((d,j)=><tr key={j} style={{borderBottom:"1px solid #EEE"}}>
+            <td style={{padding:2}}>{"י"+d.dy}</td>
+            <td style={{padding:2,background:"#F9FFF9",fontWeight:700}}>{d.myRev}</td>
+            {d.compSnap.map((c,i)=><td key={i} style={{padding:2}}>{c.rev}</td>)}
+           </tr>)}</tbody></table></div>
+         </div>;})()}
+       </Card>}
+       {}
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📅 אירועים</div>
+        {dayLog.filter(d=>d.event).length===0?<div style={{fontSize:11,color:C.tM}}>לא היו אירועים עד כה</div>:
+         dayLog.filter(d=>d.event).map((d,i)=><div key={i} style={{fontSize:11,padding:"2px 0",borderBottom:"1px solid #EEE"}}>
+          {"יום "+d.dy+": "+d.event}</div>)}
+       </Card>
+       {}
+       {dayLog.some(d=>d.actions?.length>0||d.npcActs?.some(na=>na.acts.length>0))&&
+       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>⚡ היסטוריית פעולות</div>
+        {(()=>{const actNames={flyer:"📄 פליירים",banner:"🎈 בלונים",social:"📱 פוסט",taste:"🎁 טעימות",ads:"📢 קמפיין",rumor:"🗣️ שמועות",signs:"🚫 שלטים"};
+        return dayLog.map((d,i)=>{const myActs=(d.actions||[]).map(a=>actNames[a]||a);const theirActs=d.npcActs||[];
+         const hasAny=myActs.length>0||theirActs.some(na=>na.acts.length>0);
+         if(!hasAny)return null;
+         return <div key={i} style={{padding:"4px 0",borderBottom:"1px solid #EEE",fontSize:10}}>
+          <div style={{fontWeight:700}}>{"יום "+d.dy}</div>
+          {(myActs.length>0)&&<div style={{color:C.gn}}>{"🍋 אתה: "+myActs.join(", ")}</div>}
+          {theirActs.filter(na=>na.acts.length>0).map((na,j)=>
+           <div key={j} style={{color:C.pu}}>{na.n+": "+na.acts.join(", ")}</div>)}
+         </div>;});})()}
+       </Card>}
+      </div>;})()}
+    </div></div>}
+   {}
+   {shT&&tSt<TUT.length&&<TutBubble step={TUT[tSt]} current={tSt+1} total={TUT.length} onNext={()=>{
+    const ns=tSt+1;if(ns>=TUT.length){setShT(false);return;}
+    const cur=TUT[tSt].ph.replace(/\d/,""),nxt=TUT[ns].ph.replace(/\d/,"");
+    if(nxt!==cur){setShT(false);setTSt(ns);}else setTSt(ns);
+   }} onSkip={()=>{setShT(false);setTOn(false);}}/>}
+  </div>);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<LemonadeGame />);
+</script>
+</body>
+</html>
