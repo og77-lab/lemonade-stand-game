@@ -141,7 +141,7 @@ const AuthModal = ({onClose, onAuth, supabaseClient}) => {
     if (!supabaseClient) { setErr('Supabase לא מוגדר'); return; }
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google', options: { redirectTo: 'https://og77-lab.github.io/lemonade-stand-game' }
+        provider: 'google', options: { redirectTo: 'https://lemonade-stand-game-kappa.vercel.app' }
       });
       if (error) throw error;
     } catch(e) { setErr(e.message); }
