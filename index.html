@@ -52,6 +52,57 @@ try {
   }
 } catch(e) { console.log('Supabase init error:', e); }
 
+// ===== ACHIEVEMENTS =====
+const ACH_LS_KEY = 'lem-achievements';
+const ACHIEVEMENTS = [
+  {id:'first_profit', em:'💰', n:'רווח ראשון', d:'סיים יום עם רווח חיובי',
+   chk: ({res}) => res.some(r => r.profit > 0)},
+  {id:'big_day', em:'📈', n:'יום ענק', d:'רווח של ₪50 ביום אחד',
+   chk: ({res}) => res.some(r => r.profit >= 50)},
+  {id:'hundred_cups', em:'💯', n:'יום מושלם', d:'100 כוסות ביום אחד',
+   chk: ({res}) => res.some(r => r.sold >= 100)},
+  {id:'streak_3', em:'🔥', n:'רצף מנצח', d:'3 ימים רצופים של רווח חיובי',
+   chk: ({res}) => {let c=0;for(const r of res){if(r.profit>0){c++;if(c>=3)return true;}else c=0;}return false;}},
+  {id:'five_star_rep', em:'🌟', n:'כוכב הקהילה', d:'הגע למוניטין 90+',
+   chk: ({res, rp}) => (rp||0) >= 90 || res.some(r => r.rA >= 90)},
+  {id:'storm_survivor', em:'🌪️', n:'שורד הסופה', d:'רווח חיובי ביום גשם או קור',
+   chk: ({dayLog, res}) => dayLog.some((d,i) => (d.weather?.includes('גשם')||d.weather?.includes('קר'))&&(res[i]?.profit||0)>0)},
+  {id:'viral_hit', em:'🎯', n:'להיט ויראלי', d:'50+ כוסות ומוניטין 80+ באותו יום',
+   chk: ({res}) => res.some(r => r.sold >= 50 && r.rA >= 80)},
+  {id:'millionaire', em:'👑', n:'מיליונר הלימונדה', d:'רווח כולל של ₪500 במשחק אחד',
+   chk: ({res, ln, gameOver}) => gameOver && (res.reduce((s,r)=>s+r.profit,0)-(ln||0)) >= 500},
+  {id:'five_stars', em:'⭐', n:'5 כוכבים', d:'סיים משחק עם 5 כוכבים',
+   chk: ({res, ln, gameOver}) => gameOver && (res.reduce((s,r)=>s+r.profit,0)-(ln||0)) >= 120},
+  {id:'no_waste', em:'🍋', n:'לא התבזבז', d:'סיים משחק ללא לימונים שפג תוקפם',
+   chk: ({res, gameOver}) => gameOver && res.length>0 && res.every(r => !r.ex || r.ex === 0)},
+  {id:'first_place', em:'🏆', n:'מלך התחרות', d:'סיים משחק עם רווח גבוה מכל המתחרים',
+   chk: ({res, ln, npcState, gameOver}) => {
+     if(!gameOver || !res[0]?.compSnap || res[0].compSnap.length===0) return false;
+     const myProfit = res.reduce((s,r)=>s+r.profit,0)-(ln||0);
+     const nC = res[0].compSnap.length;
+     for(let ci=0;ci<nC;ci++){
+       const cp = res.reduce((s,r)=>s+(r.compSnap?.[ci]?.profit||0),0)-(npcState?.[ci]?.ln||0);
+       if(cp >= myProfit) return false;
+     }
+     return true;
+   }},
+  {id:'no_loan', em:'🏦', n:'עצמאות כלכלית', d:'סיים משחק בלי לקחת הלוואה',
+   chk: ({ln, loanEverTaken, gameOver}) => gameOver && !loanEverTaken},
+  {id:'hard_mode', em:'💪', n:'קשוח', d:'סיים משחק ברמת קושי "קשה" עם רווח חיובי',
+   chk: ({cl, res, ln, gameOver}) => gameOver && cl==='hard' && (res.reduce((s,r)=>s+r.profit,0)-(ln||0))>=0},
+  {id:'speed_run', em:'⚡', n:'זינוק מהיר', d:'רווח חיובי כבר ביום הראשון',
+   chk: ({res}) => res.length>0 && res[0].profit > 0},
+  {id:'comeback', em:'🔄', n:'קאמבק', d:'יום הפסד ואז 3 ימי רווח',
+   chk: ({res}) => {for(let i=0;i<=res.length-4;i++){if(res[i].profit<0 && res[i+1].profit>0 && res[i+2].profit>0 && res[i+3].profit>0)return true;}return false;}},
+];
+const loadAchievements = () => {
+  try { return JSON.parse(localStorage.getItem(ACH_LS_KEY) || '[]'); }
+  catch(e) { return []; }
+};
+const saveAchievements = (list) => {
+  try { localStorage.setItem(ACH_LS_KEY, JSON.stringify(list)); } catch(e) {}
+};
+
 // ===== AUTH MODAL COMPONENT =====
 const AuthModal = ({onClose, onAuth, supabaseClient}) => {
   const [mode, setMode] = useState('login');
@@ -260,6 +311,79 @@ const Leaderboard = ({onClose, supabaseClient, currentUser, currentUsername}) =>
     </div>
   );
 };
+
+// ===== ACHIEVEMENTS MODAL =====
+const AchievementsModal = ({onClose, unlocked}) => {
+  const unlockedCount = unlocked.length;
+  const total = ACHIEVEMENTS.length;
+  const pct = Math.round((unlockedCount/total)*100);
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:60,background:'rgba(0,0,0,.5)',backdropFilter:'blur(4px)',overflowY:'auto'}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{maxWidth:500,margin:'20px auto',background:'linear-gradient(180deg,#FFF8E7,#FFF0D4)',
+        borderRadius:20,padding:'20px 16px',minHeight:'60vh',boxShadow:'0 20px 60px rgba(0,0,0,.2)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style={{fontWeight:800,fontSize:20}}>🏆 הישגים</div>
+          <button onClick={onClose} style={{background:'#E53935',color:'#FFF',border:'none',borderRadius:10,
+            padding:'6px 14px',fontSize:14,fontWeight:700,cursor:'pointer'}}>✕</button>
+        </div>
+        <div style={{background:'rgba(255,255,255,.7)',borderRadius:12,padding:'10px 14px',marginBottom:14}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+            <span style={{fontSize:13,fontWeight:700,color:'#6D4C41'}}>
+              {unlockedCount} / {total} הישגים</span>
+            <span style={{fontSize:16,fontWeight:800,color:'#D4A017'}}>{pct}%</span>
+          </div>
+          <div style={{height:8,background:'#F5E6C9',borderRadius:4,overflow:'hidden'}}>
+            <div style={{height:'100%',width:pct+'%',background:'linear-gradient(90deg,#FFD700,#FF6F00)',
+              transition:'width .4s',borderRadius:4}}/>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          {ACHIEVEMENTS.map(a => {
+            const isUnlocked = unlocked.includes(a.id);
+            return (
+              <div key={a.id} style={{
+                background: isUnlocked ? 'linear-gradient(135deg,#FFF9C4,#FFE082)' : '#F5F5F5',
+                borderRadius:12, padding:'10px 12px',
+                border: isUnlocked ? '2px solid #FFD700' : '1px solid #E0E0E0',
+                opacity: isUnlocked ? 1 : 0.6,
+                boxShadow: isUnlocked ? '0 3px 10px rgba(255,215,0,.2)' : 'none',
+                position:'relative'
+              }}>
+                <div style={{fontSize:28,marginBottom:2,filter:isUnlocked?'none':'grayscale(1)'}}>
+                  {isUnlocked ? a.em : '🔒'}
+                </div>
+                <div style={{fontSize:12,fontWeight:800,color:isUnlocked?'#3E2723':'#9E8E80'}}>{a.n}</div>
+                <div style={{fontSize:10,color:isUnlocked?'#6D4C41':'#9E8E80',lineHeight:1.3,marginTop:2}}>{a.d}</div>
+                {isUnlocked && <div style={{position:'absolute',top:6,left:6,fontSize:10,color:'#43A047',fontWeight:700}}>✓</div>}
+              </div>
+            );
+          })}
+        </div>
+        {unlockedCount === total && <div style={{marginTop:16,padding:'14px 16px',textAlign:'center',
+          background:'linear-gradient(135deg,#FFD700,#FF6F00)',borderRadius:14,color:'#FFF',fontWeight:800,fontSize:15,
+          boxShadow:'0 6px 20px rgba(255,111,0,.3)'}}>
+          🎉 פתחת את כל ההישגים! אתה אלוף!
+        </div>}
+      </div>
+    </div>
+  );
+};
+
+// ===== ACHIEVEMENT TOAST =====
+const AchievementToast = ({achievement}) => (
+  <div style={{position:'fixed',top:20,left:'50%',transform:'translateX(-50%)',zIndex:100,
+    background:'linear-gradient(135deg,#FFD700,#FF6F00)',borderRadius:14,padding:'10px 18px',
+    boxShadow:'0 10px 30px rgba(255,111,0,.4)',display:'flex',alignItems:'center',gap:12,
+    animation:'fadeUp .4s ease',color:'#FFF',minWidth:240,maxWidth:360}}>
+    <div style={{fontSize:36}}>{achievement.em}</div>
+    <div>
+      <div style={{fontSize:10,opacity:0.9,fontWeight:700}}>🏆 הישג חדש!</div>
+      <div style={{fontSize:15,fontWeight:800}}>{achievement.n}</div>
+      <div style={{fontSize:11,opacity:0.95}}>{achievement.d}</div>
+    </div>
+  </div>
+);
 
 const DAYS=10,CUP=6,CAP_BASE=30,CAP_STATION=70,CAP_TEAM=999,HELPER_B=20,HELPER_C=8,LOAN_MAX=40,LOAN_INT=0.08,REP0=50,REPMAX=100;
 const TP=[0,10,22,34,44,50,54],SR=[0,0,1,3,6,12,20],SW=[0,0,14,22,27,28,28];
@@ -517,6 +641,10 @@ function LemonadeGame(){
  const [showAuth, setShowAuth] = useState(false);
  const [showLB, setShowLB] = useState(false);
  const [saveStatus, setSaveStatus] = useState(null);
+ const [unlockedAch, setUnlockedAch] = useState(() => loadAchievements());
+ const [achToasts, setAchToasts] = useState([]);
+ const [showAch, setShowAch] = useState(false);
+ const [loanEverTaken, setLoanEverTaken] = useState(false);
 
  useEffect(() => {
    if (!supabase) return;
@@ -536,6 +664,37 @@ function LemonadeGame(){
 
  const handleAuth = (user, name) => { setAuthUser(user); setAuthName(name); setShowAuth(false); };
  const handleLogout = async () => { if(supabase) await supabase.auth.signOut(); setAuthUser(null); setAuthName(''); setPh('title'); };
+
+ // Achievement checker — runs when meaningful state changes
+ const checkAchievements = useCallback((gameOver=false) => {
+   const ctx = { res, rp, dayLog, ln, npcState, cl, loanEverTaken, gameOver };
+   const newly = [];
+   setUnlockedAch(prev => {
+     const next = [...prev];
+     ACHIEVEMENTS.forEach(a => {
+       if (!next.includes(a.id)) {
+         try { if (a.chk(ctx)) { next.push(a.id); newly.push(a); } }
+         catch(e) {}
+       }
+     });
+     if (newly.length > 0) {
+       saveAchievements(next);
+       setAchToasts(t => [...t, ...newly]);
+     }
+     return next;
+   });
+ }, [res, rp, dayLog, ln, npcState, cl, loanEverTaken]);
+
+ // Check after each day's summary (res grows) and at gameover
+ useEffect(() => { if (res.length > 0) checkAchievements(false); }, [res]);
+ useEffect(() => { if (ph === 'gameover') checkAchievements(true); }, [ph]);
+
+ // Auto-dismiss toasts
+ useEffect(() => {
+   if (achToasts.length === 0) return;
+   const t = setTimeout(() => setAchToasts(ts => ts.slice(1)), 4000);
+   return () => clearTimeout(t);
+ }, [achToasts]);
 
  const saveGameResult = async (finalProfit, difficulty, competitors, stars, repFinal, cupsSold) => {
    if (!supabase || !authUser) return;
@@ -569,7 +728,7 @@ function LemonadeGame(){
      const state = { ph, dy, ca, lm, la, hn, ic, rp, up, ln, res, cm, cl, sd,
        rL, rH, rI, pr, cu, hlp, iD, tP, npcState, dayLog, npcActions,
        tOn, goalsOn, sfxOn, loc, bestCup, vipBonus, lastVip, iPd, cIL,
-       actionsToday, bL, bH, bI, bIn, bCI, showExpD, lastVip, dayGoal, hi };
+       actionsToday, bL, bH, bI, bIn, bCI, showExpD, lastVip, dayGoal, hi, loanEverTaken };
      const { error } = await supabase.from('saved_games').upsert({
        user_id: authUser.id, game_state: state, updated_at: new Date().toISOString()
      }, { onConflict: 'user_id' });
@@ -603,6 +762,7 @@ function LemonadeGame(){
      setBI(s.bI||0); setBIn(s.bIn||0); setBCI(s.bCI||0);
      setShowExpD(s.showExpD||false); setDayGoal(s.dayGoal||null);
      setHi(s.hi||[]); setDW(null); setDE(null); setDP(null);
+     setLoanEverTaken(s.loanEverTaken||false);
      // Re-setup morning data if we're in a gameplay phase
      if (['morning','sim','summary'].includes(s.ph) && s.dy > 0) {
        setPD(s.dy);
@@ -681,6 +841,7 @@ function LemonadeGame(){
   setUp([]);setLn(0);setRes([]);setID(null);setIPd(false);setSd(Date.now());
   setActionsToday([]);setDayLog([]);setShowDash(false);setNpcActions([]);
   setDayGoal(null);setBestCup(null);setVipBonus(false);setLastVip(-3);setLoc(0);setShowExpD(false);
+  setLoanEverTaken(false);
   setPh("initEve");};
  useEffect(()=>{if(ph==="initEve"){setTP2(gd[1]?.p||{lemon:0.5,honey:0.8,ice:0.1});
   setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");if(tOn){setTSt(2);setShT(true);}}},[ph,gd,tOn]);
@@ -1069,6 +1230,14 @@ function LemonadeGame(){
        onMouseEnter={e=>{e.target.style.background="rgba(255,215,0,.15)";e.target.style.transform="scale(1.03)";}}
        onMouseLeave={e=>{e.target.style.background="rgba(255,255,255,.6)";e.target.style.transform="scale(1)";}}>
        🏆 טבלת שיאים</button>
+     <button onClick={()=>setShowAch(true)} style={{width:240,padding:"12px 28px",borderRadius:14,
+       border:"2px solid #FF6F00",background:"rgba(255,255,255,.6)",backdropFilter:"blur(8px)",
+       cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit",color:"#FF6F00",
+       boxShadow:"0 4px 14px rgba(255,111,0,.15)",transition:"all .2s",
+       display:"flex",alignItems:"center",justifyContent:"center",gap:6}}
+       onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,111,0,.15)";e.currentTarget.style.transform="scale(1.03)";}}
+       onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.6)";e.currentTarget.style.transform="scale(1)";}}>
+       🏅 הישגים <span style={{fontSize:12,opacity:0.75}}>({unlockedAch.length}/{ACHIEVEMENTS.length})</span></button>
      {!authUser && <p style={{fontSize:11,color:C.tM,margin:0}}>התחבר כדי לשמור תוצאות ולהתחרות!</p>}
     </div>
 
@@ -1692,7 +1861,7 @@ function LemonadeGame(){
     <Card style={{border:!hasCash&&ln===0?"3px solid "+C.rd:"1px solid "+C.bd,background:!hasCash&&ln===0?"#FFF3E0":C.cd}}>
      <div style={{fontWeight:700,fontSize:12,marginBottom:3}}>{"🏦 הלוואה (8%/יום!)"}</div>
      {!hasCash&&ln===0&&<div style={{fontSize:11,color:C.rd,marginBottom:6,fontWeight:700}}>💡 אין כסף? קח הלוואה!</div>}
-     {ln===0?<div style={{display:"flex",gap:3}}>{[10,20,30,40].map(a=><Btn key={a} onClick={()=>{setLn(a);setCa(p=>p+a);}} small color={!hasCash?C.ac:C.tL} style={{flex:1}}>{"₪"+a}</Btn>)}</div>
+     {ln===0?<div style={{display:"flex",gap:3}}>{[10,20,30,40].map(a=><Btn key={a} onClick={()=>{setLn(a);setCa(p=>p+a);setLoanEverTaken(true);}} small color={!hasCash?C.ac:C.tL} style={{flex:1}}>{"₪"+a}</Btn>)}</div>
      :<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
       <span>{"חוב: ₪"+ln.toFixed(1)+" (גדל 8%/יום!)"}</span>
       <Btn onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} small color={C.gn} disabled={ca<ln}>החזר</Btn></div>}</Card>
@@ -1895,9 +2064,10 @@ function LemonadeGame(){
          "המתחרים הצליחו יותר. נסה לבדוק מה הם עשו (קנה ניתוח מתחרים!) ולהתאים.")}
        </div>
       </Card>;})()}
-     <div style={{display:"flex",gap:8,marginTop:10}}>
-       <Btn onClick={()=>setShowLB(true)} color="#D4A017" style={{flex:1}}>🏆 טבלת שיאים</Btn>
-       <Btn onClick={()=>setPh("title")} color={C.ac} style={{flex:1}}>🔄 משחק חדש</Btn>
+     <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+       <Btn onClick={()=>setShowAch(true)} color="#FF6F00" style={{flex:"1 1 45%"}}>🏅 הישגים ({unlockedAch.length}/{ACHIEVEMENTS.length})</Btn>
+       <Btn onClick={()=>setShowLB(true)} color="#D4A017" style={{flex:"1 1 45%"}}>🏆 טבלת שיאים</Btn>
+       <Btn onClick={()=>setPh("title")} color={C.ac} style={{flex:"1 1 100%"}}>🔄 משחק חדש</Btn>
      </div>
      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase} />}
      {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName} />}
@@ -1927,7 +2097,109 @@ function LemonadeGame(){
       const chartWrap=(title,children)=><div style={{marginBottom:14}}>
        <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>{title}</div>
        <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:h+18}}>{children}{dayLabels}</svg></div>;
+      // === Summary insights ===
+      const totRev = dayLog.reduce((s,d)=>s+d.myRev,0);
+      const totExp = dayLog.reduce((s,d)=>s+d.myExp,0);
+      const totProfit = dayLog.reduce((s,d)=>s+d.myProfit,0);
+      const totSold = dayLog.reduce((s,d)=>s+d.mySold,0);
+      const totPrep = dayLog.reduce((s,d)=>s+d.myPrep,0);
+      const avgProfit = dayLog.length>0 ? totProfit/dayLog.length : 0;
+      const margin = totRev>0 ? (totProfit/totRev)*100 : 0;
+      const wastePct = totPrep>0 ? ((totPrep-totSold)/totPrep)*100 : 0;
+      const profitDays = dayLog.filter(d=>d.myProfit>0).length;
+      const bestDay = dayLog.length>0 ? dayLog.reduce((b,d)=>d.myProfit>b.myProfit?d:b,dayLog[0]) : null;
+      const worstDay = dayLog.length>0 ? dayLog.reduce((w,d)=>d.myProfit<w.myProfit?d:w,dayLog[0]) : null;
+      // Best weather for profit
+      const weatherProfit = {};
+      dayLog.forEach(d => {
+        const w = d.weather.split(" ")[0];
+        if (!weatherProfit[w]) weatherProfit[w] = {sum:0, count:0};
+        weatherProfit[w].sum += d.myProfit; weatherProfit[w].count++;
+      });
+      const weatherAvg = Object.entries(weatherProfit).map(([w,x])=>({w,avg:x.sum/x.count,count:x.count}))
+        .sort((a,b)=>b.avg-a.avg);
       return <div>
+       {/* Summary insights card */}
+       <Card style={{background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",border:"2px solid #64B5F6"}}>
+        <div style={{fontWeight:800,fontSize:14,marginBottom:8,textAlign:"center"}}>📊 סיכום כולל</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>💵 רווח ממוצע</div>
+          <div style={{fontSize:15,fontWeight:800,color:avgProfit>=0?C.gn:C.rd}}>{"₪"+avgProfit.toFixed(0)}</div></div>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>📐 שיעור רווח</div>
+          <div style={{fontSize:15,fontWeight:800,color:margin>=20?C.gn:margin>=0?C.ac:C.rd}}>{margin.toFixed(0)+"%"}</div></div>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>✅ ימים רווחיים</div>
+          <div style={{fontSize:15,fontWeight:800,color:C.gn}}>{profitDays+"/"+dayLog.length}</div></div>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>🥤 נמכר/הוכן</div>
+          <div style={{fontSize:13,fontWeight:800,color:C.tx}}>{totSold+"/"+totPrep}</div></div>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>🗑️ בזבוז</div>
+          <div style={{fontSize:15,fontWeight:800,color:wastePct<=10?C.gn:wastePct<=25?C.ac:C.rd}}>{wastePct.toFixed(0)+"%"}</div></div>
+         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.tM}}>⭐ מוניטין</div>
+          <div style={{fontSize:15,fontWeight:800,color:C.ac}}>{rp}</div></div>
+        </div>
+        {bestDay&&worstDay&&bestDay.dy!==worstDay.dy&&<div style={{display:"flex",gap:6,fontSize:10}}>
+         <div style={{flex:1,background:"#E8F5E9",borderRadius:6,padding:"4px 6px",textAlign:"center"}}>
+          <span style={{color:C.gn,fontWeight:700}}>🏆 הטוב: י{bestDay.dy}</span> <span style={{color:C.tL}}>₪{bestDay.myProfit.toFixed(0)}</span></div>
+         <div style={{flex:1,background:"#FFEBEE",borderRadius:6,padding:"4px 6px",textAlign:"center"}}>
+          <span style={{color:C.rd,fontWeight:700}}>📉 הקשה: י{worstDay.dy}</span> <span style={{color:C.tL}}>₪{worstDay.myProfit.toFixed(0)}</span></div>
+        </div>}
+        {weatherAvg.length>=2&&<div style={{marginTop:6,padding:"6px 8px",background:"rgba(255,255,255,.6)",borderRadius:6,fontSize:10,textAlign:"center"}}>
+         <span style={{color:C.tM}}>מזג אוויר מנצח:</span> <b>{weatherAvg[0].w}</b> <span style={{color:C.gn}}>(₪{weatherAvg[0].avg.toFixed(0)} ממוצע)</span>
+        </div>}
+       </Card>
+       {/* Expense breakdown donut */}
+       {(()=>{
+        const catLemon = dayLog.reduce((s,d)=>{const pr=d.prices?.lemon||0;return s+(d.recipe?.l||0)*d.myPrep*pr;},0);
+        const catHoney = dayLog.reduce((s,d)=>{const pr=d.prices?.honey||0;return s+(d.recipe?.h||0)*d.myPrep*pr;},0);
+        const catIce = dayLog.reduce((s,d)=>{const pr=d.prices?.ice||0;return s+(d.recipe?.i||0)*d.myPrep*pr;},0);
+        const catMat = catLemon + catHoney + catIce;
+        const catOther = Math.max(0, totExp - catMat);
+        const parts = [
+         {n:"🍋 לימון", v:catLemon, c:"#FBC02D"},
+         {n:"🍯 דבש", v:catHoney, c:"#FF6F00"},
+         {n:"🧊 קרח", v:catIce, c:"#4FC3F7"},
+         {n:"🏠 אחר", v:catOther, c:"#9575CD"},
+        ].filter(p=>p.v>0);
+        const total = parts.reduce((s,p)=>s+p.v,0);
+        if (total <= 0) return null;
+        let cumAngle = -Math.PI/2;
+        const cx=60, cy=60, r=50, ir=28;
+        const arcs = parts.map(p => {
+         const a = (p.v/total) * Math.PI * 2;
+         const x1 = cx + r*Math.cos(cumAngle), y1 = cy + r*Math.sin(cumAngle);
+         const x2 = cx + r*Math.cos(cumAngle+a), y2 = cy + r*Math.sin(cumAngle+a);
+         const xi1 = cx + ir*Math.cos(cumAngle), yi1 = cy + ir*Math.sin(cumAngle);
+         const xi2 = cx + ir*Math.cos(cumAngle+a), yi2 = cy + ir*Math.sin(cumAngle+a);
+         const large = a > Math.PI ? 1 : 0;
+         const d = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${ir} ${ir} 0 ${large} 0 ${xi1} ${yi1} Z`;
+         cumAngle += a;
+         return {d, p};
+        });
+        return <Card>
+         <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>🥧 פירוק הוצאות</div>
+         <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <svg viewBox="0 0 120 120" style={{width:130,height:130,flexShrink:0}}>
+           {arcs.map((a,i)=><path key={i} d={a.d} fill={a.p.c} stroke="#FFF" strokeWidth="1.5"/>)}
+           <text x="60" y="58" textAnchor="middle" fontSize="10" fill="#9E8E80">סה״כ</text>
+           <text x="60" y="72" textAnchor="middle" fontSize="13" fontWeight="800" fill="#3E2723">₪{total.toFixed(0)}</text>
+          </svg>
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
+           {parts.map((p,i)=>{const pct=(p.v/total*100).toFixed(0);return(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11}}>
+             <div style={{width:12,height:12,borderRadius:3,background:p.c,flexShrink:0}}/>
+             <div style={{flex:1}}>{p.n}</div>
+             <div style={{fontWeight:700}}>₪{p.v.toFixed(0)}</div>
+             <div style={{color:C.tM,fontSize:10,minWidth:30,textAlign:"left"}}>{pct}%</div>
+            </div>);})}
+          </div>
+         </div>
+        </Card>;
+       })()}
        {}
        <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🌤️ היסטוריית מזג אוויר</div>
         <div style={{display:"flex",gap:4,flexWrap:"wrap",fontSize:10}}>
@@ -2022,6 +2294,8 @@ function LemonadeGame(){
     const cur=TUT[tSt].ph.replace(/\d/,""),nxt=TUT[ns].ph.replace(/\d/,"");
     if(nxt!==cur){setShT(false);setTSt(ns);}else setTSt(ns);
    }} onSkip={()=>{setShT(false);setTOn(false);}}/>}
+   {showAch && <AchievementsModal onClose={()=>setShowAch(false)} unlocked={unlockedAch}/>}
+   {achToasts.length > 0 && <AchievementToast achievement={achToasts[0]}/>}
   </div>);
 }
 
