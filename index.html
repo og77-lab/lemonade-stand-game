@@ -2443,15 +2443,20 @@ function LemonadeGame(){
         <div className="bento-value">{dy+1}<span className="muted" style={{fontSize:14, fontWeight:600}}>/10</span></div>
         <div className="bento-sub">{10-dy} ימים נותרו</div>
       </div>
-      <div className="bento-card b-2 accent-ice">
-        <div className="bento-label">לימונים</div>
+      <div className="bento-card b-3">
+        <div className="bento-label">🍋 לימונים</div>
         <div className="bento-value"><CountUp value={lm}/></div>
-        <div className="bento-sub">במלאי</div>
+        <div className="bento-sub">{lm===0?'אזל!':'במלאי'}</div>
       </div>
-      <div className="bento-card b-2">
-        <div className="bento-label">דבש · קרח</div>
-        <div className="bento-value">{hn} · {ic}</div>
-        <div className="bento-sub">תוספים</div>
+      <div className="bento-card b-3">
+        <div className="bento-label">🍯 דבש</div>
+        <div className="bento-value"><CountUp value={hn}/></div>
+        <div className="bento-sub">{hn===0?'אזל':'במלאי'}</div>
+      </div>
+      <div className="bento-card b-3 accent-ice">
+        <div className="bento-label">🧊 קרח</div>
+        <div className="bento-value"><CountUp value={ic}/></div>
+        <div className="bento-sub">{ic===0?'אזל':'במלאי'}</div>
       </div>
     </div>
     {dy===0 && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#FFF8DA 0%,#FFEEAA 100%)'}}>
