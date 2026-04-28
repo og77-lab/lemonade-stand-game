@@ -9,18 +9,278 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍋</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Heebo','Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#FFF8E7 0%,#FFE8B0 50%,#FFF0D4 100%);overflow-x:hidden;min-height:100vh}
-    #root{min-height:100vh}
-    ::selection{background:#FFD54F;color:#3E2723}
-    ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:#E8D5B0;border-radius:3px}
-    ::-webkit-scrollbar-thumb:hover{background:#D4A017}
-    input[type="range"]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:#E0E0E0;outline:none}
-    input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid #FFF}
+    :root {
+      --bg-start: #FFF6E0; --bg-mid: #FFEFC9; --bg-end: #FCE3A8;
+      --ink-900: #2A1B0E; --ink-700: #4A3621; --ink-500: #7A6448;
+      --ink-400: #A18B6E; --ink-300: #C9B999; --ink-200: #E8DCC2;
+      --ink-100: #F5ECD7;
+      --paper: #FFFCF3; --paper-2: #FFF9E8;
+      --lemon-50: #FFF8DA; --lemon-100: #FFEEAA; --lemon-300: #FFD954;
+      --lemon-500: #F5B400; --lemon-600: #D89400; --lemon-700: #A87100;
+      --leaf-300: #9DD16A; --leaf-400: #71BD4D; --leaf-500: #4FA934;
+      --leaf-600: #3E8628; --leaf-700: #2F6A1F;
+      --honey-500: #E0840F; --honey-600: #B5620A;
+      --ice-300: #BEE3F2; --ice-500: #5EB6D8; --ice-700: #2B7B9E;
+      --rose-100: #FBE3DA; --rose-500: #E07150; --rose-700: #B14A2A;
+      --plum-500: #7E4CB8; --plum-100: #EFE4FA;
+      --good: #2D8C4E; --good-bg: #E5F3E8;
+      --warn: #C77A0F; --warn-bg: #FBEFD3;
+      --bad: #C24A2A; --bad-bg: #FBE2D8;
+      --glass-bg: rgba(255, 252, 243, 0.72);
+      --glass-bg-strong: rgba(255, 252, 243, 0.92);
+      --glass-border: rgba(168, 113, 0, 0.12);
+      --glass-border-strong: rgba(168, 113, 0, 0.18);
+      --sh-1: 0 1px 2px rgba(80, 50, 10, 0.05), 0 2px 6px rgba(80, 50, 10, 0.04);
+      --sh-2: 0 2px 4px rgba(80, 50, 10, 0.06), 0 8px 20px rgba(80, 50, 10, 0.06);
+      --sh-3: 0 6px 16px rgba(80, 50, 10, 0.08), 0 18px 40px rgba(80, 50, 10, 0.08);
+      --sh-4: 0 12px 28px rgba(80, 50, 10, 0.12), 0 30px 60px rgba(80, 50, 10, 0.10);
+      --sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(1200px 700px at 80% -10%, #FFE8A8 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 100%, #FFD7A0 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 60%, var(--bg-end) 100%);
+      background-attachment: fixed;
+      color: var(--ink-900); min-height: 100vh; overflow-x: hidden;
+      font-feature-settings: 'kern', 'liga', 'tnum';
+      -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      opacity: 0.45; mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.45  0 0 0 0 0.25  0 0 0 0.05 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+    }
+    #root { max-width: 720px; margin: 0 auto; min-height: 100vh; position: relative; z-index: 1; padding-bottom: 120px; }
+    ::selection { background: var(--lemon-300); color: var(--ink-900); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--lemon-600); }
+    h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+    h1 { font-size: 32px; } h2 { font-size: 22px; } h3 { font-size: 17px; } h4 { font-size: 14px; }
+    .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-500); }
+    .muted { color: var(--ink-500); } .tiny { font-size: 11px; } .small { font-size: 12px; }
+    .num { font-family: 'DM Mono', 'Heebo', monospace; font-feature-settings: 'tnum' 1, 'lnum' 1; letter-spacing: 0; }
+    .bold { font-weight: 700; } .x-bold { font-weight: 800; }
+    .glass { background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%); box-shadow: var(--sh-2), var(--sh-inset); border-radius: var(--r-lg); }
+    .glass-strong { background: var(--glass-bg-strong); border: 1px solid var(--glass-border-strong); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); box-shadow: var(--sh-3), var(--sh-inset); border-radius: var(--r-lg); }
+    .card { background: linear-gradient(180deg, #FFFEF7 0%, #FFFCF1 100%); border: 1px solid var(--ink-200); border-radius: var(--r-lg); box-shadow: var(--sh-1), inset 0 1px 0 rgba(255,255,255,0.7); }
+    .card-flat { background: var(--paper-2); border: 1px solid var(--ink-200); border-radius: var(--r-md); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 22px; border-radius: var(--r-pill); border: none; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease; position: relative; overflow: hidden; letter-spacing: -0.01em; font-family: inherit; }
+    .btn:active { transform: translateY(1px) scale(0.99); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(180deg, #5BC04A 0%, #3E9B2E 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.08), 0 8px 20px rgba(62, 155, 46, 0.30); }
+    .btn-primary:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.08), 0 12px 28px rgba(62, 155, 46, 0.40); }
+    .btn-warm { background: linear-gradient(180deg, #FFC347 0%, #F08A1F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08), 0 8px 20px rgba(240, 138, 31, 0.30); }
+    .btn-ghost { background: var(--glass-bg-strong); color: var(--ink-900); border: 1px solid var(--glass-border-strong); box-shadow: var(--sh-1); }
+    .btn-soft { background: var(--lemon-50); color: var(--ink-900); border: 1px solid var(--lemon-300); box-shadow: var(--sh-1); }
+    .btn-danger { background: linear-gradient(180deg, #E57373 0%, #C62828 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 8px 20px rgba(198, 40, 40, 0.25); }
+    .btn-block { width: 100%; }
+    .btn-lg { padding: 16px 24px; font-size: 16px; }
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
+    .btn-xs { padding: 5px 10px; font-size: 11px; }
+    .topbar { position: sticky; top: 0; z-index: 30; padding: 12px 16px 10px; background: linear-gradient(180deg, rgba(255, 246, 224, 0.92) 0%, rgba(255, 246, 224, 0.78) 100%); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); border-bottom: 1px solid var(--glass-border); }
+    .topbar-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #FFE466 0%, #F5B400 100%); display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 12px rgba(245, 180, 0, 0.35); font-size: 20px; }
+    .brand-meta { display: flex; flex-direction: column; line-height: 1.1; }
+    .brand-name { font-size: 14px; font-weight: 800; }
+    .brand-day { font-size: 11px; color: var(--ink-500); font-weight: 600; }
+    .day-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--ink-200); padding: 5px 10px 5px 12px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; box-shadow: var(--sh-1); }
+    .day-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--leaf-500); box-shadow: 0 0 0 3px rgba(79, 169, 52, 0.18); }
+    .topbar-row2 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; background: var(--paper); border: 1px solid var(--ink-200); border-radius: var(--r-md); box-shadow: var(--sh-1); position: relative; }
+    .stat-icon { width: 18px; height: 18px; opacity: 0.85; }
+    .stat-val { font-size: 14px; font-weight: 800; line-height: 1; font-family: 'DM Mono', 'Heebo', monospace; font-feature-settings: 'tnum'; }
+    .stat-lbl { font-size: 9px; color: var(--ink-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat.cash .stat-val { color: var(--leaf-600); }
+    .stat.cash.neg .stat-val { color: var(--bad); }
+    .stat.rep .stat-val { color: var(--lemon-600); }
+    .bottombar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: center; pointer-events: none; }
+    .bottombar-inner { width: 100%; max-width: 720px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(255, 246, 224, 0) 0%, rgba(255, 246, 224, 0.85) 30%, rgba(255, 246, 224, 0.95) 100%); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); pointer-events: auto; }
+    .steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 10px; }
+    .step { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--ink-400); }
+    .step .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-300); transition: all 0.2s; }
+    .step.active { color: var(--ink-900); }
+    .step.active .dot { background: var(--lemon-500); box-shadow: 0 0 0 4px rgba(245,180,0,0.18); width: 8px; height: 8px; }
+    .step.done .dot { background: var(--leaf-500); }
+    .step + .step::before { content: ''; width: 14px; height: 1px; background: var(--ink-200); margin: 0 2px; }
+    .screen { padding: 16px; }
+    .section { margin-bottom: 18px; }
+    .section-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-title { font-size: 15px; font-weight: 800; }
+    .section-aside { font-size: 11px; color: var(--ink-500); font-weight: 600; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .col { display: flex; flex-direction: column; gap: 8px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; background: var(--ink-100); color: var(--ink-700); }
+    .pill.lemon { background: var(--lemon-50); color: var(--lemon-700); border: 1px solid #F5E1A0; }
+    .pill.leaf { background: var(--good-bg); color: var(--leaf-700); border: 1px solid #BFE0BC; }
+    .pill.rose { background: var(--bad-bg); color: var(--bad); border: 1px solid #F2C7B5; }
+    .pill.ice { background: #E5F3FA; color: var(--ice-700); border: 1px solid #BCDDEC; }
+    .pill.plum { background: var(--plum-100); color: var(--plum-500); border: 1px solid #DCC8F0; }
+    .badge { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: var(--r-pill); background: var(--lemon-500); color: white; font-size: 11px; font-weight: 800; }
+    .choice-grid { display: grid; gap: 8px; }
+    .choice-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .choice-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .choice-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .choice { position: relative; padding: 12px; background: var(--paper); border: 1.5px solid var(--ink-200); border-radius: var(--r-md); cursor: pointer; transition: all 0.18s ease; text-align: center; box-shadow: var(--sh-1); display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: inherit; color: var(--ink-900); }
+    .choice:hover { transform: translateY(-1px); box-shadow: var(--sh-2); }
+    .choice .ch-emoji { font-size: 24px; line-height: 1; margin-bottom: 2px; }
+    .choice .ch-title { font-size: 13px; font-weight: 700; }
+    .choice .ch-sub { font-size: 11px; color: var(--ink-500); line-height: 1.3; }
+    .choice.active { border-color: var(--lemon-500); background: linear-gradient(180deg, #FFF7CF 0%, #FFEEA0 100%); box-shadow: 0 0 0 3px rgba(245, 180, 0, 0.18), var(--sh-2); }
+    .choice.active .ch-sub { color: var(--ink-700); }
+    .stepper { display: inline-flex; align-items: center; gap: 6px; background: var(--paper-2); border: 1px solid var(--ink-200); border-radius: var(--r-pill); padding: 4px; box-shadow: var(--sh-1); }
+    .stepper button { width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: white; color: var(--ink-700); font-size: 18px; font-weight: 700; display: grid; place-items: center; box-shadow: var(--sh-1); transition: all 0.12s; }
+    .stepper button:hover:not(:disabled) { background: var(--lemon-50); color: var(--lemon-700); }
+    .stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
+    .stepper .fast-btn { width: auto; min-width: 32px; height: 28px; padding: 0 8px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; background: var(--lemon-50); color: var(--lemon-700); border: 1px solid var(--lemon-300); font-family: 'DM Mono', monospace; }
+    .stepper.fast { gap: 4px; padding: 4px 6px; }
+    .stepper .val { min-width: 30px; text-align: center; font-size: 16px; font-weight: 800; font-feature-settings: 'tnum'; }
+    .ingredient { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 12px; background: var(--paper); border: 1px solid var(--ink-200); border-radius: var(--r-md); box-shadow: var(--sh-1); }
+    .ing-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: linear-gradient(135deg, #FFF8DA, #FFE9A2); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0; }
+    .ing-icon.honey { background: linear-gradient(135deg, #FFE0B0, #FFB763); }
+    .ing-icon.ice { background: linear-gradient(135deg, #E5F4FA, #9DD4EA); }
+    .ing-icon.water { background: linear-gradient(135deg, #EAF3FB, #C9E1F0); }
+    .trend-row { display: grid; grid-template-columns: 36px 1fr auto auto; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--ink-100); }
+    .trend-row:last-child { border-bottom: none; }
+    .trend-svg { height: 32px; width: 100%; }
+    .trend-price { font-weight: 800; font-feature-settings: 'tnum'; font-size: 14px; }
+    .trend-delta { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--r-pill); }
+    .trend-delta.up { color: var(--bad); background: var(--bad-bg); }
+    .trend-delta.down { color: var(--good); background: var(--good-bg); }
+    .trend-delta.flat { color: var(--ink-500); background: var(--ink-100); }
+    .quality-meter { display: flex; gap: 3px; align-items: center; }
+    .quality-meter span { flex: 1; height: 6px; border-radius: 3px; background: var(--ink-200); }
+    .quality-meter span.on { background: linear-gradient(90deg, var(--lemon-500), #FFD954); }
+    .lemon-hero { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+    .lemon-hero .glow { position: absolute; inset: -20px; background: radial-gradient(circle, rgba(255, 215, 84, 0.35) 0%, transparent 60%); filter: blur(20px); animation: pulse 4s ease-in-out infinite; }
+    .lemon-hero svg { position: relative; z-index: 2; width: 100%; height: 100%; filter: drop-shadow(0 14px 30px rgba(168, 113, 0, 0.25)); }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+    .scene { position: relative; height: 200px; background: linear-gradient(180deg, #B6DEF0 0%, #DEF1E9 60%, #DAB984 60.1%, #C99B5C 100%); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-2), var(--sh-inset); }
+    .scene .sun { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle, #FFE066 0%, #FFC107 80%); box-shadow: 0 0 30px rgba(255,193,7,0.5); }
+    .scene .road { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(180deg, #C99B5C 0%, #A87A3F 100%); }
+    .my-stand { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 3; }
+    .my-stand-roof { background: linear-gradient(180deg, #FFD954 0%, #F5B400 100%); border-radius: 10px 10px 2px 2px; font-size: 9px; font-weight: 800; color: #6B4500; text-align: center; padding: 4px 14px 5px; letter-spacing: 0.5px; box-shadow: 0 4px 8px rgba(245,180,0,0.4); }
+    .my-stand-body { background: linear-gradient(180deg, #FFF6D0 0%, #FFE89A 100%); border: 2px solid #F5B400; border-top: none; width: 80px; height: 50px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .my-stand-price { font-size: 14px; font-weight: 800; color: #6B4500; }
+    .comp-stand { position: absolute; bottom: 28px; z-index: 2; opacity: 0.92; }
+    .comp-stand-roof { width: 32px; height: 8px; background: linear-gradient(180deg, #B0BEC5 0%, #78909C 100%); border-radius: 6px 6px 0 0; }
+    .comp-stand-body { background: #ECEFF1; border: 1.5px solid #90A4AE; border-top: none; width: 44px; height: 32px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #455A64; font-feature-settings: 'tnum'; }
+    .walking-cust { position: absolute; bottom: 32px; font-size: 22px; z-index: 4; transition: right 0.4s ease, opacity 0.4s ease; }
+    .scene-progress { position: absolute; bottom: 6px; left: 12px; right: 12px; height: 4px; background: rgba(255,255,255,0.4); border-radius: 2px; z-index: 5; }
+    .scene-progress > div { height: 100%; background: var(--lemon-300); border-radius: 2px; transition: width 0.3s; }
+    .comp-pulse-row { display: grid; grid-template-columns: 110px 44px 1fr auto; gap: 10px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--ink-100); }
+    .comp-pulse-row:last-child { border-bottom: none; }
+    .comp-pulse-name { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+    .comp-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .comp-pulse-price { font-size: 13px; font-weight: 800; font-feature-settings: 'tnum'; color: var(--ink-700); }
+    .comp-pulse-bar { height: 6px; background: var(--ink-100); border-radius: 3px; overflow: hidden; }
+    .comp-pulse-bar > div { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+    .comp-pulse-stat { font-size: 11px; color: var(--ink-500); font-weight: 600; min-width: 60px; text-align: end; }
+    .insight-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--paper); border: 1px solid var(--ink-200); font-size: 13px; }
+    .insight-row[data-kind="good"] { background: linear-gradient(180deg, #F5FBF5, #EAF6EA); border-color: #BFE0BC; color: #1F5223; }
+    .insight-row[data-kind="bad"] { background: linear-gradient(180deg, #FDF6F4, #FBE8E0); border-color: #F2C7B5; color: #6B2A14; }
+    .insight-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.7); flex-shrink: 0; }
+    .insight-row[data-kind="good"] .insight-icon { color: var(--good); }
+    .insight-row[data-kind="bad"] .insight-icon { color: var(--bad); }
+    .insight-text { font-weight: 600; line-height: 1.3; }
+    .leaderboard-row { display: grid; grid-template-columns: 24px 1fr 70px 1fr 60px; gap: 10px; align-items: center; padding: 12px; border-top: 1px solid var(--ink-100); font-size: 13px; }
+    .leaderboard-row:first-child { border-top: none; }
+    .leaderboard-row.me { background: var(--lemon-50); }
+    .lb-rank { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--ink-100); font-size: 11px; font-weight: 800; color: var(--ink-700); }
+    .leaderboard-row:nth-child(1) .lb-rank { background: linear-gradient(180deg, var(--lemon-300), var(--lemon-500)); color: #6B4500; }
+    .leaderboard-row.me .lb-rank { background: var(--lemon-500); color: white; }
+    .lb-name { font-weight: 700; }
+    .leaderboard-row.me .lb-name { color: var(--lemon-700); }
+    .lb-stat { font-size: 11px; color: var(--ink-500); font-weight: 600; }
+    .lb-bar-wrap { height: 8px; background: var(--ink-100); border-radius: 4px; overflow: hidden; }
+    .lb-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .lb-profit { text-align: end; font-size: 14px; }
+    .customer-feed { max-height: 280px; overflow-y: auto; padding: 4px; }
+    .customer-feed::-webkit-scrollbar { width: 4px; }
+    .customer-feed::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 4px; }
+    .customer-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--r-md); margin-bottom: 6px; background: var(--paper); border: 1px solid var(--ink-200); animation: slideIn 0.3s ease; }
+    .customer-row.buy { border-color: #BFE0BC; background: linear-gradient(180deg, #F5FBF5, #EAF6EA); }
+    .customer-row.no { border-color: #F2C7B5; background: linear-gradient(180deg, #FDF6F4, #FBE8E0); }
+    .customer-row.miss { border-color: #FBE3A8; background: linear-gradient(180deg, #FFFAEB, #FFF1C9); }
+    .customer-row.vip { border-color: #DCC8F0; background: linear-gradient(180deg, #F8F0FE, #EFE4FA); }
+    .cust-emoji { font-size: 22px; }
+    .cust-meta { display: flex; flex-direction: column; line-height: 1.2; }
+    .cust-name { font-size: 12px; font-weight: 700; }
+    .cust-quote { font-size: 11px; color: var(--ink-500); font-style: italic; }
+    .cust-status { font-size: 14px; font-weight: 800; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .kpi { background: var(--paper); border: 1px solid var(--ink-200); border-radius: var(--r-md); padding: 12px; box-shadow: var(--sh-1); text-align: center; }
+    .kpi-val { font-size: 24px; font-weight: 800; line-height: 1; font-feature-settings: 'tnum'; font-family: 'DM Mono', 'Heebo', monospace; }
+    .kpi-lbl { font-size: 11px; color: var(--ink-500); font-weight: 600; margin-top: 4px; }
+    .kpi-delta { font-size: 11px; font-weight: 700; margin-top: 4px; }
+    .sheet-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(42, 27, 14, 0.4); backdrop-filter: blur(8px); display: grid; place-items: end center; animation: fadeIn 0.2s ease; }
+    .sheet { width: 100%; max-width: 720px; background: var(--paper); border-radius: var(--r-xl) var(--r-xl) 0 0; padding: 16px; box-shadow: 0 -20px 60px rgba(0,0,0,0.2); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow-y: auto; }
+    .sheet-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--ink-200); margin: 0 auto 16px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .tabs { display: inline-flex; gap: 2px; padding: 4px; background: var(--ink-100); border-radius: var(--r-pill); }
+    .tab { padding: 8px 14px; border: none; background: transparent; cursor: pointer; border-radius: var(--r-pill); font: inherit; font-size: 12px; font-weight: 700; color: var(--ink-500); transition: all 0.18s; font-family: inherit; }
+    .tab.active { background: var(--paper); color: var(--ink-900); box-shadow: var(--sh-1); }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    .toggle-switch { width: 40px; height: 22px; border-radius: 12px; background: var(--ink-200); position: relative; transition: all 0.2s; }
+    .toggle-switch::after { content: ''; position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: all 0.2s; }
+    .toggle.on .toggle-switch { background: var(--leaf-500); }
+    .toggle.on .toggle-switch::after { right: calc(100% - 20px); }
+    .money-row { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 12px; border-bottom: 1px solid var(--ink-100); font-size: 13px; }
+    .money-row:last-child { border-bottom: none; }
+    .money-row.total { background: var(--lemon-50); border-radius: 0 0 var(--r-md) var(--r-md); border-bottom: none; font-weight: 800; font-size: 15px; }
+    .money-amt { font-weight: 700; font-feature-settings: 'tnum'; }
+    .money-amt.pos { color: var(--good); }
+    .money-amt.neg { color: var(--bad); }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 50% { transform: scale(1.03); } 100% { transform: scale(1); opacity: 1; } }
+    .pop { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger > * { opacity: 0; animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+    .stagger > *:nth-child(2) { animation-delay: 0.08s; }
+    .stagger > *:nth-child(3) { animation-delay: 0.12s; }
+    .stagger > *:nth-child(4) { animation-delay: 0.16s; }
+    .stagger > *:nth-child(5) { animation-delay: 0.20s; }
+    .stagger > *:nth-child(6) { animation-delay: 0.24s; }
+    .stagger > *:nth-child(7) { animation-delay: 0.28s; }
+    .stagger > *:nth-child(8) { animation-delay: 0.32s; }
+    .stagger > *:nth-child(9) { animation-delay: 0.36s; }
+    .stagger > *:nth-child(10) { animation-delay: 0.40s; }
+    .stagger > *:nth-child(11) { animation-delay: 0.44s; }
+    .stagger > *:nth-child(12) { animation-delay: 0.48s; }
+    .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .bento > .b-1 { grid-column: span 6; }
+    .bento > .b-2 { grid-column: span 3; }
+    .bento > .b-3 { grid-column: span 2; }
+    .bento > .b-4 { grid-column: span 4; }
+    .bento-card { background: linear-gradient(180deg, #FFFEF7, #FFF7DD); border: 1px solid var(--ink-200); border-radius: var(--r-md); padding: 14px; box-shadow: var(--sh-1), inset 0 1px 0 rgba(255,255,255,0.7); position: relative; overflow: hidden; }
+    .bento-card .bento-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-500); margin-bottom: 6px; }
+    .bento-card .bento-value { font-size: 24px; font-weight: 800; line-height: 1; font-feature-settings: 'tnum'; color: var(--ink-900); font-family: 'DM Mono', 'Heebo', monospace; }
+    .bento-card .bento-sub { font-size: 11px; color: var(--ink-500); margin-top: 4px; }
+    .bento-card.accent-lemon { background: linear-gradient(180deg, #FFFCF3, #FFE89A); border-color: #F5D470; }
+    .bento-card.accent-leaf { background: linear-gradient(180deg, #F4FAEF, #DEF1D5); border-color: #BFE0BC; }
+    .bento-card.accent-ice { background: linear-gradient(180deg, #F0F8FC, #D8ECF6); border-color: #BEE3F2; }
+    .bento-card.accent-rose { background: linear-gradient(180deg, #FDF6F4, #FBE2D8); border-color: #F2C7B5; }
+    .flex { display: flex; } .flex-col { display: flex; flex-direction: column; }
+    .gap-4 { gap: 4px; } .gap-6 { gap: 6px; } .gap-8 { gap: 8px; } .gap-10 { gap: 10px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; }
+    .mt-4 { margin-top: 4px; } .mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 4px; } .mb-8 { margin-bottom: 8px; } .mb-12 { margin-bottom: 12px; } .mb-16 { margin-bottom: 16px; }
+    .p-8 { padding: 8px; } .p-12 { padding: 12px; } .p-16 { padding: 16px; }
+    .text-center { text-align: center; }
+    .w-full { width: 100%; }
+    @media (min-width: 600px) { .screen { padding: 20px 24px; } h1 { font-size: 38px; } }
   </style>
 </head>
 <body>
@@ -51,6 +311,62 @@ try {
     console.log('Supabase lib not found', typeof sbLib, sbLib);
   }
 } catch(e) { console.log('Supabase init error:', e); }
+
+// ===== LUCIDE-STYLE ICONS =====
+const Icon = ({ children, size = 18, stroke = 1.8, color = 'currentColor', style = {} }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round"
+    style={{ display: 'inline-block', verticalAlign: 'middle', ...style }}>
+    {children}
+  </svg>
+);
+const I = {
+  Coin: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M9 9.5c0-1 .9-1.5 3-1.5s3 .5 3 1.5-.7 1.4-3 2-3 1-3 2 1 1.5 3 1.5 3-.5 3-1.5"/><path d="M12 6v2M12 16v2"/></Icon>,
+  Lemon: (p) => <Icon {...p}><ellipse cx="12" cy="13" rx="7" ry="8"/><path d="M9 5l3-2 3 2"/><path d="M12 3v2"/></Icon>,
+  Honey: (p) => <Icon {...p}><path d="M5 6h14l-2 14H7z"/><path d="M3 6h18"/><path d="M9 10c.7 1 .7 2 0 3M15 10c-.7 1-.7 2 0 3"/></Icon>,
+  Ice: (p) => <Icon {...p}><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></Icon>,
+  Star: (p) => <Icon {...p}><polygon points="12 2 15 9 22 9.3 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.3 9 9 12 2"/></Icon>,
+  Calendar: (p) => <Icon {...p}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></Icon>,
+  Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></Icon>,
+  Cloud: (p) => <Icon {...p}><path d="M6 16h12a3 3 0 0 0 0-6 5 5 0 0 0-9.6-1.4A3.5 3.5 0 0 0 6 16z"/></Icon>,
+  Rain: (p) => <Icon {...p}><path d="M6 14h12a3 3 0 0 0 0-6 5 5 0 0 0-9.6-1.4A3.5 3.5 0 0 0 6 14z"/><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/></Icon>,
+  Trend: (p) => <Icon {...p}><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></Icon>,
+  TrendDn: (p) => <Icon {...p}><polyline points="3 7 9 13 13 9 21 17"/><polyline points="14 17 21 17 21 10"/></Icon>,
+  Chart: (p) => <Icon {...p}><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="6"/><rect x="12" y="9" width="3" height="10"/><rect x="17" y="5" width="3" height="14"/></Icon>,
+  Shop: (p) => <Icon {...p}><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9v11h18V9"/><path d="M3 9c0 1.5 1 3 3 3s3-1.5 3-3c0 1.5 1 3 3 3s3-1.5 3-3c0 1.5 1 3 3 3s3-1.5 3-3"/></Icon>,
+  Cup: (p) => <Icon {...p}><path d="M6 6h12l-1.5 14h-9z"/><path d="M5 6h14"/><path d="M9 10v6M15 10v6"/></Icon>,
+  Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
+  Minus: (p) => <Icon {...p}><path d="M5 12h14"/></Icon>,
+  Check: (p) => <Icon {...p}><polyline points="4 12 10 18 20 6"/></Icon>,
+  Arrow: (p) => <Icon {...p}><path d="M5 12h14M13 6l6 6-6 6"/></Icon>,
+  ArrowL: (p) => <Icon {...p}><path d="M19 12H5M11 6l-6 6 6 6"/></Icon>,
+  ArrowDn: (p) => <Icon {...p}><path d="M12 5v14M6 13l6 6 6-6"/></Icon>,
+  ArrowUp: (p) => <Icon {...p}><path d="M12 19V5M6 11l6-6 6 6"/></Icon>,
+  Equals: (p) => <Icon {...p}><path d="M5 9h14M5 15h14"/></Icon>,
+  Settings: (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1A1.7 1.7 0 0 0 20.9 10H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></Icon>,
+  Trophy: (p) => <Icon {...p}><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></Icon>,
+  Medal: (p) => <Icon {...p}><circle cx="12" cy="14" r="6"/><path d="M8 6L6 2h12l-2 4M10 14l2 2 4-4"/></Icon>,
+  Book: (p) => <Icon {...p}><path d="M4 4h13a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h13"/></Icon>,
+  User: (p) => <Icon {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></Icon>,
+  Users: (p) => <Icon {...p}><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 11a4 4 0 0 0 0-8M22 21a7 7 0 0 0-5-6.7"/></Icon>,
+  Eye: (p) => <Icon {...p}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></Icon>,
+  Shield: (p) => <Icon {...p}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></Icon>,
+  Megaphone: (p) => <Icon {...p}><path d="M3 11v2a2 2 0 0 0 2 2h2l4 5V4L7 9H5a2 2 0 0 0-2 2z"/><path d="M14 7c2 1.5 2 8.5 0 10"/><path d="M17 5c3 2 3 12 0 14"/></Icon>,
+  Spy: (p) => <Icon {...p}><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/><path d="M11 14h2"/><path d="M3 11l3-5h12l3 5"/></Icon>,
+  Sparkle: (p) => <Icon {...p}><path d="M12 3l1.5 5L19 9.5 13.5 11 12 16l-1.5-5L5 9.5 10.5 8z"/></Icon>,
+  Home: (p) => <Icon {...p}><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></Icon>,
+  Pin: (p) => <Icon {...p}><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="3"/></Icon>,
+  Play: (p) => <Icon {...p}><polygon points="6 4 20 12 6 20"/></Icon>,
+  Forward: (p) => <Icon {...p}><polygon points="4 4 14 12 4 20"/><polygon points="12 4 22 12 12 20"/></Icon>,
+  Lock: (p) => <Icon {...p}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></Icon>,
+  Bank: (p) => <Icon {...p}><path d="M3 9l9-6 9 6"/><path d="M5 9v10h14V9"/><path d="M3 21h18"/><path d="M8 12v5M12 12v5M16 12v5"/></Icon>,
+  Volume: (p) => <Icon {...p}><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M16 8a5 5 0 0 1 0 8"/></Icon>,
+  Target: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></Icon>,
+  Info: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v6"/></Icon>,
+  Close: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
+  Save: (p) => <Icon {...p}><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 14h8v7H8z"/></Icon>,
+  Logout: (p) => <Icon {...p}><path d="M9 21H5V3h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></Icon>,
+};
 
 // ===== ACHIEVEMENTS =====
 const ACH_LS_KEY = 'lem-achievements';
@@ -510,113 +826,270 @@ const wBuy=(sc,pr,rep,ct,rand,db=0)=>{
  return rand()<prob;
 };
 const cCost=(l,h,ic,p)=>l*p.lemon+h*p.honey+ic*p.ice;
-const C={bg:"#FFF8E7",cd:"rgba(255,255,255,.85)",bd:"rgba(232,213,176,.5)",lm:"#FFD700",lD:"#D4A017",hn:"#D4920B",ic:"#87CEEB",iD:"#5BA3C9",
- gn:"#43A047",rd:"#E53935",tx:"#3E2723",tL:"#6D4C41",tM:"#9E8E80",ac:"#FF6F00",pu:"#7B1FA2"};
-const Btn=({children,onClick,color=C.gn,disabled,small,style={}})=>(
- <button onClick={onClick} disabled={disabled} className={disabled?"":"btn-press"} style={{padding:small?"7px 14px":"12px 26px",borderRadius:14,border:"none",
-  cursor:disabled?"not-allowed":"pointer",
-  background:disabled?"#CCC":`linear-gradient(135deg,${color},${color}DD)`,
-  color:"#FFF",fontWeight:700,letterSpacing:0.3,
-  fontSize:small?12:15,opacity:disabled?0.5:1,
-  boxShadow:disabled?"none":`0 4px 14px ${color}40`,
-  fontFamily:"inherit",transition:"transform .2s ease, box-shadow .2s ease, opacity .2s ease",transform:"scale(1)",...style}}
-  onMouseEnter={e=>{if(!disabled){e.currentTarget.style.transform="scale(1.03)";e.currentTarget.style.boxShadow=`0 6px 20px ${color}55`;}}}
-  onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow=disabled?"none":`0 4px 14px ${color}40`;}}>
-  {children}</button>);
-const Card=({children,style={}})=>(<div className="card-hover" style={{background:C.cd,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderRadius:16,padding:16,border:`1px solid ${C.bd}`,boxShadow:"0 4px 20px rgba(0,0,0,.06)",marginBottom:12,...style}}>{children}</div>);
-// Smooth count-up hook: returns a display value that animates toward `target`
-const useCountUp = (target, duration=600) => {
-  const [display, setDisplay] = useState(target);
-  const fromRef = useRef(target);
+const C={bg:"#FFFCF3",cd:"linear-gradient(180deg,#FFFEF7 0%,#FFFCF1 100%)",bd:"#E8DCC2",lm:"#F5B400",lD:"#D89400",hn:"#E0840F",ic:"#5EB6D8",iD:"#2B7B9E",
+ gn:"#2D8C4E",rd:"#C24A2A",tx:"#2A1B0E",tL:"#4A3621",tM:"#7A6448",ac:"#E0840F",pu:"#7E4CB8"};
+
+// CountUp: smooth number tween
+const CountUp = ({ value, duration = 700, prefix = '', suffix = '', decimals = 0, className = '', style }) => {
+  const [display, setDisplay] = useState(Number(value) || 0);
+  const fromRef = useRef(Number(value) || 0);
+  const firstRef = useRef(true);
   useEffect(() => {
-    const from = fromRef.current;
-    const to = target;
-    if (from === to) return;
+    const target = Number(value) || 0;
+    if (firstRef.current) { firstRef.current = false; fromRef.current = target; setDisplay(target); return; }
+    const from = fromRef.current; fromRef.current = target;
     const start = performance.now();
     let raf;
     const tick = (now) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - t, 3);
-      setDisplay(from + (to - from) * eased);
+      setDisplay(from + (target - from) * eased);
       if (t < 1) raf = requestAnimationFrame(tick);
-      else fromRef.current = to;
+      else setDisplay(target);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return display;
+  }, [value, duration]);
+  const shown = decimals > 0 ? display.toFixed(decimals) : Math.round(display);
+  return <span className={"num "+className} style={style}>{prefix}{shown}{suffix}</span>;
 };
 
-const SBar=({cash,lemons,honey,ice,rep,day,loan,onDash,onSave,saveMsg,userName,onLogout})=>{
- const cashColor=cash>=0?"#43A047":"#E53935";const repColor=rep>=65?"#43A047":rep<=35?"#E53935":"#3E2723";
- const hasLoan=loan>0;
- const displayCash = useCountUp(cash, 700);
- const [cashFlash, setCashFlash] = useState(null); // 'up' | 'down' | null
- const [repFlash, setRepFlash] = useState(false);
- const [floatTxt, setFloatTxt] = useState(null); // {txt, color, id}
- const prevCashRef = useRef(cash);
- const prevRepRef = useRef(rep);
- useEffect(() => {
-   const d = cash - prevCashRef.current;
-   if (Math.abs(d) >= 1) {
-     setCashFlash(d > 0 ? 'up' : 'down');
-     setFloatTxt({txt: (d>0?'+':'')+'₪'+d.toFixed(0), color: d>0?'#43A047':'#E53935', id: Date.now()});
-     const t1 = setTimeout(() => setCashFlash(null), 700);
-     const t2 = setTimeout(() => setFloatTxt(null), 1200);
-     prevCashRef.current = cash;
-     return () => { clearTimeout(t1); clearTimeout(t2); };
-   }
-   prevCashRef.current = cash;
- }, [cash]);
- useEffect(() => {
-   if (rep !== prevRepRef.current) {
-     setRepFlash(true);
-     const t = setTimeout(() => setRepFlash(false), 600);
-     prevRepRef.current = rep;
-     return () => clearTimeout(t);
-   }
- }, [rep]);
- return(<div style={{position:"sticky",top:0,zIndex:20,
-  background:"rgba(255,253,231,.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-  borderRadius:"0 0 16px 16px",padding:"8px 14px",marginBottom:10,
-  boxShadow:"0 4px 20px rgba(0,0,0,.08)",border:"1px solid rgba(232,213,176,.4)"}}>
-  {userName&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,paddingBottom:4,borderBottom:"1px solid rgba(232,213,176,.3)"}}>
-   <div style={{display:"flex",alignItems:"center",gap:6}}>
-    <div style={{width:20,height:20,borderRadius:"50%",background:"linear-gradient(135deg,#FFD54F,#FF6F00)",
-      display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#FFF",fontWeight:800}}>
-      {userName.charAt(0).toUpperCase()}</div>
-    <span style={{fontSize:11,fontWeight:600,color:"#6D4C41"}}>{userName}</span>
-   </div>
-   <div style={{display:"flex",gap:4,alignItems:"center"}}>
-    {saveMsg&&<span style={{fontSize:10,color:saveMsg==='saved'?"#43A047":"#9E8E80",fontWeight:600,animation:saveMsg==='saving'?"pulse 1s infinite":"none"}}>
-      {saveMsg==='saving'?'💾...':saveMsg==='saved'?'✅ נשמר':'❌'}</span>}
-    {onSave&&<button onClick={onSave} className="btn-press" style={{background:"linear-gradient(135deg,#1976D2,#1565C0)",color:"#FFF",border:"none",borderRadius:6,
-     padding:"2px 8px",fontSize:10,fontWeight:700,cursor:"pointer",transition:"transform .2s"}}
-     onMouseEnter={e=>e.currentTarget.style.transform="scale(1.05)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>💾</button>}
-    <button onClick={onLogout} style={{background:"none",border:"none",color:"#9E8E80",fontSize:10,
-      cursor:"pointer",fontFamily:"inherit"}}>יציאה</button>
-   </div>
-  </div>}
-  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-   <div style={{display:"flex",gap:10,alignItems:"center",fontSize:13}}>
-    <span style={{position:"relative",display:"inline-block"}}>
-     <span style={{fontWeight:800,color:cashColor,background:cash>=0?"rgba(67,160,71,.08)":"rgba(229,57,53,.08)",padding:"2px 8px",borderRadius:8,display:"inline-block",
-      animation:cashFlash==='up'?"cashPulse .7s ease":cashFlash==='down'?"cashDrop .7s ease":"none"}}>{"💰₪"+displayCash.toFixed(0)}</span>
-     {floatTxt&&<span key={floatTxt.id} style={{position:"absolute",left:"50%",top:-4,fontSize:13,fontWeight:800,color:floatTxt.color,
-       animation:"floatUp 1.2s ease-out forwards",pointerEvents:"none",whiteSpace:"nowrap",textShadow:"0 1px 2px rgba(0,0,0,.2)"}}>{floatTxt.txt}</span>}
-    </span>
-    <span style={{color:"#D4A017"}}>{"🍋"+lemons}</span>
-    <span style={{color:"#D4920B"}}>{"🍯"+honey}</span>
-    <span style={{color:"#5BA3C9"}}>{"🧊"+ice}</span></div>
-   <div style={{display:"flex",gap:8,alignItems:"center",fontSize:12}}>
-    <span style={{fontWeight:700,color:repColor,display:"inline-block",animation:repFlash?"repPulse .6s ease":"none"}}>{"⭐"+rep}</span>
-    {hasLoan&&<span style={{color:"#E53935",fontSize:10,padding:"2px 6px",borderRadius:6,animation:"loanGlow 2s ease-in-out infinite"}}>{"🏦₪"+loan.toFixed(0)}</span>}
-    <span style={{color:"#9E8E80",fontWeight:500}}>{"יום "+day+"/10"}</span>
-    {onDash&&<button onClick={onDash} className="btn-press" style={{background:"linear-gradient(135deg,#FF6F00,#F57C00)",color:"#FFF",border:"none",borderRadius:8,
-     padding:"4px 10px",fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:"0 2px 8px rgba(255,111,0,.3)",transition:"transform .2s"}}
-     onMouseEnter={e=>e.currentTarget.style.transform="scale(1.05)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>📊</button>}
-   </div>
-  </div></div>);};
+// Legacy Btn (still used some places) — now styled via .btn classes
+const Btn = ({children, onClick, color, disabled, small, style={}, variant}) => {
+  const cls = variant ? `btn btn-${variant}` :
+    color === C.gn || !color ? 'btn btn-primary' :
+    color === C.ac || color === '#FF6F00' || color === C.lm ? 'btn btn-warm' :
+    color === C.rd ? 'btn btn-danger' : 'btn btn-ghost';
+  return <button onClick={onClick} disabled={disabled} className={cls + (small?' btn-sm':'')} style={style}>{children}</button>;
+};
+
+const Card = ({children, style={}, className=''}) => (
+  <div className={"card "+className} style={{padding:16, marginBottom:12, ...style}}>{children}</div>
+);
+
+// Choice tile
+const Choice = ({active, onClick, emoji, icon, title, sub, disabled}) => (
+  <button className={"choice "+(active?'active':'')} onClick={onClick} disabled={disabled}
+    style={{cursor:disabled?'not-allowed':'pointer', opacity:disabled?0.5:1}}>
+    {emoji && <span className="ch-emoji">{emoji}</span>}
+    {icon && !emoji && <span className="ch-emoji">{icon}</span>}
+    <span className="ch-title">{title}</span>
+    {sub && <span className="ch-sub">{sub}</span>}
+  </button>
+);
+
+// Stepper
+const Stepper = ({value, onChange, min=0, max=99, step=1, color, fast}) => (
+  <div className={"stepper "+(fast?'fast':'')}>
+    {fast && <button className="fast-btn" onClick={()=>onChange(Math.max(min, value-5))} disabled={value<=min}>−5</button>}
+    <button onClick={()=>onChange(Math.max(min, value-step))} disabled={value<=min}><I.Minus size={14}/></button>
+    <span className="val num">{value}</span>
+    <button onClick={()=>onChange(Math.min(max, value+step))} disabled={value>=max}><I.Plus size={14}/></button>
+    {fast && <button className="fast-btn" onClick={()=>onChange(Math.min(max, value+5))} disabled={value>=max}>+5</button>}
+  </div>
+);
+
+// Toggle
+const Toggle = ({on, onChange, label}) => (
+  <div className={"toggle "+(on?'on':'')} onClick={()=>onChange(!on)}>
+    <span className="toggle-switch"></span>
+    {label && <span style={{fontSize:13, fontWeight:600}}>{label}</span>}
+  </div>
+);
+
+// Section header
+const SectionHeader = ({title, aside, icon}) => (
+  <div className="section-h">
+    <div style={{display:'flex', alignItems:'center', gap:8}}>
+      {icon}<span className="section-title">{title}</span>
+    </div>
+    {aside && <span className="section-aside">{aside}</span>}
+  </div>
+);
+
+// Lemon hero logo (SVG)
+const LemonHero = () => (
+  <div className="lemon-hero">
+    <div className="glow"></div>
+    <svg viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="lemGrad" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="#FFF6BA"/>
+          <stop offset="50%" stopColor="#FFD954"/>
+          <stop offset="100%" stopColor="#D89400"/>
+        </radialGradient>
+        <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#9DD16A"/>
+          <stop offset="100%" stopColor="#3E8628"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="100" cy="115" rx="70" ry="78" fill="url(#lemGrad)"/>
+      <ellipse cx="78" cy="85" rx="20" ry="28" fill="rgba(255,255,255,0.5)"/>
+      <ellipse cx="100" cy="190" rx="8" ry="6" fill="#A87100" opacity="0.4"/>
+      <path d="M105 40 Q140 20 155 50 Q150 65 130 60 Q115 55 105 40 Z" fill="url(#leafGrad)"/>
+      <path d="M125 48 Q140 45 150 55" stroke="rgba(255,255,255,0.4)" strokeWidth="2" fill="none"/>
+      <path d="M100 40 Q102 30 108 28" stroke="#5A4525" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </svg>
+  </div>
+);
+
+// Quality meter (cup quality bar)
+const QualityMeter = ({score, segments=10}) => {
+  const filled = Math.round((score / 100) * segments);
+  return <div className="quality-meter">
+    {Array.from({length:segments}).map((_,i)=><span key={i} className={i<filled?'on':''}></span>)}
+  </div>;
+};
+
+// Cup vessel SVG with layered ingredients
+const CupVessel = ({lemon=0, honey=0, ice=0, max=6}) => {
+  const water = Math.max(0, max - lemon - honey - ice);
+  const layers = [
+    {n: water, fill: 'url(#wGrad)'},
+    {n: ice,   fill: 'url(#iGrad)'},
+    {n: honey, fill: 'url(#hGrad)'},
+    {n: lemon, fill: 'url(#lGrad)'},
+  ];
+  let cum = 0;
+  return <svg viewBox="0 0 120 170" className="cup-vessel" style={{width:110, height:160, display:'block', margin:'0 auto', filter:'drop-shadow(0 12px 16px rgba(0,0,0,0.12))'}}>
+    <defs>
+      <linearGradient id="lGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFE680"/><stop offset="100%" stopColor="#F5B400"/></linearGradient>
+      <linearGradient id="hGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFCC80"/><stop offset="100%" stopColor="#E0840F"/></linearGradient>
+      <linearGradient id="iGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#D0EAF5"/><stop offset="100%" stopColor="#7BBFD9"/></linearGradient>
+      <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#EAF3FB"/><stop offset="100%" stopColor="#CFE3F0"/></linearGradient>
+      <clipPath id="cupClip"><path d="M22 35 L98 35 L92 155 L28 155 Z"/></clipPath>
+    </defs>
+    <path d="M22 35 L98 35 L92 155 L28 155 Z" fill="rgba(255,255,255,0.4)" stroke="#A18B6E" strokeWidth="2"/>
+    <g clipPath="url(#cupClip)">
+      {layers.map((la,i) => {
+        if (la.n <= 0) return null;
+        const totalH = 120, layerH = (la.n/max)*totalH, y = 155 - cum - layerH;
+        cum += layerH;
+        return <rect key={i} x="22" y={y} width="76" height={layerH} fill={la.fill} style={{transition:'all .5s cubic-bezier(.4,0,.2,1)'}}/>;
+      })}
+    </g>
+    <ellipse cx="60" cy="35" rx="38" ry="5" fill="#FFFFFF" opacity="0.6"/>
+    <ellipse cx="60" cy="35" rx="38" ry="5" fill="none" stroke="#A18B6E" strokeWidth="1.5"/>
+    <path d="M30 50 L34 140" stroke="rgba(255,255,255,0.6)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    <rect x="65" y="20" width="6" height="40" fill="#E55050" rx="2" transform="rotate(8 68 40)"/>
+  </svg>;
+};
+
+// Sparkline (small trend chart)
+const Sparkline = ({values, color='var(--lemon-500)', height=32, width=100}) => {
+  if (!values || values.length < 2) return null;
+  const min = Math.min(...values), max = Math.max(...values), range = max - min || 0.01;
+  const pad = 2;
+  const points = values.map((v,i) => {
+    const x = pad + (i*(width-2*pad))/(values.length-1);
+    const y = height - pad - (((v-min)/range)*(height-2*pad));
+    return x+","+y;
+  }).join(' ');
+  return <svg viewBox={"0 0 "+width+" "+height} style={{width:'100%', height}}>
+    <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+    {values.map((v,i) => {
+      const x = pad + (i*(width-2*pad))/(values.length-1);
+      const y = height - pad - (((v-min)/range)*(height-2*pad));
+      return <circle key={i} cx={x} cy={y} r={i===values.length-1?2.5:1.2} fill={color} opacity={i===values.length-1?1:0.5}/>;
+    })}
+  </svg>;
+};
+
+// Sheet (modal that slides up from bottom)
+const Sheet = ({open, onClose, children, title}) => {
+  if (!open) return null;
+  return <div className="sheet-backdrop" onClick={onClose}>
+    <div className="sheet" onClick={e=>e.stopPropagation()}>
+      <div className="sheet-handle"></div>
+      {title && <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12}}>
+        <h2>{title}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:8}}><I.Close size={16}/></button>
+      </div>}
+      {children}
+    </div>
+  </div>;
+};
+
+// BottomBar — sticky steps + CTA
+const BottomBar = ({steps, activeStep, cta, onCta, ctaDisabled, secondary, onSecondary, ctaVariant='primary'}) => (
+  <div className="bottombar">
+    <div className="bottombar-inner">
+      {steps && steps.length > 0 && <div className="steps">
+        {steps.map((s,i) => <div key={i} className={"step "+(i===activeStep?'active':i<activeStep?'done':'')}>
+          <span className="dot"></span><span>{s}</span>
+        </div>)}
+      </div>}
+      <div style={{display:'flex', gap:8}}>
+        {secondary && <button className="btn btn-ghost" onClick={onSecondary} style={{flex:'0 0 auto'}}>{secondary}</button>}
+        {cta && <button className={"btn btn-"+ctaVariant+" btn-lg btn-block"} onClick={onCta} disabled={ctaDisabled} style={{flex:1}}>
+          {cta}<I.Arrow size={16}/>
+        </button>}
+      </div>
+    </div>
+  </div>
+);
+// SBar (TopBar) — two-tier design
+const PHASE_LABELS = {
+  title:'', setup:'הגדרות', eveIntel:'בריפינג ערב', evening:'שוק חומרי גלם',
+  morning:'בוקר', sim:'סימולציה חיה', summary:'דוח יום', gameover:'סוף משחק', initEve:''
+};
+const SBar = ({cash, lemons, honey, ice, rep, day, loan, onDash, onSave, saveMsg, userName, onLogout, phase}) => {
+  const phaseLabel = PHASE_LABELS[phase] || '';
+  return <div className="topbar">
+    <div className="topbar-row1">
+      <div className="brand">
+        <div className="brand-mark">🍋</div>
+        <div className="brand-meta">
+          <span className="brand-name">דוכן הלימונדה</span>
+          <span className="brand-day">{phaseLabel}</span>
+        </div>
+      </div>
+      <div style={{display:'flex', gap:6, alignItems:'center'}}>
+        {userName && <div style={{display:'flex', alignItems:'center', gap:6, padding:'4px 10px', background:'var(--paper)', borderRadius:'var(--r-pill)', border:'1px solid var(--ink-200)', fontSize:11, fontWeight:700}}>
+          <div style={{width:18, height:18, borderRadius:'50%', background:'linear-gradient(135deg,#FFD54F,#F5B400)', display:'grid', placeItems:'center', fontSize:9, color:'#FFF', fontWeight:800}}>{userName.charAt(0).toUpperCase()}</div>
+          <span>{userName}</span>
+          {onLogout && <button onClick={onLogout} style={{background:'none', border:'none', color:'var(--ink-500)', fontSize:11, cursor:'pointer', padding:0, fontFamily:'inherit'}}><I.Logout size={12}/></button>}
+        </div>}
+        {onSave && <button onClick={onSave} className="btn btn-ghost btn-xs" title="שמור"><I.Save size={12}/></button>}
+        {saveMsg && <span className="pill" style={{fontSize:10, padding:'2px 8px'}}>{saveMsg==='saving'?'שומר…':saveMsg==='saved'?'✓':'✗'}</span>}
+        {day > 0 && <div className="day-pill"><span className="dot"></span>יום {day}<span className="muted">/10</span></div>}
+      </div>
+    </div>
+    {day > 0 && <div className="topbar-row2">
+      <div className={"stat cash"+(cash<0?' neg':'')}>
+        <I.Coin size={14} color={cash<0?'var(--bad)':'var(--leaf-600)'}/>
+        <span className="stat-val num">₪<CountUp value={Math.round(cash)}/></span>
+        <span className="stat-lbl">מזומן</span>
+      </div>
+      <div className="stat">
+        <I.Lemon size={14} color="var(--lemon-600)"/>
+        <span className="stat-val num">{lemons}</span>
+        <span className="stat-lbl">לימונים</span>
+      </div>
+      <div className="stat">
+        <I.Honey size={14} color="var(--honey-500)"/>
+        <span className="stat-val num">{honey}</span>
+        <span className="stat-lbl">דבש</span>
+      </div>
+      <div className="stat">
+        <I.Ice size={14} color="var(--ice-500)"/>
+        <span className="stat-val num">{ice}</span>
+        <span className="stat-lbl">קרח</span>
+      </div>
+      <div className="stat rep">
+        <I.Star size={14} color="var(--lemon-600)"/>
+        <span className="stat-val num">{rep}</span>
+        <span className="stat-lbl">מוניטין</span>
+      </div>
+    </div>}
+    {loan > 0 && day > 0 && <div style={{display:'flex', justifyContent:'flex-end', marginTop:6}}>
+      <span className="pill rose" style={{fontSize:10}}><I.Bank size={11}/> חוב ₪{loan.toFixed(0)} (8%/יום)</span>
+    </div>}
+    {onDash && day > 0 && <div style={{display:'flex', justifyContent:'flex-end', marginTop:6}}>
+      <button onClick={onDash} className="btn btn-soft btn-xs"><I.Chart size={12}/> דשבורד</button>
+    </div>}
+  </div>;
+};
 const PrCh=({prices,color,emoji})=>{if(!prices||prices.length<2)return null;
  const mn=Math.min(...prices),mx=Math.max(...prices),rg=mx-mn||0.01,last=prices[prices.length-1],prev=prices[prices.length-2];
  const dir=last>prev?"📈":last<prev?"📉":"➡️",pct=prev>0?Math.round((last-prev)/prev*100):0;
@@ -846,6 +1319,7 @@ function LemonadeGame(){
  const [tOn,setTOn]=useState(false),[tSt,setTSt]=useState(0),[shT,setShT]=useState(false),[cIL,setCIL]=useState(0);
  const [actionsToday,setActionsToday]=useState([]);
  const [showDash,setShowDash]=useState(false);
+ const [morningTab,setMorningTab]=useState('recipe');
  const [dayLog,setDayLog]=useState([]);
  const [npcActions,setNpcActions]=useState([]);
  const [pendSum,setPendSum]=useState(null);
@@ -1250,695 +1724,903 @@ function LemonadeGame(){
     .card-hover:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,.12)!important}
     .phase-enter{animation:phaseFade .35s ease-out both}`}</style>
    {}
-   {ph==="title"&&<div key="title" className="phase-enter" style={{textAlign:"center",paddingTop:20}}>
-    {/* Auth bar */}
-    <div style={{display:"flex",justifyContent:"flex-start",alignItems:"center",marginBottom:16,gap:8}}>
-     {authUser ? (
-       <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,.7)",
-         backdropFilter:"blur(8px)",borderRadius:12,padding:"6px 14px",border:"1px solid rgba(232,213,176,.4)"}}>
-         <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FFD54F,#FF6F00)",
-           display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#FFF",fontWeight:800}}>
-           {authName.charAt(0).toUpperCase()}</div>
-         <span style={{fontSize:13,fontWeight:600,color:C.tx}}>{authName}</span>
-         <button onClick={handleLogout} style={{background:"none",border:"none",color:C.tM,fontSize:11,
-           cursor:"pointer",fontFamily:"inherit"}}>יציאה</button>
-       </div>
-     ) : (
-       <button onClick={()=>setShowAuth(true)} style={{background:"rgba(255,255,255,.7)",backdropFilter:"blur(8px)",
-         border:"1px solid rgba(232,213,176,.4)",borderRadius:12,padding:"6px 14px",fontSize:13,fontWeight:600,
-         cursor:"pointer",fontFamily:"inherit",color:C.tx,display:"flex",alignItems:"center",gap:6}}>
-         👤 התחבר</button>
-     )}
+   {ph==="title"&&<div key="title" className="screen phase-enter" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
+    <div style={{display:'flex', justifyContent:'flex-end', marginBottom:8}}>
+      {authUser ? (
+        <div style={{display:'flex', alignItems:'center', gap:8, padding:'5px 12px', background:'var(--paper)', borderRadius:'var(--r-pill)', border:'1px solid var(--ink-200)', fontSize:12, fontWeight:700, boxShadow:'var(--sh-1)'}}>
+          <div style={{width:22, height:22, borderRadius:'50%', background:'linear-gradient(135deg,#FFD54F,#F5B400)', display:'grid', placeItems:'center', fontSize:10, color:'#FFF', fontWeight:800}}>{authName.charAt(0).toUpperCase()}</div>
+          <span>{authName}</span>
+          <button onClick={handleLogout} className="btn btn-ghost btn-xs" style={{padding:'2px 6px'}}><I.Logout size={11}/></button>
+        </div>
+      ) : (
+        <button className="btn btn-ghost btn-sm" onClick={()=>setShowAuth(true)}><I.User size={14}/> התחבר</button>
+      )}
     </div>
-
-    {/* Hero */}
-    <div style={{position:"relative",marginBottom:24}}>
-      <div style={{fontSize:72,animation:"float 4s ease-in-out infinite",filter:"drop-shadow(0 8px 16px rgba(255,215,0,.3))"}}>🍋</div>
-      <h1 style={{fontSize:32,fontWeight:900,margin:"8px 0 4px",color:"#3E2723",
-        letterSpacing:-0.5}}>דוכן הלימונדה</h1>
-      <p style={{color:C.tL,fontSize:15,margin:0,fontWeight:400}}>משחק אסטרטגיה כלכלי • 10 ימים</p>
-      <div style={{margin:"12px auto",width:60,height:3,borderRadius:2,
-        background:"linear-gradient(90deg,transparent,#FFD700,transparent)"}} />
-    </div>
-
-    {/* Action buttons */}
-    <div style={{display:"flex",flexDirection:"column",gap:10,alignItems:"center",marginBottom:20}}>
-     {hasSavedGame && authUser && <Btn onClick={async()=>{const ok=await loadGame();if(!ok)alert('שגיאה בטעינה');}}
-       color="#1976D2" style={{width:260,fontSize:17,padding:"16px 28px",
-         boxShadow:"0 6px 20px rgba(25,118,210,.3)"}}>▶️ המשך משחק שמור</Btn>}
-     <Btn onClick={()=>{setTOn(true);setTSt(0);setShT(true);setPh("setup");}} color={C.ac}
-       style={{width:240,fontSize:16,padding:"14px 28px"}}>🎓 עם הדרכה</Btn>
-     <Btn onClick={()=>{setTOn(false);setShT(false);setPh("setup");}} color={C.gn}
-       style={{width:240,fontSize:16,padding:"14px 28px"}}>🚀 התחל משחק</Btn>
-     <button onClick={()=>setShowLB(true)} style={{width:240,padding:"12px 28px",borderRadius:14,
-       border:"2px solid #FFD700",background:"rgba(255,255,255,.6)",backdropFilter:"blur(8px)",
-       cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit",color:"#D4A017",
-       boxShadow:"0 4px 14px rgba(255,215,0,.15)",transition:"all .2s"}}
-       onMouseEnter={e=>{e.target.style.background="rgba(255,215,0,.15)";e.target.style.transform="scale(1.03)";}}
-       onMouseLeave={e=>{e.target.style.background="rgba(255,255,255,.6)";e.target.style.transform="scale(1)";}}>
-       🏆 טבלת שיאים</button>
-     <button onClick={()=>setShowAch(true)} style={{width:240,padding:"12px 28px",borderRadius:14,
-       border:"2px solid #FF6F00",background:"rgba(255,255,255,.6)",backdropFilter:"blur(8px)",
-       cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit",color:"#FF6F00",
-       boxShadow:"0 4px 14px rgba(255,111,0,.15)",transition:"all .2s",
-       display:"flex",alignItems:"center",justifyContent:"center",gap:6}}
-       onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,111,0,.15)";e.currentTarget.style.transform="scale(1.03)";}}
-       onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.6)";e.currentTarget.style.transform="scale(1)";}}>
-       🏅 הישגים <span style={{fontSize:12,opacity:0.75}}>({unlockedAch.length}/{ACHIEVEMENTS.length})</span></button>
-     {!authUser && <p style={{fontSize:11,color:C.tM,margin:0}}>התחבר כדי לשמור תוצאות ולהתחרות!</p>}
-    </div>
-
-    {/* Local high scores */}
-    {hasHi&&<Card style={{textAlign:"right",background:"rgba(255,255,255,.6)"}}>
-      <div style={{fontWeight:800,marginBottom:6,fontSize:14}}>🏆 השיאים שלך</div>
-     {hi.slice(0,5).map((h,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",
-       borderBottom:"1px solid rgba(0,0,0,.05)",fontSize:13,alignItems:"center"}}>
-      <span style={{letterSpacing:2}}>{"⭐".repeat(h.stars)+"☆".repeat(5-h.stars)}</span>
-      <span style={{fontWeight:700,color:h.sc>=0?C.gn:C.rd,fontSize:15}}>{"₪"+h.sc}</span></div>)}</Card>}
-
-    {/* Auth & Leaderboard modals */}
-    {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase} />}
-    {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName} />}
-   </div>}
-   {}
-   {ph==="setup"&&<div key="setup" className="phase-enter" style={{paddingTop:16}}>
-    <h2 style={{textAlign:"center",fontSize:20,margin:"0 0 14px"}}>⚙️ הגדרות</h2>
-    <Card>
-     <div style={{fontWeight:700,marginBottom:6}}>מספר מתחרים</div>
-     <div style={{display:"flex",gap:6,marginBottom:8}}>{[0,1,2,3].map(n=><Btn key={n} onClick={()=>setCm(n)} color={cm===n?C.ac:C.tM} small style={{flex:1}}>{n===0?"ללא":n}</Btn>)}</div>
-     <div style={{fontWeight:700,marginBottom:6}}>רמת קושי</div>
-     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:12}}>
-      {[["easy","😊 קלה","יותר לקוחות, קל למכור"],["medium","😐 בינונית","כלכלה מאוזנת"],["hard","😈 קשה","פחות לקוחות, קשה למכור"]].map(([v,l,d])=>(
-       <div key={v} onClick={()=>setCl(v)} style={{cursor:"pointer",padding:"10px 6px",borderRadius:10,textAlign:"center",
-        background:cl===v?"linear-gradient(135deg,"+C.ac+",#F57C00)":"#F5F5F5",
-        color:cl===v?"#FFF":C.tx,border:"2px solid "+(cl===v?C.ac:"#E0E0E0")}}>
-        <div style={{fontSize:14,fontWeight:700}}>{l}</div><div style={{fontSize:9,opacity:0.8}}>{d}</div></div>))}
-     </div>
-     <div style={{display:"flex",gap:12,marginBottom:12}}>
-      <div onClick={()=>setGoalsOn(p=>!p)} style={{display:"flex",alignItems:"center",gap:8,flex:1,padding:"8px 10px",
-       background:goalsOn?"#E8F5E9":"#F5F5F5",borderRadius:8,cursor:"pointer",border:"1px solid "+(goalsOn?"#A5D6A7":"#E0E0E0")}}>
-       <div style={{width:36,height:20,borderRadius:10,background:goalsOn?"#4CAF50":"#CCC",position:"relative",transition:"background 0.2s"}}>
-        <div style={{width:16,height:16,borderRadius:8,background:"#FFF",position:"absolute",top:2,
-         left:goalsOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,.3)"}}/></div>
-       <div><div style={{fontSize:12,fontWeight:700}}>🎯 מטרות יומיות</div><div style={{fontSize:9,color:C.tL}}>אתגרים + בונוסים</div></div></div>
-      <div onClick={()=>setSfxOn(p=>!p)} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",
-       background:sfxOn?"#E3F2FD":"#F5F5F5",borderRadius:8,cursor:"pointer",border:"1px solid "+(sfxOn?"#90CAF9":"#E0E0E0")}}>
-       <div style={{width:28,height:16,borderRadius:8,background:sfxOn?"#1976D2":"#CCC",position:"relative",transition:"background 0.2s"}}>
-        <div style={{width:12,height:12,borderRadius:6,background:"#FFF",position:"absolute",top:2,
-         left:sfxOn?14:2,transition:"left 0.2s"}}/></div>
-       <div style={{fontSize:14}}>{sfxOn?"🔊":"🔇"}</div></div>
-     </div>
-     <Btn onClick={startG} color={C.gn} style={{width:"100%"}}>🍋 התחל!</Btn></Card>
-   </div>}
-   {}
-   {ph==="morning"&&dW&&<div key="morning" className="phase-enter">
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
-    <div style={{textAlign:"center",fontWeight:800,fontSize:17,marginBottom:6}}>{"☀️ בוקר יום "+dy+" | "+LOC[loc].n}</div>
-    {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return(
-     <div style={{fontSize:10,color:C.tL,textAlign:"center",marginBottom:6,padding:"4px 8px",background:"#F5F5F5",borderRadius:6}}>
-      {"📋 אתמול: "+(y.profit>=0?"✅":"❌")+" ₪"+y.profit.toFixed(0)+" רווח | "+y.sold+" כוסות | מוניטין "+y.rB+"→"+y.rA}</div>);})()}
-    {vipBonus&&<div style={{padding:"6px 10px",background:"linear-gradient(135deg,#FFF9C4,#FFF176)",borderRadius:8,marginBottom:6,
-     border:"1px solid #FFD600",fontSize:11,textAlign:"center",fontWeight:700}}>
-     📰 כתבה בעיתון מאתמול! מבקר האוכל המליץ עליך — ×1.3 לקוחות היום!</div>}
-    {goalsOn&&dayGoal&&<div style={{padding:"6px 10px",background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",borderRadius:8,marginBottom:6,
-     border:"1px solid #64B5F6",fontSize:11,textAlign:"center"}}>
-     {"🎯 מטרת היום: "+dayGoal.text}
-     <span style={{color:C.gn,fontWeight:700}}>{" (בונוס: "+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":"")+")"}</span></div>}
-    <Card>
-     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-      <span style={{fontSize:22}}>{dW.w.n.split(" ")[0]}</span>
-      <span style={{fontWeight:700,fontSize:15,color:isHeat?C.rd:isHot?"#E65100":isCold?C.iD:C.tx}}>{dW.temp+"°C"}</span>
-      <span style={{fontSize:11,color:C.tM}}>{dW.w.n.split(" ").slice(1).join(" ")}</span></div>
-     <div style={{fontSize:10,color:C.tL,padding:"3px 8px",background:"#F5F5F5",borderRadius:6}}>
-      {isHeat?"🔥 שרב — רוב האנשים בבית! מי שבחוץ מת מצמא. קרח קריטי!":
-       isHot?"🥵 חם — אנשים צמאים אבל חלק נשארים בבית. קרח חשוב!":
-       isWarm?"☀️ מושלם! — הרבה ביקוש ללימונדה קרה!":
-       dW.temp>=21?"😊 נעים — ביקוש סביר":
-       isCold?"🥶 קר — מעט מאוד ביקוש ללימונדה":
-       "🌡️ קריר — ביקוש נמוך"}
-      {dW.w.id.includes("Rain")?" | 🌧️ גשם — פחות אנשים ברחוב!":""}</div>
-     {hasIntel&&<div style={{padding:"4px 8px",borderRadius:8,background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",
-      fontSize:11,border:"1px solid #A5D6A7",marginTop:4}}>
-      <b>{"🔍 תחזית למחר (רמה "+iD.lv+"):"}</b>{" "+iD.w+", "+iD.temp+"°C"}
-      {iD.pT&&<span>{" | 🍋"+iD.pT.l+" 🍯"+iD.pT.h+" 🧊"+iD.pT.i}</span>}
-      {iD.evDetail&&<div style={{fontSize:10,marginTop:2,color:"#2E7D32"}}>{iD.evDetail}</div>}
-      {iD.evHint&&!iD.evDetail&&<div style={{fontSize:10,marginTop:2,color:C.ac}}>{iD.evHint}</div>}
-      <div style={{fontSize:9,color:C.tM,marginTop:2}}>{"⚠️ דיוק ~"+(iD.lv===1?"70%":iD.lv===2?"85%":"95%")+" — המידע לא בהכרח מדויק!"}</div></div>}
-    </Card>
-    {dE&&<div style={{borderRadius:14,overflow:"hidden",marginBottom:10,
-     background:dE.dm>1?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":dE.dm&&dE.dm<1?"linear-gradient(135deg,#FFEBEE,#FFCDD2)":"linear-gradient(135deg,#E3F2FD,#BBDEFB)",
-     border:"2px solid "+(dE.dm>1?"#66BB6A":dE.dm<1?"#EF9A9A":"#90CAF9"),
-     padding:"12px 14px",animation:"slideIn .5s ease"}}>
-     <div style={{display:"flex",alignItems:"center",gap:8}}>
-      <div style={{fontSize:32,animation:"pop .5s ease"}}>{dE.n.split(" ")[0]}</div>
-      <div style={{flex:1}}>
-       <div style={{fontSize:15,fontWeight:800}}>{dE.n.split(" ").slice(1).join(" ")}</div>
-       <div style={{fontSize:12,color:C.tL}}>{dE.d}</div>
+    <div style={{flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:'20px 0'}}>
+      <LemonHero/>
+      <h1 style={{marginTop:24, textAlign:'center', letterSpacing:'-0.03em'}}>דוכן הלימונדה</h1>
+      <p className="muted" style={{marginTop:8, fontSize:14, textAlign:'center'}}>
+        משחק אסטרטגיה כלכלי <span style={{color:'var(--lemon-600)'}}>•</span> 10 ימים
+      </p>
+      <div style={{display:'flex', gap:4, marginTop:12}}>
+        <span style={{width:32, height:3, background:'var(--lemon-500)', borderRadius:2}}></span>
+        <span style={{width:8, height:3, background:'var(--leaf-500)', borderRadius:2}}></span>
+        <span style={{width:4, height:3, background:'var(--ink-300)', borderRadius:2}}></span>
       </div>
-      <div style={{fontSize:11,fontWeight:800,padding:"3px 8px",borderRadius:6,
-       background:dE.dm>1?"#4CAF50":dE.dm<1?"#E53935":"#1976D2",color:"#FFF"}}>
-       {(dE.dm>1)?("+"+(Math.round((dE.dm-1)*100))+"%"):(dE.dm<1)?(Math.round((dE.dm-1)*100)+"%"):dE.fee?("₪"+dE.fee):dE.ll?"-30% לימונים":"מיוחד"}</div>
-     </div></div>}
-    {dE?.id==="insp"&&!iPd&&<Card style={{background:"#FFF3E0"}}>
-     <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>🏛️ פיקוח!</div>
-     <div style={{display:"flex",gap:6}}>
-      <Btn onClick={()=>{setCa(p=>p-8);setIPd(true);}} color={C.rd} small disabled={ca<8}>שלם ₪8</Btn>
-      <Btn onClick={()=>{setIPd(false);runSim(0);}} color={C.tM} small>סגור ליום</Btn></div></Card>}
-    {(dy>1)&&<Card style={{padding:8}}><div style={{fontSize:10,fontWeight:700,color:C.tM,marginBottom:2}}>📊 מגמות מחירים</div>
-     <PrCh prices={pH.l} color={C.lD} emoji="🍋"/><PrCh prices={pH.h} color={C.hn} emoji="🍯"/><PrCh prices={pH.i} color={C.iD} emoji="🧊"/></Card>}
-    {}
-    {hasCompIntel&&hasComps&&compD.length>0&&<Card style={{background:"linear-gradient(135deg,#F3E5F5,#EDE7F6)",border:"2px solid #CE93D8"}}>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:6,color:C.pu}}>🕵️ מודיעין מתחרים — מה הם מתכננים היום</div>
-     {compD.map((c,i)=><div key={i} style={{padding:"6px 8px",background:"#FFF",borderRadius:8,marginBottom:4,border:"1px solid #E1BEE7"}}>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-       <b style={{fontSize:12}}>{c.n}</b>
-       <span style={{fontSize:10,color:C.tM}}>{"⭐"+c.repB+" | 💰₪"+c.cash.toFixed(0)}</span></div>
-      <div style={{fontSize:11,color:C.tL}}>
-       {"💲 מחיר: ₪"+c.pr}
-       {cIL>=2&&<span>{" | 🥤 "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊"+(c.rec.w>0?" +"+c.rec.w+"💧":"")}</span>}
-       {cIL>=2&&" | 📦 "+c.prep+" כוסות"}
+      <div style={{marginTop:36, width:'100%', maxWidth:360, display:'flex', flexDirection:'column', gap:10}}>
+        {hasSavedGame && authUser && <button className="btn btn-warm btn-lg btn-block" onClick={async()=>{const ok=await loadGame();if(!ok)alert('שגיאה בטעינה');}}>
+          <I.Forward size={18}/> המשך משחק שמור
+        </button>}
+        <button className="btn btn-primary btn-lg btn-block" onClick={()=>{setTOn(false);setShT(false);setPh("setup");}}>
+          <I.Play size={18}/> התחל משחק חדש
+        </button>
+        <button className="btn btn-soft btn-block" onClick={()=>{setTOn(true);setTSt(0);setShT(true);setPh("setup");}}>
+          <I.Book size={16}/> משחק עם הדרכה
+        </button>
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginTop:4}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setShowLB(true)}>
+            <I.Trophy size={14} color="var(--lemon-600)"/> טבלת שיאים
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setShowAch(true)}>
+            <I.Medal size={14} color="var(--rose-500)"/> הישגים
+            <span className="badge" style={{background:'var(--rose-500)', minWidth:18, height:18, fontSize:10}}>{unlockedAch.length}/{ACHIEVEMENTS.length}</span>
+          </button>
+        </div>
       </div>
-      {cIL>=2&&npcActions[i]&&npcActions[i].acts.length>0&&
-       <div style={{fontSize:10,color:C.ac,marginTop:2}}>{"⚡ פעולות: "+npcActions[i].acts.join(", ")}</div>}
-      {cIL>=3&&<div style={{fontSize:9,color:C.gn,marginTop:2}}>{"🛡️ סיכול פעולות מלוכלכות פעיל"}</div>}
-     </div>)}
-     <div style={{fontSize:9,color:C.tM,textAlign:"center",marginTop:2}}>
-      {"💡 השתמש במידע הזה כדי לקבוע מחיר תחרותי ולתכנן את הפעולות שלך!"}</div>
-    </Card>}
-    <div className="gg">
-    <Card>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:3}}>{"🥤 מתכון הכוס ("+CUP+" יחידות)"}</div>
-     <CupVis l={rL} h={rH} ic={rI}/>
-     {[{e:"🍋",lb:"לימון",v:rL,s:setRL,mn:1,mx:5,c:C.lD,bg:"#FFF9C4",st:lm,tip:"⬆️ טעם + חמיצות קלה"},
-      {e:"🍯",lb:"דבש",v:rH,s:setRH,mn:0,mx:5,c:C.hn,bg:"#FFF3E0",st:hn,tip:"מתיקות — מאזן חמיצות, יותר מדי דורס לימון"},
-      {e:"🧊",lb:"קרח",v:rI,s:setRI,mn:0,mx:5,c:C.iD,bg:"#E1F5FE",st:ic,tip:"רעננות"+(isWarm?" (חשוב היום!)":"")+" — מדלל טעם"},
-     ].map(ing=>{const canA=rL+rH+rI<CUP&&ing.v<ing.mx,canS=ing.v>ing.mn;return(
-      <div key={ing.lb} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:ing.bg,borderRadius:10,marginBottom:5}}>
-       <span style={{fontSize:22,width:30,textAlign:"center"}}>{ing.e}</span>
-       <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{ing.lb}</div>
-        <div style={{fontSize:9,color:C.tM}}>{"מלאי: "+ing.st+" | "+ing.tip}</div></div>
-       <div style={{display:"flex",alignItems:"center",gap:4}}>
-        <button onClick={()=>{if(canS)ing.s(ing.v-1);}} disabled={!canS} style={{width:32,height:32,borderRadius:8,border:"none",fontSize:18,fontWeight:800,cursor:canS?"pointer":"not-allowed",background:canS?"#FFF":"#EEE",color:canS?C.rd:"#CCC"}}>−</button>
-        <span style={{fontSize:20,fontWeight:800,width:28,textAlign:"center",color:ing.c}}>{ing.v}</span>
-        <button onClick={()=>{if(canA)ing.s(ing.v+1);}} disabled={!canA} style={{width:32,height:32,borderRadius:8,border:"none",fontSize:18,fontWeight:800,cursor:canA?"pointer":"not-allowed",background:canA?"#FFF":"#EEE",color:canA?C.gn:"#CCC"}}>+</button></div></div>);})}
-     {(rW>0)&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:"#E3F2FD",borderRadius:10,marginBottom:5}}>
-      <span style={{fontSize:22,width:30,textAlign:"center"}}>💧</span>
-      <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.tL}}>מים</div><div style={{fontSize:10,color:C.rd}}>מדלל טעם!</div></div>
-      <span style={{fontSize:20,fontWeight:800,color:"#1976D2"}}>{rW}</span></div>}
-    </Card>
-    <Card>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>💰 תמחור</div>
-     <div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:1}}>
-      <span>💰 מחיר לכוס</span><span style={{fontWeight:700,color:C.gn}}>{"₪"+pr}</span></div>
-      <input type="range" min={1} max={15} value={pr} onChange={e=>setPr(+e.target.value)} style={{width:"100%",accentColor:C.gn,height:5}}/></div>
-     {(()=>{const estD=Math.max(5,Math.round(100*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM/(1+cm*npcA)));
-      const rec=Math.min(mxC,Math.round(estD*0.7));return(
-      <div style={{background:"#E3F2FD",borderRadius:8,padding:"8px 10px",marginBottom:8,border:"1px solid #90CAF9"}}>
-       <div style={{display:"flex",gap:6,marginBottom:4}}>
-        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>👥 צפי לקוחות</div><div style={{fontSize:18,fontWeight:800,color:"#1976D2"}}>{"~"+estD}</div></div>
-        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>📊 צפי מכירה</div><div style={{fontSize:18,fontWeight:800,color:C.gn}}>{"~"+rec}</div></div>
-        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>🥤 מהמלאי</div><div style={{fontSize:18,fontWeight:800,color:C.ac}}>{mxC}</div></div>
-        <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:9,color:C.tM}}>🏪 הגשה מקס׳</div><div style={{fontSize:18,fontWeight:800,color:cap>=CAP_TEAM?C.gn:cap<mxFromIng?C.rd:C.tM}}>{cap>=CAP_TEAM?"∞":cap}</div></div></div>
-       <div style={{fontSize:9,color:C.tL,textAlign:"center"}}>{"💡 מומלץ ~"+rec+" כוסות"}</div></div>);})()}
-     <div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:1}}>
-      <span>{"🥤 כוסות להכנה"}</span><span style={{fontWeight:700,color:C.ac}}>{Math.min(cu,mxC)}</span></div>
-      {!up.includes("team")&&mxFromIng>cap&&<div style={{fontSize:9,color:C.rd,marginBottom:2}}>
-       {"⚠️ מלאי מספיק ל-"+mxFromIng+" אבל מגבלת הגשה: "+cap}
-       {!hlp&&" (עם עוזר: "+(cap+HELPER_B)+")"}
-       {!up.includes("station")&&dy>=3&&" | 🏪 עמדה נוספת ("+CAP_STATION+") — קנה בשוק הערב ₪30!"}
-       {!up.includes("station")&&dy<3&&" | 🏪 עמדה נוספת ("+CAP_STATION+") — זמינה מיום 3"}
-       {up.includes("station")&&!up.includes("team")&&dy>=4&&" | 👥 צוות מלא (∞) — קנה בשוק הערב ₪50!"}
-       {up.includes("station")&&!up.includes("team")&&dy<4&&" | 👥 צוות מלא (∞) — זמין מיום 4"}
+      {!authUser && <p className="muted tiny" style={{marginTop:20, textAlign:'center', maxWidth:280}}>
+        התחבר כדי לשמור תוצאות ולהתחרות בטבלת השיאים העולמית
+      </p>}
+      {hasHi && <div className="card stagger" style={{marginTop:24, padding:14, width:'100%', maxWidth:360}}>
+        <div className="row-between mb-8"><div className="bold small"><I.Trophy size={14} color="var(--lemon-600)" style={{marginLeft:6}}/>השיאים שלך</div></div>
+        {hi.slice(0,5).map((h,i)=><div key={i} className="row-between" style={{padding:'4px 0', borderBottom: i<Math.min(4,hi.length-1)?'1px solid var(--ink-100)':'none'}}>
+          <span className="small" style={{letterSpacing:2}}>{"⭐".repeat(h.stars)+"☆".repeat(5-h.stars)}</span>
+          <span className="num bold" style={{color: h.sc>=0?'var(--good)':'var(--bad)', fontSize:14}}>₪{h.sc}</span>
+        </div>)}
       </div>}
-      <input type="range" min={0} max={mxC} value={Math.min(cu,mxC)} onChange={e=>setCu(Math.min(+e.target.value,mxC))} style={{width:"100%",accentColor:C.ac,height:5}}/>
-     </div>
-     {!up.includes("team")&&(()=>{const baseCap=up.includes("station")?CAP_STATION:CAP_BASE;const withHelp=baseCap+HELPER_B;return(
-     <label style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",
-      background:hlp?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":"#F3E5F5",borderRadius:10,fontSize:11,cursor:"pointer",
-      border:"2px solid "+(hlp?"#66BB6A":"transparent")}}>
-      <input type="checkbox" checked={hlp} onChange={e=>setHlp(e.target.checked)}/>
-      <div style={{flex:1}}>
-       <div style={{fontWeight:700,fontSize:12}}>{"👤 שכור עוזר — ₪"+HELPER_C+" להיום"}</div>
-       <div style={{fontSize:10,color:C.tL,lineHeight:1.5,marginTop:2}}>
-        {"בלי עוזר: עד "+baseCap+" כוסות ליום."}
-        {"\nעם עוזר: "+withHelp+" כוסות."}
-        {(mxC>baseCap)&&!hlp?"\n⚠️ יש לך מלאי ל-"+mxFromIng+" אבל בלי עוזר רק "+baseCap+"!":""}
-        {(mxC<=baseCap)&&!hlp?"\n💡 מלאי ל-"+mxC+" — העוזר לא הכרחי.":""}
-       </div>
-      </div></label>);})()}
-    </Card></div>
-    {}
-    {}
-    <Card>
-     <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>⚡ פעולות יום</div>
-     <div style={{fontSize:10,color:C.tL,marginBottom:8}}>בחר פעולות שיווק ותחרות. עלות מנוכה בסוף היום.</div>
-     {}
-     <div style={{fontWeight:700,fontSize:12,marginBottom:4,color:"#1976D2"}}>📣 שיווק</div>
-     {MKTG_ACT.map(act=>{const isActive=actionsToday.some(a=>a.id===act.id);return(
-      <div key={act.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-       padding:"6px 8px",marginBottom:4,borderRadius:8,
-       background:isActive?"#E8F5E9":"#F5F5F5",border:"1px solid "+(isActive?"#A5D6A7":"#E0E0E0")}}>
-       <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700}}>{act.n}</div>
-        <div style={{fontSize:9,color:C.tL}}>{act.desc}</div></div>
-       <Btn onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
-        else setActionsToday(p=>[...p,{id:act.id,cost:act.c,dm:act.dm,repChance:act.repChance,repB:act.repB,freeCups:act.freeCups}]);}}
-        color={isActive?C.rd:C.gn} small disabled={!isActive&&ca<act.c}>
-        {isActive?"בטל":("₪"+act.c)}</Btn></div>);})}
-     {}
-     {hasComps&&<div>
-      <div style={{fontWeight:700,fontSize:12,marginTop:8,marginBottom:4,color:C.pu}}>⚔️ נגד מתחרים</div>
-      {COMP_ACT.map(act=>{
-       const isActive=actionsToday.some(a=>a.id===act.id);
-       const isRisky=act.risk>0;
-       if(act.id==="ads"){
-        const curLvl=actionsToday.find(a=>a.id==="ads");
-        return <div key={act.id} style={{marginBottom:8}}>
-         <div style={{fontSize:12,fontWeight:700,marginBottom:2}}>{act.n}</div>
-         <div style={{fontSize:9,color:C.tL,marginBottom:4}}>{act.desc}</div>
-         <div style={{display:"flex",gap:3}}>
-          <Btn onClick={()=>setActionsToday(p=>p.filter(a=>a.id!=="ads"))} color={!curLvl?C.ac:C.tM} small style={{flex:1}}>ללא</Btn>
-          {act.costs.map((c,i)=><Btn key={i} onClick={()=>setActionsToday(p=>[...p.filter(a=>a.id!=="ads"),{id:"ads",cost:c,steal:act.steal[i],lvl:i}])}
-           color={curLvl?.lvl===i?C.ac:C.tM} small style={{flex:1}} disabled={ca<c}>
-           {act.labels[i]+"\n₪"+c}</Btn>)}</div></div>;
-       }
-       return <div key={act.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-        padding:"6px 8px",marginBottom:4,borderRadius:8,
-        background:isActive?"#E8F5E9":isRisky?"#FFF3E0":"#F5F5F5",
-        border:"1px solid "+(isActive?"#A5D6A7":isRisky?"#FFB74D":"#E0E0E0")}}>
-        <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700}}>{act.n+" ⚠️"}</div>
-         <div style={{fontSize:9,color:C.ac}}>{act.desc}</div></div>
-        <Btn onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
-         else setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}}
-         color={isActive?C.rd:C.gn} small disabled={!isActive&&ca<act.c}>
-         {isActive?"בטל":("₪"+act.c)}</Btn></div>;
-      })}</div>}
-     {}
-     {hasComps&&cIL>=2&&npcActions.length>0&&<div style={{marginTop:8,padding:"6px 8px",background:"#F3E5F5",borderRadius:8,border:"1px solid #CE93D8"}}>
-      <div style={{fontSize:10,fontWeight:700,color:C.pu,marginBottom:3}}>🕵️ מודיעין: פעולות מתחרים</div>
-      {npcActions.map((na,i)=><div key={i} style={{fontSize:10,color:C.tL}}>
-       {na.n+": "+(na.acts.length>0?na.acts.join(", "):"אין פעולות מיוחדות")}
-       {cIL>=3&&na.acts.some(a=>a.includes("שמועות")||a.includes("שלטים"))&&
-        <span style={{color:C.gn,fontWeight:700}}> — ✅ סוכלה!</span>}
-      </div>)}</div>}
-     {(actionsToday.length>0)&&<div style={{fontSize:11,fontWeight:700,textAlign:"center",marginTop:8,padding:"4px 0",
-      background:"#FFF3E0",borderRadius:6,color:C.ac}}>
-      {"💰 עלות פעולות: ₪"+actionsToday.reduce((s,a)=>s+(a.cost||0),0)}</div>}
-    </Card>
-    <Card>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📍 מיקום הדוכן היום</div>
-     <div style={{display:"flex",gap:4}}>
-      {LOC.map((l,i)=>(
-       <div key={i} onClick={()=>setLoc(i)} style={{flex:1,cursor:"pointer",padding:"8px 4px",borderRadius:8,textAlign:"center",
-        background:loc===i?"linear-gradient(135deg,#1976D2,#1565C0)":"#F5F5F5",
-        color:loc===i?"#FFF":C.tx,border:"2px solid "+(loc===i?"#1565C0":"#E0E0E0")}}>
-        <div style={{fontSize:12,fontWeight:700}}>{l.n}</div>
-        <div style={{fontSize:9,opacity:0.8}}>{l.d}</div></div>))}
-     </div>
-    </Card>
-    <Btn onClick={()=>{const c=Math.min(cu,mxC);setCu(c);runSim(c);}} color={C.gn} style={{width:"100%"}}>
-     {(cu>0)?("🚀 פתח! ("+Math.min(cu,mxC)+" כוסות × ₪"+pr+")"):"⏭️ דלג (אין מלאי)"}</Btn>
+    </div>
+    {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase}/>}
+    {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName}/>}
    </div>}
    {}
-   {ph==="sim"&&<div key="sim" className="phase-enter">
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
-    {(()=>{
-     const sunX=10+sP*0.8, sunY=15+Math.sin(sP/100*Math.PI)*-12;
-     const isRain=dW?.w.id?.includes("Rain");const isCld=dW?.w.id==="cloudy";
-     const nComps=Math.min(cm,3);
-     const recentBuyers=sC.filter(c=>c.buys).length;
-     const recentSoldOut=sC.filter(c=>c.rx==="💨").length;
-     const compEmojis=["🧑","👩","👨"];
-     const compColors=["#7B1FA2","#1565C0","#E65100"];
-     const compPos=nComps===1?[{left:"15%"}]:nComps===2?[{left:"12%"},{right:"12%"}]:[{left:"8%"},{right:"8%"},{left:"28%"}];
-     return(
-     <div style={{position:"relative",width:"100%",height:"clamp(220px,40vw,300px)",borderRadius:16,overflow:"hidden",
-      background:dW?.w.bg||"#87CEEB",border:"2px solid "+C.bd,marginBottom:10}}>
-      {}
-      <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg,transparent ${60+sP*0.3}%,rgba(255,140,0,${sP>80?0.15:0}) 100%)`,pointerEvents:"none"}}/>
-      {}
-      {!isRain&&<div style={{position:"absolute",left:sunX+"%",top:sunY+"%",fontSize:sP>90?28:36,
-       transition:"left 2s linear, top 2s ease",filter:`brightness(${sP>85?0.7:1})`,zIndex:1}}>
-       {isHeat?"🔥":"☀️"}</div>}
-      {}
-      {(isCld||isRain)&&<>
-       <div style={{position:"absolute",top:8,left:"15%",fontSize:28,opacity:0.6,animation:"cloudDr 8s ease-in-out infinite"}}>☁️</div>
-       <div style={{position:"absolute",top:18,left:"55%",fontSize:20,opacity:0.4,animation:"cloudDr 12s ease-in-out infinite reverse"}}>☁️</div>
-       <div style={{position:"absolute",top:5,left:"80%",fontSize:24,opacity:0.5,animation:"cloudDr 10s ease-in-out infinite"}}>☁️</div></>}
-      {}
-      {isRain&&Array.from({length:12}).map((_,i)=>(
-       <div key={i} style={{position:"absolute",top:-8,left:(5+i*8)+"%",fontSize:10,opacity:0.5,
-        animation:`rainDr ${0.6+i*0.08}s linear infinite`,animationDelay:(i*0.1)+"s"}}>💧</div>))}
-      {}
-      <div style={{position:"absolute",bottom:0,width:"100%",height:65,background:"linear-gradient(180deg,#A5D6A7,#81C784)"}}/>
-      <div style={{position:"absolute",bottom:0,width:"100%",height:22,background:"linear-gradient(180deg,#BDBDBD,#9E9E9E)"}}/>
-      {}
-      <div style={{position:"absolute",bottom:45,left:"5%",fontSize:24}}>🌳</div>
-      <div style={{position:"absolute",bottom:45,right:"8%",fontSize:20}}>🌴</div>
-      {}
-      <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",textAlign:"center",zIndex:5}}>
-       <div style={{fontSize:8,fontWeight:800,color:"#FFF",background:C.ac,borderRadius:5,padding:"1px 8px",
-        animation:"bob 2s ease-in-out infinite"}}>{"🍋 לימונדה ₪"+pr}</div>
-       <div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:1}}>
-        {up.includes("station")&&<div style={{fontSize:22,opacity:0.7}}>🏪</div>}
-        <div style={{fontSize:38}}>🏪</div>
-        {hlp&&!up.includes("team")&&<div style={{fontSize:14,position:"relative",bottom:2}}>👤</div>}
-        {up.includes("team")&&<div style={{fontSize:14,position:"relative",bottom:2}}>👥</div>}
-       </div>
-       {up.includes("sign")&&<div style={{fontSize:10,position:"absolute",top:-6,right:-12}}>🪧</div>}
-       {up.includes("shade")&&<div style={{fontSize:12,position:"absolute",top:-12,left:-8}}>⛱️</div>}
-       {(recentSoldOut>0)&&<div style={{fontSize:8,color:C.rd,fontWeight:800,background:"#FFF",borderRadius:4,padding:"1px 4px"}}>🚫 אזל!</div>}
+   {ph==="setup"&&<div key="setup" className="screen phase-enter">
+    <button className="btn btn-ghost btn-sm" onClick={()=>setPh("title")} style={{marginBottom:16}}>
+      <I.ArrowL size={14}/> חזרה
+    </button>
+    <h1 style={{fontSize:28}}>הגדרות משחק</h1>
+    <p className="muted" style={{marginTop:6}}>בחר את אופי המשחק שלך</p>
+    <div className="section" style={{marginTop:24}}>
+      <SectionHeader title="מספר מתחרים" aside="כמה דוכנים נוספים יפעלו ברחוב"/>
+      <div className="choice-grid cols-4">
+        {[0,1,2,3].map(n => (
+          <Choice key={n} active={cm===n} onClick={()=>setCm(n)}
+            title={n===0?'ללא':String(n)}
+            sub={n===0?'לבד':n===1?'דואל':'תחרות'}/>
+        ))}
       </div>
-      {}
-      {compD.slice(0,nComps).map((cd,ci)=>(
-       <div key={ci} style={{position:"absolute",bottom:18,...compPos[ci],textAlign:"center",zIndex:2,
-        animation:`compPulse ${3+ci*0.5}s ease-in-out infinite ${ci*0.3}s`}}>
-        <div style={{fontSize:7,color:"#333",background:"rgba(255,255,255,.85)",borderRadius:4,padding:"1px 4px",
-         border:"1px solid "+compColors[ci%3]}}>
-         {cd.n+" ₪"+cd.pr}</div>
-        <div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:0}}>
-         {cd.hasStation&&<div style={{fontSize:16,opacity:0.6}}>🏪</div>}
-         <div style={{fontSize:26}}>🏪</div>
-         {cd.hasHelper&&<div style={{fontSize:9}}>👤</div>}
-         {cd.hasTeam&&<div style={{fontSize:9}}>👥</div>}
-        </div>
-        <div style={{fontSize:10,animation:`walkComp ${4+ci}s ease-in-out infinite ${ci*0.5}s`}}>{compEmojis[ci%3]}</div>
-        {cIL>=3&&<div style={{fontSize:7,color:compColors[ci%3],fontWeight:700}}>{"⭐"+cd.repA}</div>}
-       </div>))}
-      {}
-      {sC.slice(-4).map((c,i)=>{const bought=c.buys;return(
-       <div key={c.id||i} style={{position:"absolute",bottom:3,fontSize:18,zIndex:10,
-        left:(25+i*12)+"%",animation:"walkIn 3s ease forwards",opacity:bought?1:0.5}}>
-        {c.em}{bought&&<span style={{fontSize:10}}>🥤</span>}</div>);})}
-      {}
-      <div style={{position:"absolute",top:6,left:6,background:"rgba(255,255,255,.9)",borderRadius:6,padding:"3px 7px",fontSize:11,fontWeight:700}}>
-       {dW?.w.n.split(" ")[0]+" "+dW?.temp+"°C"}</div>
-      <div style={{position:"absolute",top:6,right:6,display:"flex",gap:4}}>
-       <div style={{background:"rgba(76,175,80,.9)",borderRadius:6,padding:"3px 8px",fontSize:12,color:"#FFF",fontWeight:800}}>{"₪"+sR}</div>
-       <div style={{background:"rgba(255,111,0,.9)",borderRadius:6,padding:"3px 8px",fontSize:12,color:"#FFF"}}>{"🥤"+sS+"/"+cu}</div></div>
-      {}
-      <div style={{position:"absolute",bottom:0,left:0,width:"100%",height:4,background:"rgba(0,0,0,.15)"}}>
-       <div style={{height:"100%",background:C.ac,width:sP+"%",transition:"width 0.5s"}}/></div>
-      <div style={{position:"absolute",bottom:5,left:"50%",transform:"translateX(-50%)",fontSize:8,color:"#FFF",fontWeight:700,
-       background:"rgba(0,0,0,.3)",borderRadius:4,padding:"0 6px"}}>
-       {(()=>{if(sP<25)return "🌅 בוקר";if(sP<50)return "☀️ צהריים";if(sP<75)return "🌤️ אחה\"צ";return "🌅 ערב";})()}</div>
-     </div>);})()}
-    {hasCompIntel&&hasComps&&<Card style={{background:"#F3E5F5",border:"1px solid #CE93D8",padding:10}}>
-     <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>🕵️ מתחרים בזמן אמת:</div>
-     {compD.map((c,i)=><div key={i} style={{fontSize:11,padding:"4px 0",borderBottom:"1px solid #E1BEE7"}}>
-      <div style={{display:"flex",justifyContent:"space-between"}}>
-       <b>{c.n}</b>
-       <span style={{fontSize:10,color:C.tM}}>{"⭐"+c.repA+" 💰₪"+c.cashAfter.toFixed(0)}</span></div>
-      <div style={{color:C.tL}}>
-       {"💰 מחיר: ₪"+c.pr+" | הכין "+c.prep+" כוסות"}
-       {cIL>=2&&(" | מתכון: "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊")}
-       {cIL>=3&&(" | מכר "+c.sold+" = ₪"+c.rev)}
-       {c.boughtIntel&&" | 🔍 קנה מודיעין"}</div></div>)}</Card>}
-    <Card style={{maxHeight:260,overflowY:"auto"}}>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 לקוחות</div>
-     {sC.length===0&&<div style={{textAlign:"center",color:C.tM,padding:16}}>⏳ ממתינים...</div>}
-     {[...sC].reverse().map((c,i)=>{const bought=c.buys,soldOut=c.rx==="💨";return(
-      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",marginBottom:4,borderRadius:10,
-       animation:i===0?"slideIn .4s":"none",background:bought?"#E8F5E9":soldOut?"#FFEBEE":"#F5F5F5",
-       border:"1px solid "+(bought?"#A5D6A7":soldOut?"#EF9A9A":"#E0E0E0")}}>
-       <span style={{fontSize:24}}>{c.em}</span>
-       <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{(CT[c.type]||CT.adult).nm}</div>
-        <div style={{fontSize:11,color:bought?C.gn:soldOut?C.rd:C.tL,fontStyle:"italic"}}>
-         {'"'+(c.sp||"...")+'"'}</div></div>
-       <div style={{textAlign:"center",minWidth:50}}>
-        <div style={{fontSize:22}}>{c.rx}</div>
-        <div style={{fontSize:10,fontWeight:700,color:bought?C.gn:soldOut?C.rd:C.tM}}>
-         {bought?("קנה ₪"+pr):soldOut?"אזל!":"לא קנה"}</div></div></div>);})}
-    </Card>
-    <div style={{display:"flex",gap:6,marginBottom:6}}>
-     <div style={{flex:1,background:"#E8F5E9",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
-      <div style={{fontSize:10,color:C.tM}}>🥤 נמכרו</div><div style={{fontSize:20,fontWeight:800,color:C.gn}}>{sS+"/"+cu}</div></div>
-     <div style={{flex:1,background:"#E3F2FD",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
-      <div style={{fontSize:10,color:C.tM}}>💰 הכנסות</div><div style={{fontSize:20,fontWeight:800,color:"#1976D2"}}>{"₪"+sR}</div></div>
-     <div style={{flex:1,background:"#FFF3E0",borderRadius:10,padding:"6px 10px",textAlign:"center"}}>
-      <div style={{fontSize:10,color:C.tM}}>🚶 לא קנו</div><div style={{fontSize:20,fontWeight:800,color:C.ac}}>{sNB}</div></div></div>
-    {sC.filter(c=>c.rx==="💨").length>0&&<div style={{textAlign:"center",fontSize:11,color:C.rd,marginBottom:4}}>
-     {"💨 "+sC.filter(c=>c.rx==="💨").length+" לקוחות רצו לקנות — אזל!"}</div>}
-    {sDn&&<Btn onClick={()=>{if(pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk);}} color={C.gn} style={{width:"100%"}}>📊 סיכום יום →</Btn>}
-   </div>}
-   {}
-   {ph==="summary"&&smD&&<div key="summary" className="phase-enter">
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
-    <h2 style={{textAlign:"center",fontSize:17,margin:"0 0 6px"}}>{"📊 יום "+smD.dy}</h2>
-    <Card>
-     <div style={{textAlign:"center",marginBottom:8}}><span style={{fontSize:12,color:C.tM}}>{"🥤 נמכרו "}</span>
-      <span style={{fontSize:22,fontWeight:800}}>{smD.sold}</span><span style={{fontSize:12,color:C.tM}}>{" / "+smD.prep}</span></div>
-     <div style={{display:"flex",gap:8,marginBottom:8}}>
-      <div style={{flex:1,background:"#E8F5E9",borderRadius:10,padding:"8px 6px",textAlign:"center",animation:"pop .45s ease-out .1s both"}}>
-       <div style={{fontSize:10,color:C.tM}}>💰 הכנסות</div><div style={{fontSize:22,fontWeight:800,color:C.gn}}>{"₪"+smD.rev.toFixed(0)}</div></div>
-      <div style={{display:"flex",alignItems:"center",fontSize:20,color:C.tM}}>−</div>
-      <div onClick={()=>setShowExpD(p=>!p)} style={{flex:1,background:"#FFEBEE",borderRadius:10,padding:"8px 6px",textAlign:"center",cursor:"pointer",animation:"pop .45s ease-out .25s both"}}>
-       <div style={{fontSize:10,color:C.tM}}>{"💸 הוצאות"+(showExpD?" ▲":" ▼")}</div><div style={{fontSize:22,fontWeight:800,color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</div></div>
-      <div style={{display:"flex",alignItems:"center",fontSize:20,color:C.tM}}>=</div>
-      <div style={{flex:1,background:smD.profit>=0?"#E8F5E9":"#FFEBEE",borderRadius:10,padding:"8px 6px",textAlign:"center",
-       border:"2px solid "+(smD.profit>=0?C.gn:C.rd),
-       animation:smD.profit>=0?"pop .5s ease-out .4s both, glowRing 1.6s ease-out .9s 2":"pop .5s ease-out .4s both, shakeH .4s ease-out .9s"}}>
-       <div style={{fontSize:10,color:C.tM}}>{smD.profit>=0?"📈 רווח":"📉 הפסד"}</div>
-       <div style={{fontSize:22,fontWeight:800,color:smD.profit>=0?C.gn:C.rd}}>{"₪"+smD.profit.toFixed(0)}</div></div></div>
-     {showExpD&&smD.expBreak&&<div style={{background:"#FFF5F5",borderRadius:8,padding:"8px 10px",marginBottom:6,fontSize:11}}>
-      <div style={{fontWeight:700,marginBottom:4,color:C.rd}}>📋 פירוט הוצאות:</div>
-      {smD.expBreak.mc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
-       <span>🍋 חומרי גלם ({smD.prep} כוסות)</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.mc.toFixed(1)}</span></div>}
-      {smD.expBreak.hc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
-       <span>👤 עוזר</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.hc}</span></div>}
-      {smD.expBreak.rentC>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
-       <span>{"🏠 שכירות ("+LOC[loc].n+")"}</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.rentC}</span></div>}
-      {smD.expBreak.actCost>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
-       <span>⚡ פעולות</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.actCost}</span></div>}
-      {smD.expBreak.fc>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"2px 0"}}>
-       <span>🏛️ פיקוח</span><span style={{fontWeight:700}}>{"₪"+smD.expBreak.fc}</span></div>}
-      <div style={{borderTop:"1px solid #EEB",marginTop:4,paddingTop:4,display:"flex",justifyContent:"space-between",fontWeight:700}}>
-       <span>סה״כ</span><span style={{color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</span></div>
-     </div>}
-    </Card>
-    <Card style={{border:"2px solid "+(smD.rA>=smD.rB?"#A5D6A7":"#EF9A9A")}}>
-     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-      <span style={{fontWeight:700,fontSize:14}}>⭐ מוניטין</span>
-      <span style={{fontSize:18,fontWeight:800}}>{smD.rB+" → "}<span style={{color:smD.rA>=smD.rB?C.gn:C.rd}}>{smD.rA}</span></span></div>
-     {smD.rEx&&smD.rEx.length>0&&<div style={{background:"#F5F5F5",borderRadius:8,padding:"6px 8px",marginBottom:6}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.tL,marginBottom:3}}>למה?</div>
-      {smD.rEx.map((r,i)=><div key={i} style={{fontSize:11,padding:"1px 0"}}>{r}</div>)}</div>}
-     <div style={{fontSize:10,color:C.tL,padding:"4px 8px",background:"#FFFDE7",borderRadius:6}}>
-      {"💡 מוניטין "+smD.rA+": "+(smD.rA>=75?"מצוין! לקוחות מוכנים לשלם יותר":smD.rA>=60?"טוב — שומעים עליך":smD.rA>=45?"סביר — המשך לשפר":smD.rA>=30?"נמוך — פחות לקוחות מחר":"בבעיה! שפר איכות")}</div>
-     {smD.rR&&smD.rR.length>0&&<details style={{marginTop:6}}>
-      <summary style={{fontSize:10,color:C.tM,cursor:"pointer"}}>{"🗣️ ציטוטים ("+smD.rR.length+")"}</summary>
-      <div style={{maxHeight:80,overflowY:"auto",marginTop:4}}>{smD.rR.map((r,i)=><div key={i} style={{fontSize:10,color:C.tL,animation:`slideIn .3s ease-out ${i*0.08}s both`}}>{r}</div>)}</div></details>}
-    </Card>
-    {hasComps&&compD.length>0&&(()=>{
-     const myDayRev=smD.rev;const myDaySold=smD.sold;
-     const myCumRev=res.reduce((s,r)=>s+r.rev,0);
-     const compCumRevs=compD.map((c,ci)=>{
-      return res.reduce((s,r)=>{const snap=r.compSnap?.[ci];return s+(snap?.rev||0);},0);
-     });
-     return <Card>
-      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>🏪 דוח תחרות — יום {smD.dy}</div>
-      {}
-      <table style={{width:"100%",fontSize:10,borderCollapse:"collapse",textAlign:"center",marginBottom:10}}>
-       <thead><tr style={{background:"#F5F5F5"}}>
-        <th style={{padding:3,borderBottom:"2px solid #DDD",textAlign:"right"}}>שם</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>מחיר</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הכנו</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>מכרו</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הכנסות</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>הוצאות</th>
-        <th style={{padding:3,borderBottom:"2px solid #DDD"}}>רווח</th>
-       </tr></thead>
-       <tbody>
-        <tr style={{background:"#E8F5E9",fontWeight:700}}>
-         <td style={{padding:3,textAlign:"right"}}>🍋 אתה</td>
-         <td>{"₪"+pr}</td>
-         <td>{smD.prep}</td>
-         <td>{myDaySold}</td>
-         <td style={{color:C.gn}}>{"₪"+myDayRev.toFixed(0)}</td>
-         <td style={{color:C.rd}}>{"₪"+smD.exp.toFixed(0)}</td>
-         <td style={{color:smD.profit>=0?C.gn:C.rd,fontWeight:800}}>{"₪"+smD.profit.toFixed(0)}</td>
-        </tr>
-        {compD.map((c,i)=>(<tr key={i} style={{borderBottom:"1px solid #EEE"}}>
-          <td style={{padding:3,textAlign:"right"}}>{c.n}</td>
-          <td>{"₪"+c.pr}</td>
-          <td>{cIL>=3?c.prep:"?"}</td>
-          <td>{cIL>=3?c.sold:"?"}</td>
-          <td>{"₪"+c.rev}</td>
-          <td>{cIL>=3?"₪"+c.exp.toFixed(0):"?"}</td>
-          <td style={{fontWeight:700,color:c.profit>=0?C.gn:C.rd}}>{cIL>=3?"₪"+c.profit.toFixed(0):"?"}</td>
-         </tr>))}
-       </tbody>
-      </table>
-      {}
-      {cIL>=2&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6,fontSize:9}}>
-       {compD.map((c,i)=><div key={i} style={{background:"#F5F5F5",borderRadius:6,padding:"3px 6px"}}>
-        {c.n+": ⭐"+c.repA+" 💰₪"+c.cashAfter.toFixed(0)+(c.boughtIntel?" 🔍":"")}</div>)}</div>}
-      {}
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
-       {compD.map((c,i)=>{const diff=myDayRev-c.rev;const cumDiff=myCumRev-compCumRevs[i];return(
-        <div key={i} style={{flex:1,minWidth:120,background:diff>=0?"#E8F5E9":"#FFEBEE",borderRadius:8,padding:"6px 8px",textAlign:"center",
-         border:"1px solid "+(diff>=0?"#A5D6A7":"#EF9A9A")}}>
-         <div style={{fontSize:10,color:C.tM}}>{"vs "+c.n}</div>
-         <div style={{fontSize:14,fontWeight:800,color:diff>=0?C.gn:C.rd}}>{(diff>=0?"+":"")+"₪"+diff.toFixed(0)+" היום"}</div>
-         <div style={{fontSize:10,color:cumDiff>=0?C.gn:C.rd}}>{(cumDiff>=0?"+":"")+"₪"+cumDiff.toFixed(0)+" מצטבר"}</div>
-        </div>);})}
+    </div>
+    <div className="section">
+      <SectionHeader title="רמת קושי"/>
+      <div className="choice-grid cols-3">
+        <Choice active={cl==='easy'} onClick={()=>setCl('easy')} emoji="🌱" title="קלה" sub="יותר לקוחות, סיכויי קנייה גבוהים"/>
+        <Choice active={cl==='medium'} onClick={()=>setCl('medium')} emoji="⚖️" title="בינונית" sub="כלכלה מאוזנת"/>
+        <Choice active={cl==='hard'} onClick={()=>setCl('hard')} emoji="🔥" title="קשה" sub="מתחרים חזקים, פחות לקוחות"/>
       </div>
-      {}
-      {res.length>=2&&(()=>{
-       const allRevs=[res.map(r=>r.rev),...compD.map((c,ci)=>res.map(r=>r.compSnap?.[ci]?.rev||0))];
-       const cumAll=allRevs.map(arr=>{let s=0;return arr.map(v=>{s+=v;return s;});});
-       const maxVal=Math.max(...cumAll.flat(),1);const w=240,h=70,pad=4;
-       const colors=[C.gn,"#7B1FA2","#1976D2","#E65100"];
-       const labels=["אתה",...compD.map(c=>c.n)];
-       return <div>
-        <div style={{fontSize:11,fontWeight:700,marginBottom:4}}>📈 הכנסות מצטברות</div>
-        <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:90}}>
-         {cumAll.map((pts,si)=>{
-          const line=pts.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(pts.length-1,1));const y=h-pad-(v/maxVal)*(h-2*pad);return x+","+y;}).join(" ");
-          return <polyline key={si} points={line} fill="none" stroke={colors[si%colors.length]} strokeWidth={si===0?"2.5":"1.5"} strokeLinejoin="round" strokeDasharray={si===0?"":"4,3"}/>;
-         })}
-         {}
-         {res.map((r,j)=>{const x=pad+j*((w-2*pad)/Math.max(res.length-1,1));return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="#999">{"י"+r.dy}</text>;})}
-        </svg>
-        <div style={{display:"flex",gap:8,justifyContent:"center",fontSize:9}}>
-         {labels.map((l,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
-          <span style={{width:10,height:3,background:colors[i%colors.length],borderRadius:2,display:"inline-block"}}/>{l}</span>)}
+    </div>
+    <div className="section">
+      <SectionHeader title="העדפות נוספות"/>
+      <div className="card" style={{padding:4}}>
+        <div style={{padding:'14px 12px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--ink-100)'}}>
+          <div>
+            <div style={{fontSize:14, fontWeight:700, display:'flex', alignItems:'center', gap:8}}>
+              <I.Volume size={16} color="var(--ink-500)"/> אפקטי קול
+            </div>
+            <div className="muted tiny">צלילים קצרים בסימולציה</div>
+          </div>
+          <Toggle on={sfxOn} onChange={setSfxOn}/>
         </div>
-       </div>;})()}
-      {cIL>=2&&<div style={{marginTop:8,fontSize:10,color:C.tL}}>
-       <b>מתכונים:</b> {compD.map(c=>c.n+": "+c.rec.l+"🍋"+c.rec.h+"🍯"+c.rec.i+"🧊").join(" | ")}</div>}
-      {cIL===0&&<div style={{fontSize:10,color:C.tM,marginTop:6,fontStyle:"italic"}}>💡 קנה ניתוח מתחרים בשלב המודיעין כדי לראות מכירות ומתכונים</div>}
-     </Card>;})()}
-    {hasRes&&<Card>
-     <div style={{fontWeight:700,fontSize:12,marginBottom:6}}>📈 רווח יומי</div>
-     <div style={{position:"relative",height:100,display:"flex",alignItems:"center"}}>
-      <div style={{position:"absolute",left:0,right:0,top:"50%",height:1,background:"#999"}}/>
-      <div style={{display:"flex",alignItems:"center",gap:2,width:"100%",height:"100%"}}>
-       {res.map((r,i)=>{const mx=Math.max(...res.map(x=>Math.abs(x.profit)),1),h=Math.abs(r.profit)/mx*42,pos=r.profit>=0;
-        return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",justifyContent:"center"}}>
-         {pos?<><div style={{fontSize:8,fontWeight:700,color:C.gn}}>{"₪"+r.profit.toFixed(0)}</div>
-          <div style={{width:"75%",height:h,borderRadius:"3px 3px 0 0",background:C.gn}}/><div style={{height:42}}/></>
-         :<><div style={{height:42}}/><div style={{width:"75%",height:h,borderRadius:"0 0 3px 3px",background:C.rd}}/>
-          <div style={{fontSize:8,fontWeight:700,color:C.rd}}>{"₪"+r.profit.toFixed(0)}</div></>}</div>);})}</div></div></Card>}
-    <div style={{textAlign:"center",fontWeight:700,fontSize:13,marginBottom:6,color:totP>=0?C.gn:C.rd}}>{"סה\"כ: ₪"+totP.toFixed(0)}</div>
-    <Btn onClick={goEve} color={isLastDay?C.pu:C.ac} style={{width:"100%"}}>{isLastDay?"🏆 סיום!":"🌙 ערב — קניות →"}</Btn>
+        <div style={{padding:'14px 12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div>
+            <div style={{fontSize:14, fontWeight:700, display:'flex', alignItems:'center', gap:8}}>
+              <I.Target size={16} color="var(--ink-500)"/> מטרות יומיות
+            </div>
+            <div className="muted tiny">אתגר אקראי כל יום + בונוסים</div>
+          </div>
+          <Toggle on={goalsOn} onChange={setGoalsOn}/>
+        </div>
+      </div>
+    </div>
+    <BottomBar cta="התחל משחק" onCta={startG} ctaVariant="primary"/>
    </div>}
    {}
-   {ph==="eveIntel"&&tP&&<div key="eveIntel" className="phase-enter">
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
-    <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🌙 לפני יום 1":"🌙 ערב — שלב 1: מודיעין"}</div>
-    {dy===0&&<Card style={{background:"#E8F5E9"}}><div style={{fontSize:13,fontWeight:700}}>🎉 ברוכים הבאים!</div>
-     <div style={{fontSize:11,color:C.tL}}>יש לך 40 לימונים ו-₪80. קנה מודיעין, ואז דבש וקרח בשוק.</div></Card>}
-    <Card><div style={{fontWeight:700,marginBottom:4,fontSize:13}}>📊 מגמות מחירים</div>
-     <PrCh prices={pH.l} color={C.lD} emoji="🍋"/><PrCh prices={pH.h} color={C.hn} emoji="🍯"/><PrCh prices={pH.i} color={C.iD} emoji="🧊"/>
-     <div style={{fontSize:9,color:C.tM,marginTop:2,textAlign:"center"}}>📈 עולה = קנה עכשיו | 📉 יורד = אולי לחכות</div></Card>
-    <Card style={{background:"linear-gradient(135deg,#FFFDE7,#FFF8E1)",border:"2px solid "+C.lm}}>
-     <div style={{fontWeight:800,fontSize:15,marginBottom:4,textAlign:"center"}}>🔍 תחזית מזג אוויר</div>
-     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-      {[{v:0,e:"🙈",n:"ללא",d:"חינם",sub:"בלי מידע"},
-       ...INTL.map(il=>({v:il.lv,e:il.lv===1?"👂":il.lv===2?"📡":"🕵️",n:il.n,d:"₪"+il.c+" ~"+il.ac*100+"%",
-        sub:il.lv===1?"☁️ מזג אוויר":il.lv===2?"☁️+💲 מגמות":"☁️💲🎯 הכל"}))
-      ].map(o=>{const sel=bIn===o.v,canA=o.v===0||ca>=INTL[o.v-1]?.c;return(
-       <div key={o.v} onClick={()=>{if(canA)setBIn(o.v);}} style={{cursor:canA?"pointer":"not-allowed",
-        padding:"10px 6px",borderRadius:12,textAlign:"center",opacity:canA?1:0.35,
-        background:sel?"linear-gradient(135deg,#FF6F00,#F57C00)":"#F5F5F5",color:sel?"#FFF":C.tx,
-        border:"2px solid "+(sel?C.ac:"#E0E0E0")}}>
-        <div style={{fontSize:24}}>{o.e}</div><div style={{fontSize:12,fontWeight:700}}>{o.n}</div>
-        <div style={{fontSize:9,opacity:0.8}}>{o.d}</div><div style={{fontSize:8,marginTop:1,opacity:0.7}}>{o.sub}</div></div>);})}</div>
-    </Card>
-    {hasComps&&<Card style={{background:"linear-gradient(135deg,#F3E5F5,#E1BEE7)",border:"2px solid #CE93D8"}}>
-     <div style={{fontWeight:800,fontSize:14,marginBottom:4,textAlign:"center"}}>🕵️ ניתוח מתחרים</div>
-     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
-      {[{v:0,n:"ללא",d:"חינם"},...CINTL.map(c=>({v:c.lv,n:c.n,d:"₪"+c.c+" — "+c.d}))].map(o=>{
-       const sel=bCI===o.v;return(
-       <div key={o.v} onClick={()=>setBCI(o.v)} style={{cursor:"pointer",padding:"8px 4px",borderRadius:10,textAlign:"center",
-        background:sel?"linear-gradient(135deg,#7B1FA2,#6A1B9A)":"#F5F5F5",color:sel?"#FFF":C.tx,
-        border:"2px solid "+(sel?C.pu:"#E0E0E0")}}>
-        <div style={{fontSize:11,fontWeight:700}}>{o.n}</div><div style={{fontSize:9,opacity:0.8}}>{o.d}</div></div>);})}</div>
-    </Card>}
-    {(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const canGo=tc===0||tc<=ca;return(
-     <Btn onClick={confIntel} color={C.gn} disabled={!canGo} style={{width:"100%"}}>
-      {(tc>0)?("🔍 קנה מודיעין (₪"+tc+") → לשוק"):("🛒 המשך לשוק →")}</Btn>);})()}
+   {ph==="morning"&&dW&&(()=>{const score = Math.round(((rL+rH+rI)/CUP)*100*(rL>0?1:0.4));
+    const recipeQuality = score;
+    return <div key="morning" className="screen phase-enter" style={{paddingBottom:200}}>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <div className="row-between mb-12">
+      <div>
+        <div className="eyebrow">בוקר</div>
+        <h1 style={{fontSize:26}}>יום {dy} • הכנות</h1>
+      </div>
+      <span className="pill leaf"><I.Sun size={12}/> {dW.temp}°C</span>
+    </div>
+    {/* Yesterday recap */}
+    {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return(
+      <div className="card-flat p-12 mb-12 small">
+        <span className="muted">📋 אתמול:</span> <span className="bold" style={{color:y.profit>=0?'var(--good)':'var(--bad)'}}>₪{y.profit.toFixed(0)}</span>
+        <span className="muted"> רווח · </span>{y.sold} כוסות
+        <span className="muted"> · מוניטין </span>{y.rB}→{y.rA}
+      </div>);})()}
+    {vipBonus && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#FFF9C4,#FFF176)', borderColor:'#FFD600'}}>
+      <span className="bold small">📰 כתבה בעיתון! מבקר האוכל המליץ עליך — ×1.3 לקוחות היום</span>
+    </div>}
+    {goalsOn && dayGoal && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#E3F2FD,#BBDEFB)', borderColor:'#64B5F6'}}>
+      <div className="row gap-8"><I.Target size={14} color="#1976D2"/>
+        <div>
+          <div className="bold small">🎯 מטרת היום: {dayGoal.text}</div>
+          <div className="tiny" style={{color:'var(--good)'}}>בונוס: {dayGoal.rw>0?'₪'+dayGoal.rw:''}{dayGoal.rw>0&&dayGoal.rr>0?' + ':''}{dayGoal.rr>0?dayGoal.rr+' מוניטין':''}</div>
+        </div>
+      </div>
+    </div>}
+    {/* Weather + event hero card */}
+    <div className="card mb-12" style={{
+      background:`linear-gradient(135deg, ${dW.w.id==='heat'?'#FF8A65':dW.w.id==='hot'?'#FFCC80':dW.w.id==='cold'?'#90A4AE':dW.w.id==='hRain'?'#546E7A':dW.w.id==='lRain'?'#78909C':dW.w.id==='cloudy'?'#B0BEC5':dW.w.id==='nice'?'#90CAF9':'#87CEEB'} 0%, ${dW.w.id==='heat'?'#FFCC80':dW.w.id==='hot'?'#FFE0B2':dW.w.id==='cold'?'#B0BEC5':dW.w.id==='hRain'?'#78909C':dW.w.id==='lRain'?'#B0BEC5':dW.w.id==='cloudy'?'#CFD8DC':dW.w.id==='nice'?'#E8F5E9':'#E0F7FA'} 100%)`,
+      color: ['hRain','lRain','cold'].includes(dW.w.id)?'white':'var(--ink-900)',
+      padding:16, borderColor:'transparent'}}>
+      <div className="row-between">
+        <div>
+          <div className="eyebrow" style={{color: ['hRain','lRain','cold'].includes(dW.w.id)?'rgba(255,255,255,0.7)':'var(--ink-500)'}}>מזג אוויר</div>
+          <div style={{fontSize:22, fontWeight:800, marginTop:2}}>{dW.w.n.split(' ').slice(1).join(' ')||dW.w.n}</div>
+          <div className="small" style={{marginTop:4, opacity:0.9}}>
+            {isHeat?'🔥 שרב — קרח קריטי':isHot?'🥵 חם — אנשים צמאים':isWarm?'☀️ מושלם לעסקים':dW.temp>=21?'😊 נעים':isCold?'🥶 קר — ביקוש נמוך':'🌡️ קריר'}
+          </div>
+        </div>
+        <div style={{fontSize:56, lineHeight:1}}>{dW.w.n.split(' ')[0]}</div>
+      </div>
+      {dE && <div style={{marginTop:12, padding:10, background:'rgba(255,255,255,0.85)', color:'var(--ink-900)', borderRadius:'var(--r-md)', fontSize:13}}>
+        <span className="bold">{dE.n}</span><span className="muted" style={{marginRight:6}}> • {dE.d}</span>
+      </div>}
+    </div>
+    {dE?.id==='insp' && !iPd && <div className="card p-12 mb-12" style={{background:'var(--warn-bg)', borderColor:'#F0D080'}}>
+      <div className="bold small mb-4">🏛️ פיקוח עירוני!</div>
+      <div className="row gap-6">
+        <button className="btn btn-warm btn-sm" onClick={()=>{setCa(p=>p-8);setIPd(true);}} disabled={ca<8}>שלם ₪8</button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{setIPd(false);runSim(0);}}>סגור ליום</button>
+      </div>
+    </div>}
+    {/* Competitor intel — collapsed style */}
+    {hasCompIntel && hasComps && compD.length>0 && <div className="card mb-12" style={{background:'linear-gradient(135deg,#F8F0FE,#EFE4FA)', borderColor:'#DCC8F0'}}>
+      <div className="p-12" style={{borderBottom:'1px solid var(--ink-100)'}}>
+        <div className="bold small" style={{color:'var(--plum-500)'}}><I.Spy size={12}/> מודיעין מתחרים</div>
+      </div>
+      {compD.map((c,i) => <div key={i} className="p-12" style={{borderBottom: i<compD.length-1?'1px solid var(--ink-100)':'none', fontSize:12}}>
+        <div className="row-between"><b>{c.n}</b><span className="muted tiny">⭐{c.repB} · ₪{c.cash.toFixed(0)}</span></div>
+        <div className="muted tiny" style={{marginTop:2}}>
+          ₪{c.pr} {cIL>=2&&` · ${c.rec.l}🍋${c.rec.h}🍯${c.rec.i}🧊 · ${c.prep} כוסות`}
+        </div>
+      </div>)}
+    </div>}
+    {/* TABS */}
+    <div className="mb-12" style={{display:'flex', justifyContent:'center'}}>
+      <div className="tabs">
+        <button className={"tab "+(morningTab==='recipe'?'active':'')} onClick={()=>setMorningTab('recipe')}><I.Cup size={12}/> מתכון</button>
+        <button className={"tab "+(morningTab==='plan'?'active':'')} onClick={()=>setMorningTab('plan')}><I.Pin size={12}/> תכנון</button>
+        <button className={"tab "+(morningTab==='actions'?'active':'')} onClick={()=>setMorningTab('actions')}><I.Megaphone size={12}/> פעולות</button>
+      </div>
+    </div>
+    {/* RECIPE TAB */}
+    {morningTab==='recipe' && <div className="fade-in">
+      <div className="section">
+        <div className="card p-16">
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch'}}>
+            <div>
+              <CupVessel lemon={rL} honey={rH} ice={rI} max={CUP}/>
+              <div className="text-center" style={{marginTop:8}}>
+                <div className="muted tiny">איכות צפויה</div>
+                <div style={{marginTop:4}}><QualityMeter score={recipeQuality}/></div>
+                <div className="bold small num" style={{marginTop:4, color: recipeQuality>70?'var(--good)':recipeQuality>40?'var(--warn)':'var(--bad)'}}>{recipeQuality}/100</div>
+              </div>
+            </div>
+            <div className="col gap-6" style={{padding:'4px 0'}}>
+              {[{e:'🍋', n:'לימון', v:rL, s:setRL, mn:1, mx:Math.min(5,lm), c:'var(--lemon-500)', req:true},
+                {e:'🍯', n:'דבש', v:rH, s:setRH, mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
+                {e:'🧊', n:'קרח', v:rI, s:setRI, mn:0, mx:Math.min(5,ic), c:'var(--ice-500)', req:false}].map(ing => (
+                <div key={ing.n} style={{display:'grid', gridTemplateColumns:'24px 1fr auto', gap:8, alignItems:'center', fontSize:12}}>
+                  <span style={{fontSize:18}}>{ing.e}</span>
+                  <div>
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:3, fontSize:11}}>
+                      <span className="bold">{ing.n} {ing.req && <span style={{color:'var(--bad)'}}>*</span>}</span>
+                      <span className="muted">×{ing.v}</span>
+                    </div>
+                    <div style={{height:8, borderRadius:4, background:'var(--ink-100)', overflow:'hidden'}}>
+                      <span style={{display:'block', width:`${(ing.v/CUP)*100}%`, background:ing.c, height:'100%', borderRadius:4, transition:'width .4s'}}></span>
+                    </div>
+                  </div>
+                  <Stepper value={ing.v} onChange={(n)=>{const cap=CUP-(rL+rH+rI-ing.v); ing.s(Math.max(ing.mn, Math.min(Math.min(ing.mx, cap), n)));}} min={ing.mn} max={Math.min(ing.mx, CUP-(rL+rH+rI-ing.v))}/>
+                </div>
+              ))}
+              <div style={{paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--ink-500)'}}>
+                <span>💧 מים</span><span className="num bold">{rW}/{CUP}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="section">
+        <SectionHeader title="מחיר וכמות"/>
+        <div className="card p-12">
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
+            <div>
+              <div className="muted tiny mb-4">מחיר לכוס</div>
+              <div className="row gap-8" style={{justifyContent:'space-between'}}>
+                <Stepper value={pr} onChange={setPr} min={1} max={20}/>
+                <span className="num bold" style={{fontSize:18, color:'var(--lemon-700)'}}>₪{pr}</span>
+              </div>
+            </div>
+            <div>
+              <div className="muted tiny mb-4">להכין כוסות</div>
+              <div className="row gap-8" style={{justifyContent:'space-between'}}>
+                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>setCu(Math.min(mxC, Math.max(0,n)))} min={0} max={mxC} step={5}/>
+                <span className="num bold" style={{fontSize:18}}>{Math.min(cu,mxC)}</span>
+              </div>
+            </div>
+          </div>
+          {(()=>{const estD=Math.max(5,Math.round(100*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM/(1+cm*npcA)));
+            const rec=Math.min(mxC,Math.round(estD*0.7));
+            return <div className="card-flat p-12" style={{marginTop:10}}>
+              <div className="kpi-grid">
+                <div className="text-center"><div className="muted tiny">צפי לקוחות</div><div className="num x-bold" style={{fontSize:20, color:'var(--ice-700)'}}>~{estD}</div></div>
+                <div className="text-center"><div className="muted tiny">צפי מכירה</div><div className="num x-bold" style={{fontSize:20, color:'var(--good)'}}>~{rec}</div></div>
+                <div className="text-center"><div className="muted tiny">קיבולת</div><div className="num x-bold" style={{fontSize:20, color: cap>=CAP_TEAM?'var(--good)':'var(--ink-700)'}}>{cap>=CAP_TEAM?'∞':cap}</div></div>
+              </div>
+              <div className="muted tiny text-center mt-8">💡 מומלץ ~{rec} כוסות</div>
+            </div>;})()}
+        </div>
+      </div>
+    </div>}
+    {/* PLAN TAB */}
+    {morningTab==='plan' && <div className="fade-in">
+      <div className="section">
+        <SectionHeader title="מיקום הדוכן" aside="היכן להציב היום" icon={<I.Pin size={16} color="var(--rose-500)"/>}/>
+        <div className="choice-grid cols-3">
+          {LOC.map((l,i) => (
+            <Choice key={i} active={loc===i} onClick={()=>setLoc(i)}
+              emoji={i===0?'🏚️':i===1?'🏠':'🏙️'} title={l.n} sub={l.d}/>
+          ))}
+        </div>
+      </div>
+      {!up.includes("team")&&(()=>{const baseCap=up.includes("station")?CAP_STATION:CAP_BASE;
+        return <div className="section">
+          <SectionHeader title="עוזר"/>
+          <div className="card p-12">
+            <div className="row-between">
+              <div className="row gap-12">
+                <I.Users size={20} color="var(--ink-500)"/>
+                <div>
+                  <div className="bold small">העסק עוזר ליום • ₪{HELPER_C}</div>
+                  <div className="muted tiny">קיבולת {baseCap+HELPER_B} כוסות במקום {baseCap}</div>
+                </div>
+              </div>
+              <Toggle on={hlp} onChange={setHlp}/>
+            </div>
+          </div>
+        </div>;})()}
+    </div>}
+    {/* ACTIONS TAB */}
+    {morningTab==='actions' && <div className="fade-in">
+      <div className="section">
+        <SectionHeader title="שיווק" aside={`הוצאה: ₪${actionsToday.reduce((s,a)=>s+(a.cost||0),0)}`} icon={<I.Megaphone size={16} color="var(--leaf-600)"/>}/>
+        <div className="col gap-8">
+          {MKTG_ACT.map(act => {
+            const isActive = actionsToday.some(a=>a.id===act.id);
+            return <button key={act.id} className="card p-12" style={{cursor:'pointer', textAlign:'right', background: isActive?'linear-gradient(135deg,#E5F3E8,#D5EAD9)':'var(--paper)', borderColor: isActive?'var(--leaf-500)':'var(--ink-200)', width:'100%', font:'inherit', fontFamily:'inherit', color:'var(--ink-900)'}}
+              onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
+                else if(ca>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c,dm:act.dm,repChance:act.repChance,repB:act.repB,freeCups:act.freeCups}]);}}>
+              <div className="row-between">
+                <div className="row gap-12">
+                  <span style={{fontSize:22}}>{act.n.split(' ')[0]}</span>
+                  <div>
+                    <div className="bold small">{act.n.split(' ').slice(1).join(' ')||act.n}</div>
+                    <div className="muted tiny">{act.desc}</div>
+                  </div>
+                </div>
+                <div className="row gap-8">
+                  <span className="pill plum num">₪{act.c}</span>
+                  {isActive && <I.Check size={16} color="var(--leaf-600)"/>}
+                </div>
+              </div>
+            </button>;
+          })}
+        </div>
+      </div>
+      {hasComps && <div className="section">
+        <SectionHeader title="נגד מתחרים" icon={<I.Shield size={16} color="var(--plum-500)"/>}/>
+        <div className="card p-12" style={{background:'var(--plum-100)', borderColor:'#DCC8F0'}}>
+          <div className="muted tiny mb-8">קמפיין תחרותי — גנב לקוחות מהמתחרים</div>
+          {COMP_ACT.map(act => {
+            const isActive = actionsToday.some(a=>a.id===act.id);
+            if (act.id==='ads') {
+              const curLvl = actionsToday.find(a=>a.id==='ads');
+              return <div key={act.id} style={{marginBottom:8}}>
+                <div className="bold small mb-4">{act.n} <span className="muted tiny" style={{fontWeight:400}}>{act.desc}</span></div>
+                <div className="choice-grid cols-4">
+                  <Choice active={!curLvl} onClick={()=>setActionsToday(p=>p.filter(a=>a.id!=='ads'))} title="ללא"/>
+                  {act.costs.map((c,i) => <Choice key={i} active={curLvl?.lvl===i} disabled={ca<c}
+                    onClick={()=>setActionsToday(p=>[...p.filter(a=>a.id!=='ads'),{id:'ads',cost:c,steal:act.steal[i],lvl:i}])}
+                    title={act.labels[i]} sub={`₪${c}`}/>)}
+                </div>
+              </div>;
+            }
+            return <div key={act.id} style={{display:'grid', gridTemplateColumns:'1fr auto', gap:8, alignItems:'center', padding:'8px 0', borderBottom:'1px solid var(--ink-100)'}}>
+              <div>
+                <div className="bold small">{act.n} <span style={{color:'var(--warn)'}}>⚠️</span></div>
+                <div className="muted tiny">{act.desc}</div>
+              </div>
+              <button className={"btn btn-"+(isActive?'danger':'soft')+" btn-xs"} onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
+                else if(ca>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}} disabled={!isActive&&ca<act.c}>
+                {isActive?'בטל':`₪${act.c}`}</button>
+            </div>;
+          })}
+        </div>
+      </div>}
+    </div>}
+    <BottomBar
+      steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={2}
+      cta={cu>0?`פתח ${Math.min(cu,mxC)} כוסות × ₪${pr}`:'דלג (אין מלאי)'}
+      ctaVariant="primary"
+      onCta={()=>{const c=Math.min(cu,mxC);setCu(c);runSim(c);}}/>
+   </div>;})()}
+   {}
+   {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:200}}>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <div className="row-between mb-12">
+      <div>
+        <div className="eyebrow">סימולציה חיה — יום {dy}</div>
+        <h1 style={{fontSize:24}}>הדוכן פתוח</h1>
+      </div>
+      <div className="row gap-6">
+        <span className="pill leaf">{dW?.w.n.split(' ')[0]} {dW?.temp}°C</span>
+        <span className="pill plum num">{sP}%</span>
+      </div>
+    </div>
+    {/* Stylized live scene */}
+    <div className="scene mb-12">
+      <div className="sun"></div>
+      {(dW?.w.id==='cloudy'||dW?.w.id?.includes('Rain'))&&<>
+        <div style={{position:'absolute', top:26, right:40, fontSize:26, opacity:0.85, animation:'cloudDr 8s ease-in-out infinite'}}>☁️</div>
+        <div style={{position:'absolute', top:44, left:60, fontSize:20, opacity:0.65, animation:'cloudDr 12s ease-in-out infinite reverse'}}>☁️</div>
+      </>}
+      {dW?.w.id?.includes('Rain') && Array.from({length:10}).map((_,i)=>(
+        <div key={i} style={{position:'absolute', top:-8, left:(8+i*9)+'%', fontSize:10, opacity:0.5, animation:`rainDr ${0.6+i*0.08}s linear infinite`, animationDelay:(i*0.1)+'s'}}>💧</div>
+      ))}
+      <div style={{position:'absolute', bottom:32, left:12, fontSize:24}}>🌳</div>
+      <div style={{position:'absolute', bottom:32, right:12, fontSize:24}}>🌴</div>
+      {/* Competitor stands */}
+      {compD.slice(0,3).map((c,i) => (
+        <div key={i} className="comp-stand" style={{
+          right: i===0?'15%':'auto',
+          left: i===1?'15%':i===2?'32%':'auto',
+        }}>
+          <div className="comp-stand-roof"></div>
+          <div className="comp-stand-body num">₪{c.pr}</div>
+        </div>
+      ))}
+      {/* My stand */}
+      <div className="my-stand">
+        <div className="my-stand-roof">LEMONADE</div>
+        <div className="my-stand-body">
+          <div className="my-stand-price num">₪{pr}</div>
+          <div style={{fontSize:16}}>🍋</div>
+        </div>
+      </div>
+      {/* Walking customers */}
+      {sC.slice(-5).map((c,i) => {
+        const offset = ((sP + i*17) % 100);
+        return <div key={c.id||i} className="walking-cust" style={{right:`${offset}%`, opacity: 1-i*0.18}}>{c.em}</div>;
+      })}
+      <div className="road"></div>
+      <div className="scene-progress"><div style={{width:`${sP}%`}}></div></div>
+    </div>
+    {/* KPI tiles */}
+    <div className="kpi-grid mb-12">
+      <div className="kpi">
+        <div className="kpi-val" style={{color:'var(--leaf-600)'}}><CountUp value={sS} duration={400}/><span className="muted" style={{fontSize:14}}>/{cu}</span></div>
+        <div className="kpi-lbl">נמכרו</div>
+      </div>
+      <div className="kpi" style={{background:'linear-gradient(135deg,#FFFCF3,var(--lemon-50))'}}>
+        <div className="kpi-val num" style={{color:'var(--lemon-700)'}}>₪<CountUp value={sR} duration={400}/></div>
+        <div className="kpi-lbl">הכנסות</div>
+      </div>
+      <div className="kpi">
+        <div className="kpi-val" style={{color:'var(--bad)'}}><CountUp value={sNB} duration={400}/></div>
+        <div className="kpi-lbl">לא קנו</div>
+      </div>
+    </div>
+    {/* Competitor pulse */}
+    {hasComps && compD.length > 0 && <div className="section">
+      <div className="section-h">
+        <span className="section-title">מתחרים בזמן אמת</span>
+        <span className="section-aside">{sP}% מהיום</span>
+      </div>
+      <div className="card p-8">
+        {compD.map((c,i) => {
+          // Estimate live competitor sold based on progress
+          const liveSold = Math.round(((c.sold||0) * sP) / 100);
+          return <div key={i} className="comp-pulse-row">
+            <span className="comp-pulse-name">
+              <span className="comp-dot" style={{background: ['#7B1FA2','#0288D1','#E65100'][i%3]}}></span>
+              {c.n}
+            </span>
+            <span className="comp-pulse-price">₪{c.pr}</span>
+            <div className="comp-pulse-bar">
+              <div style={{width:`${Math.min(100, (liveSold/Math.max(1,cu))*100)}%`, background: ['#7B1FA2','#0288D1','#E65100'][i%3]}}></div>
+            </div>
+            <span className="comp-pulse-stat num">{cIL>=3?liveSold+' נמכרו':'?'}</span>
+          </div>;
+        })}
+      </div>
+    </div>}
+    {/* Customer feed */}
+    <div className="section">
+      <div className="section-h">
+        <span className="section-title">תור הלקוחות</span>
+        <span className="section-aside">{sC.length} ביקורים • {sS} קנו</span>
+      </div>
+      <div className="customer-feed">
+        {sC.length === 0 && <div className="card-flat p-16 text-center muted small">ממתין ללקוחות הראשונים…</div>}
+        {[...sC].reverse().slice(0,12).map((c,i) => {
+          const bought = c.buys;
+          const soldOut = c.rx === '💨';
+          const isVip = c.isVip;
+          const cls = isVip?'vip':bought?'buy':soldOut?'miss':'no';
+          return <div key={c.id||i} className={"customer-row "+cls}>
+            <span className="cust-emoji">{c.em}</span>
+            <div className="cust-meta">
+              <span className="cust-name">{isVip?'🎩 ':''}{(CT[c.type]||CT.adult).nm}</span>
+              <span className="cust-quote">"{c.sp || '…'}"</span>
+            </div>
+            <span className="cust-status">{c.rx}</span>
+          </div>;
+        })}
+      </div>
+    </div>
+    <BottomBar
+      steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={3}
+      cta={sDn?'דוח יום':'סימולציה רצה…'}
+      ctaVariant={sDn?'primary':'ghost'}
+      onCta={()=>{if(sDn&&pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk);}}
+      ctaDisabled={!sDn}/>
    </div>}
+   {}
+   {ph==="summary"&&smD&&(()=>{
+    const sellThrough = smD.prep>0 ? Math.round((smD.sold/smD.prep)*100) : 0;
+    const wasted = Math.max(0, smD.prep - smD.sold);
+    const avgPrice = smD.sold>0 ? smD.rev/smD.sold : 0;
+    const repDelta = smD.rA - smD.rB;
+    const profitColor = smD.profit>=0?'var(--good)':'var(--bad)';
+    // Insights
+    const insights = [];
+    if (sellThrough>=95 && smD.sold>0) insights.push({kind:'good', icon:<I.Check size={14}/>, text:'מכרת הכול! אולי כדאי להכין יותר מחר'});
+    else if (sellThrough>=80) insights.push({kind:'good', icon:<I.Trend size={14}/>, text:`שיעור מכירה ${sellThrough}% — מצוין`});
+    if (wasted>=5) insights.push({kind:'bad', icon:<I.TrendDn size={14}/>, text:`${wasted} כוסות נזרקו — להכין פחות`});
+    if (smD.profit>=30) insights.push({kind:'good', icon:<I.Coin size={14}/>, text:'יום רווחי במיוחד'});
+    else if (smD.profit<0) insights.push({kind:'bad', icon:<I.Info size={14}/>, text:'הוצאות עברו את ההכנסות'});
+    if (repDelta>=2) insights.push({kind:'good', icon:<I.Star size={14}/>, text:`מוניטין עלה ב-${repDelta} נק׳`});
+    else if (repDelta<=-2) insights.push({kind:'bad', icon:<I.Star size={14}/>, text:`מוניטין ירד ב-${Math.abs(repDelta)} נק׳`});
+    if (insights.length===0) insights.push({kind:'good', icon:<I.Info size={14}/>, text:'יום סטנדרטי — המשך כך'});
+    // Leaderboard
+    const ranked = [
+      {name:'אתה', sold:smD.sold, profit:smD.profit, you:true},
+      ...compD.map(c => ({name:c.n, sold:c.sold, profit:c.profit, you:false})),
+    ].sort((a,b) => b.profit - a.profit);
+    const myRank = ranked.findIndex(r=>r.you)+1;
+    const maxProfit = Math.max(...ranked.map(r=>Math.abs(r.profit)),1);
+    return <div key="summary" className="screen phase-enter" style={{paddingBottom:200}}>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <div className="row-between mb-12">
+      <div>
+        <div className="eyebrow">סיכום יום</div>
+        <h1 style={{fontSize:26}}>יום {smD.dy} • דוח</h1>
+      </div>
+      {ranked.length>1 && <span className="pill" style={{background: myRank===1?'var(--lemon-100)':'var(--ink-100)', color: myRank===1?'var(--lemon-700)':'var(--ink-700)', fontWeight:800}}>
+        <I.Trophy size={12}/> מקום {myRank}/{ranked.length}
+      </span>}
+    </div>
+    {/* HERO P&L */}
+    <div className="card mb-12 p-16" style={{
+      background: smD.profit>=0?'linear-gradient(135deg,#F5FBF5 0%,#E5F3E8 100%)':'linear-gradient(135deg,#FDF6F4 0%,#FBE2D8 100%)',
+      borderColor: smD.profit>=0?'#BFE0BC':'#F2C7B5'
+    }}>
+      <div className="text-center">
+        <div className="muted small">{smD.profit>=0?'רווח נקי היום':'הפסד היום'}</div>
+        <div className="num" style={{fontSize:48, fontWeight:800, color:profitColor, lineHeight:1.05, marginTop:4, letterSpacing:'-0.02em'}}>
+          {smD.profit>=0?'+':'−'}₪<CountUp value={Math.abs(smD.profit)} duration={1100} decimals={0}/>
+        </div>
+      </div>
+      {/* P&L grid */}
+      <div style={{marginTop:16, padding:'12px 14px', background:'rgba(255,255,255,0.75)', borderRadius:'var(--r-md)', display:'grid', gridTemplateColumns:'1fr auto 1fr auto 1fr', alignItems:'center', gap:8}}>
+        <div className="text-center">
+          <div className="muted tiny">הכנסות</div>
+          <div className="num bold" style={{fontSize:18, color:'var(--good)'}}>₪{smD.rev.toFixed(0)}</div>
+          <div className="muted tiny" style={{marginTop:2}}>{smD.sold} × ₪{avgPrice.toFixed(1)}</div>
+        </div>
+        <span style={{fontSize:18, color:'var(--ink-400)', fontWeight:300}}>−</span>
+        <div className="text-center" onClick={()=>setShowExpD(p=>!p)} style={{cursor:'pointer'}}>
+          <div className="muted tiny">הוצאות {showExpD?'▲':'▼'}</div>
+          <div className="num bold" style={{fontSize:18, color:'var(--bad)'}}>₪{smD.exp.toFixed(0)}</div>
+          <div className="muted tiny" style={{marginTop:2}}>חומ׳+תפעול</div>
+        </div>
+        <span style={{fontSize:18, color:'var(--ink-400)', fontWeight:300}}>=</span>
+        <div className="text-center">
+          <div className="muted tiny">רווח</div>
+          <div className="num bold" style={{fontSize:18, color:profitColor}}>₪{smD.profit.toFixed(0)}</div>
+          <div className="muted tiny" style={{marginTop:2}}>{smD.rev>0?Math.round((smD.profit/smD.rev)*100):0}% מרג׳</div>
+        </div>
+      </div>
+      {/* Stat strip */}
+      <div style={{display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:8, marginTop:12}}>
+        <div style={{textAlign:'center', padding:'8px 4px', background:'rgba(255,255,255,0.5)', borderRadius:'var(--r-sm)'}}>
+          <div className="num bold" style={{fontSize:20}}>{smD.sold}<span className="muted" style={{fontSize:13, fontWeight:600}}>/{smD.prep}</span></div>
+          <div className="muted tiny">כוסות</div>
+        </div>
+        <div style={{textAlign:'center', padding:'8px 4px', background:'rgba(255,255,255,0.5)', borderRadius:'var(--r-sm)'}}>
+          <div className="num bold" style={{fontSize:20, color: sellThrough>=80?'var(--good)':sellThrough>=50?'var(--ink-700)':'var(--bad)'}}>{sellThrough}%</div>
+          <div className="muted tiny">שיעור מכירה</div>
+        </div>
+        <div style={{textAlign:'center', padding:'8px 4px', background:'rgba(255,255,255,0.5)', borderRadius:'var(--r-sm)'}}>
+          <div className="num bold" style={{fontSize:20, color: wasted>5?'var(--bad)':'var(--ink-700)'}}>{wasted}</div>
+          <div className="muted tiny">בזבוז</div>
+        </div>
+      </div>
+    </div>
+    {showExpD && smD.expBreak && <div className="card-flat p-12 mb-12 small">
+      <div className="bold mb-4" style={{color:'var(--bad)'}}>📋 פירוט הוצאות:</div>
+      {smD.expBreak.mc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🍋 חומרי גלם ({smD.prep} כוסות)</span><span className="num bold">₪{smD.expBreak.mc.toFixed(1)}</span></div>}
+      {smD.expBreak.hc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>👤 עוזר</span><span className="num bold">₪{smD.expBreak.hc}</span></div>}
+      {smD.expBreak.rentC>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🏠 שכירות ({LOC[loc].n})</span><span className="num bold">₪{smD.expBreak.rentC}</span></div>}
+      {smD.expBreak.actCost>0 && <div className="row-between" style={{padding:'2px 0'}}><span>⚡ פעולות</span><span className="num bold">₪{smD.expBreak.actCost}</span></div>}
+      {smD.expBreak.fc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🏛️ פיקוח</span><span className="num bold">₪{smD.expBreak.fc}</span></div>}
+    </div>}
+    {/* Insights */}
+    <div className="section">
+      <div className="section-h"><span className="section-title">תובנות היום</span></div>
+      <div className="col gap-6 stagger">
+        {insights.map((ins,i) => (
+          <div key={i} className="insight-row" data-kind={ins.kind}>
+            <span className="insight-icon">{ins.icon}</span>
+            <span className="insight-text">{ins.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+    {/* Reputation */}
+    <div className="section">
+      <div className="section-h">
+        <span className="section-title">מוניטין</span>
+        <span className="section-aside num bold" style={{color: repDelta>=0?'var(--good)':'var(--bad)'}}>
+          {smD.rB} → {smD.rA} ({repDelta>=0?'+':''}{repDelta})
+        </span>
+      </div>
+      <div className="card p-12">
+        <div style={{position:'relative', height:10, background:'var(--ink-100)', borderRadius:5, overflow:'hidden'}}>
+          <div style={{position:'absolute', top:0, bottom:0, right:0, width:`${smD.rB}%`, background:'var(--ink-200)'}}></div>
+          <div style={{position:'absolute', top:0, bottom:0, right:0, width:`${smD.rA}%`, background:'linear-gradient(90deg,var(--lemon-300),var(--lemon-600))', transition:'width 0.8s ease'}}></div>
+        </div>
+        {smD.rEx && smD.rEx.length>0 && <div style={{marginTop:12, paddingTop:10, borderTop:'1px dashed var(--ink-200)'}}>
+          {smD.rEx.map((r,i) => (
+            <div key={i} style={{display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0'}}>
+              <span style={{color:'var(--ink-700)'}}>{r}</span>
+            </div>
+          ))}
+        </div>}
+        {smD.rR && smD.rR.length>0 && <details style={{marginTop:8}}>
+          <summary className="muted tiny" style={{cursor:'pointer'}}>🗣️ ציטוטים ({smD.rR.length})</summary>
+          <div style={{maxHeight:120, overflowY:'auto', marginTop:6}}>
+            {smD.rR.map((r,i) => <div key={i} className="tiny" style={{padding:'2px 0', color:'var(--ink-700)', animation:`slideIn .3s ease-out ${i*0.08}s both`}}>{r}</div>)}
+          </div>
+        </details>}
+      </div>
+    </div>
+    {/* Leaderboard */}
+    {hasComps && compD.length > 0 && <div className="section">
+      <div className="section-h">
+        <span className="section-title">לוח התחרות</span>
+        <span className="section-aside">דירוג לפי רווח</span>
+      </div>
+      <div className="card stagger" style={{overflow:'hidden'}}>
+        {ranked.map((c,i) => {
+          const barWidth = Math.abs(c.profit)/maxProfit*100;
+          return <div key={i} className={"leaderboard-row "+(c.you?'me':'')}>
+            <span className="lb-rank">{i+1}</span>
+            <span className="lb-name">{c.you && <I.User size={12} style={{marginLeft:4}}/>}{c.name}</span>
+            <span className="lb-stat num">{c.sold} כוסות</span>
+            <div className="lb-bar-wrap">
+              <div className="lb-bar" style={{width:`${barWidth}%`, background: c.profit>=0?(c.you?'var(--lemon-500)':'var(--leaf-400)'):'#E57373'}}></div>
+            </div>
+            <span className="lb-profit num bold" style={{color: c.profit>=0?'var(--good)':'var(--bad)'}}>{c.profit>=0?'+':'−'}₪{Math.abs(c.profit).toFixed(0)}</span>
+          </div>;
+        })}
+      </div>
+      {cIL===0 && <div className="muted tiny mt-8 text-center">💡 קנה ניתוח מתחרים בשלב המודיעין כדי לראות פרטים נוספים</div>}
+    </div>}
+    {/* Total profit so far */}
+    <div className="card p-12 mb-12 text-center">
+      <span className="muted small">סה״כ במשחק: </span>
+      <span className="num bold" style={{fontSize:18, color: totP>=0?'var(--good)':'var(--bad)'}}>₪{totP.toFixed(0)}</span>
+    </div>
+    <BottomBar
+      steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={4}
+      cta={isLastDay?'סיום משחק':`ערב — בריפינג ליום ${dy+1}`}
+      ctaVariant="warm"
+      onCta={goEve}/>
+   </div>;})()}
+   {}
+   {ph==="eveIntel"&&tP&&(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const remaining=ca-tc;const canGo=tc===0||tc<=ca;
+    return <div key="eveIntel" className="screen phase-enter" style={{paddingBottom:200}}>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <div className="row-between mb-12">
+      <div>
+        <div className="eyebrow">לפני יום {dy+1}</div>
+        <h1 style={{fontSize:26}}>בריפינג ערב</h1>
+      </div>
+      <span className="pill plum"><I.Spy size={12}/> מודיעין</span>
+    </div>
+    <div className="bento mb-12 stagger">
+      <div className="bento-card b-2 accent-lemon">
+        <div className="bento-label">מזומן</div>
+        <div className="bento-value">₪<CountUp value={ca}/></div>
+        <div className="bento-sub">זמין להוצאה</div>
+      </div>
+      <div className="bento-card b-2 accent-leaf">
+        <div className="bento-label">מוניטין</div>
+        <div className="bento-value"><CountUp value={rp}/>/100</div>
+        <div className="bento-sub">{rp>=70?'מצוין':rp>=40?'בסדר':'לשפר'}</div>
+      </div>
+      <div className="bento-card b-2">
+        <div className="bento-label">יום</div>
+        <div className="bento-value">{dy+1}<span className="muted" style={{fontSize:14, fontWeight:600}}>/10</span></div>
+        <div className="bento-sub">{10-dy} ימים נותרו</div>
+      </div>
+      <div className="bento-card b-3 accent-ice">
+        <div className="bento-label">לימונים</div>
+        <div className="bento-value"><CountUp value={lm}/></div>
+        <div className="bento-sub">במלאי</div>
+      </div>
+      <div className="bento-card b-3">
+        <div className="bento-label">דבש · קרח</div>
+        <div className="bento-value">{hn} · {ic}</div>
+        <div className="bento-sub">תוספים</div>
+      </div>
+    </div>
+    {dy===0 && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#FFF8DA 0%,#FFEEAA 100%)'}}>
+      <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:4}}>
+        <I.Sparkle size={14} color="var(--lemon-700)"/>
+        <span className="bold small">איך מתחילים</span>
+      </div>
+      <p className="tiny" style={{color:'var(--ink-700)', lineHeight:1.5}}>
+        קנה מודיעין כדי לדעת מה מצפה מחר, ואז קנה דבש וקרח בשוק.
+      </p>
+    </div>}
+    <div className="section">
+      <SectionHeader title="מגמות מחירים" icon={<I.Chart size={16} color="var(--lemon-600)"/>}/>
+      <div className="card stagger">
+        {[
+          {name:'לימונים', icon:<I.Lemon size={20} color="var(--lemon-600)"/>, vals:pH.l, color:'var(--lemon-500)', bg:''},
+          {name:'דבש', icon:<I.Honey size={20} color="var(--honey-500)"/>, vals:pH.h, color:'var(--honey-500)', bg:'honey'},
+          {name:'קרח', icon:<I.Ice size={20} color="var(--ice-500)"/>, vals:pH.i, color:'var(--ice-500)', bg:'ice'},
+        ].map((it,i) => {
+          const last = it.vals[it.vals.length-1];
+          const prev = it.vals[it.vals.length-2] || last;
+          const pct = prev > 0 ? Math.round(((last-prev)/prev)*100) : 0;
+          const dir = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+          return <div className="trend-row" key={i}>
+            <div className={"ing-icon "+it.bg}>{it.icon}</div>
+            <div style={{flex:1}}>
+              <div className="bold small" style={{marginBottom:2}}>{it.name}</div>
+              <Sparkline values={it.vals} color={it.color} height={26} width={140}/>
+            </div>
+            <div className="trend-price num">₪{last.toFixed(2)}</div>
+            <div className={"trend-delta "+dir}>{dir==='up'?'▲':dir==='down'?'▼':'•'} {pct>0?'+':''}{pct}%</div>
+          </div>;
+        })}
+      </div>
+      <p className="muted tiny" style={{marginTop:6, textAlign:'center'}}>▲ עולה = קנה היום • ▼ יורד = חכה למחר</p>
+    </div>
+    <div className="section">
+      <SectionHeader title="מודיעין מזג אוויר" aside={`כמה לדעת על יום ${dy+1}`}/>
+      <div className="choice-grid cols-2">
+        <Choice active={bIn===0} onClick={()=>setBIn(0)} icon={<I.Eye size={22}/>} title="ללא" sub="חינם • בלי מידע"/>
+        {INTL.map((il,i) => (
+          <Choice key={i} active={bIn===il.lv} onClick={()=>{if(ca>=il.c)setBIn(il.lv);}}
+            disabled={ca<il.c}
+            emoji={il.lv===1?'👂':il.lv===2?'📡':'🕵️'}
+            title={il.n}
+            sub={`₪${il.c} • דיוק ~${Math.round(il.ac*100)}%`}/>
+        ))}
+      </div>
+    </div>
+    {hasComps && <div className="section">
+      <SectionHeader title="ניתוח מתחרים" aside={`${cm} מתחרים פעילים`} icon={<I.Users size={16} color="var(--plum-500)"/>}/>
+      <div className="choice-grid cols-2">
+        <Choice active={bCI===0} onClick={()=>setBCI(0)} emoji="🚫" title="ללא" sub="חינם • בלי מידע"/>
+        {CINTL.map(c => (
+          <Choice key={c.lv} active={bCI===c.lv} onClick={()=>setBCI(c.lv)}
+            emoji={c.lv===1?'👁️':c.lv===2?'🕵️':'🛡️'}
+            title={c.n}
+            sub={`₪${c.c} • ${c.d}`}/>
+        ))}
+      </div>
+    </div>}
+    <div className="card p-12" style={{background: tc>0?'var(--lemon-50)':'var(--paper)'}}>
+      <div className="row-between">
+        <span className="small bold">עלות מודיעין</span>
+        <span className="num bold" style={{color: tc>0?'var(--bad)':'var(--ink-500)'}}>-₪{tc}</span>
+      </div>
+      <div className="row-between" style={{marginTop:6}}>
+        <span className="muted small">יישאר במזומן</span>
+        <span className="num bold small">₪{remaining.toFixed(0)}</span>
+      </div>
+    </div>
+    <BottomBar
+      steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={0}
+      cta={tc>0?`קנה מודיעין (₪${tc})`:'המשך לשוק'}
+      ctaVariant="warm"
+      onCta={confIntel}
+      ctaDisabled={!canGo}/>
+   </div>;})()}
    {}
    {ph==="evening"&&tP&&(()=>{const sp=eveT,rem=ca-sp;const tmL=lm+bL,tmH=hn+bH,tmI=ic+bI;
     const cupsBare=tmL,cupsB=Math.min(Math.floor(tmL/3),tmH>0?tmH:9999,tmI>0?tmI:9999);
     const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
     const remOk=rem>=0;const canGo=sp===0||remOk;
-    return <div key="evening" className="phase-enter">
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout}/>
-    <div style={{textAlign:"center",fontWeight:800,fontSize:16,marginBottom:6}}>{dy===0?"🏪 שוק ליום 1":"🏪 שוק — ערב יום "+dy}</div>
-    <div style={{position:"sticky",top:42,zIndex:15,background:"linear-gradient(135deg,#FFF8E1,#FFFDE7)",
-     borderRadius:12,padding:"10px 14px",marginBottom:10,border:"2px solid "+(remOk?"#66BB6A":"#E53935"),boxShadow:"0 4px 16px rgba(0,0,0,.12)"}}>
-     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>💰 קופה</div><div style={{fontSize:18,fontWeight:800}}>{"₪"+ca.toFixed(0)}</div></div>
-      <div style={{fontSize:18,color:C.tM}}>−</div>
-      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>🛒 הוצאות</div><div style={{fontSize:18,fontWeight:800,color:sp>0?C.rd:C.tM}}>{"₪"+sp.toFixed(0)}</div></div>
-      <div style={{fontSize:18,color:C.tM}}>=</div>
-      <div style={{textAlign:"center",flex:1}}><div style={{fontSize:9,color:C.tM}}>💵 נשאר</div><div style={{fontSize:18,fontWeight:800,color:remOk?C.gn:C.rd}}>{"₪"+rem.toFixed(0)}</div></div></div></div>
-    {hasIntel&&<Card style={{background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",border:"1px solid #66BB6A"}}>
-     <b>{"🔍 תחזית (רמה "+iD.lv+"): "+iD.w+", "+iD.temp+"°C"}</b>
-     {iD.pT&&<div style={{fontSize:11}}>{"💲 🍋"+iD.pT.l+" 🍯"+iD.pT.h+" 🧊"+iD.pT.i}</div>}
-     {iD.evDetail&&<div style={{fontSize:11,color:"#2E7D32",marginTop:2}}>{iD.evDetail}</div>}
-     {iD.evHint&&!iD.evDetail&&<div style={{fontSize:11,color:C.ac,marginTop:2}}>{iD.evHint}</div>}
-     <div style={{fontSize:9,color:C.tM}}>{"⚠️ דיוק ~"+(iD.lv===1?"70%":iD.lv===2?"85%":"95%")+" — קנה בהתאם"}</div></Card>}
-    {!hasIntel&&<Card style={{background:"#FFF3E0",padding:10}}><div style={{fontSize:11,color:C.ac,textAlign:"center"}}>🙈 אין מודיעין — קונים בעיוורון</div></Card>}
-    <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🏪 חומרי גלם</div>
-     {[{e:"🍋",lb:"לימונים",p:tP.lemon,v:bL,s:setBL,mx:100,st:lm,c:C.lD,bg:"#FFF9C4",note:"⏳ מתקלקלים 3 ימים",af:tmL},
-      {e:"🍯",lb:"דבש",p:tP.honey,v:bH,s:setBH,mx:100,st:hn,c:C.hn,bg:"#FFF3E0",note:"✅ יקר אבל נשמר לנצח!",af:tmH},
-      {e:"🧊",lb:"קרח",p:tP.ice,v:bI,s:setBI,mx:500,st:ic,c:C.iD,bg:"#E1F5FE",note:"❌ זול אבל נמס בסוף כל יום!",af:tmI},
-     ].map(p=>{const av=Math.min(p.mx,Math.floor((rem+p.v*p.p)/p.p));return(
-      <div key={p.lb} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:p.bg,borderRadius:10,marginBottom:6}}>
-       <div style={{textAlign:"center",width:38}}><div style={{fontSize:24}}>{p.e}</div><div style={{fontSize:8,fontWeight:700,color:p.c}}>{"₪"+p.p.toFixed(2)}</div></div>
-       <div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700}}>{p.lb}</div>
-        <div style={{fontSize:9,color:C.tM}}>{p.note}</div>
-        <div style={{fontSize:9,color:C.tL}}>{"מלאי: "+p.st+(p.v>0?" → "+p.af:"")}</div></div>
-       <div style={{display:"flex",alignItems:"center",gap:2}}>
-        <button onClick={()=>p.s(Math.max(0,p.v-5))} disabled={p.v===0} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:11,fontWeight:800,cursor:p.v>0?"pointer":"not-allowed",background:p.v>0?"#FFF":"#EEE",color:p.v>0?C.rd:"#CCC"}}>−5</button>
-        <button onClick={()=>p.s(Math.max(0,p.v-1))} disabled={p.v===0} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:13,fontWeight:800,cursor:p.v>0?"pointer":"not-allowed",background:p.v>0?"#FFF":"#EEE",color:p.v>0?C.rd:"#CCC"}}>−</button>
-        <span style={{fontSize:15,fontWeight:800,width:30,textAlign:"center",color:p.c}}>{p.v}</span>
-        <button onClick={()=>p.s(Math.min(av,p.v+1))} disabled={p.v>=av} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:13,fontWeight:800,cursor:p.v<av?"pointer":"not-allowed",background:p.v<av?"#FFF":"#EEE",color:p.v<av?C.gn:"#CCC"}}>+</button>
-        <button onClick={()=>p.s(Math.min(av,p.v+5))} disabled={p.v>=av} style={{width:24,height:24,borderRadius:6,border:"none",fontSize:11,fontWeight:800,cursor:p.v<av?"pointer":"not-allowed",background:p.v<av?"#FFF":"#EEE",color:p.v<av?C.gn:"#CCC"}}>+5</button></div>
-       <div style={{fontSize:10,fontWeight:700,color:p.c,minWidth:42,textAlign:"center"}}>{(p.v>0)?"₪"+(p.v*p.p).toFixed(1):"—"}</div></div>);})}</Card>
-    <Card style={{background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",border:"1px solid #64B5F6"}}>
-     <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>🥤 כוסות מחר (לפי מלאי אחרי רכישה)</div>
-     {myCap<CAP_TEAM&&<div style={{fontSize:9,color:C.tL,marginBottom:4}}>
-      {"מגבלת הגשה: "+myCap+" כוסות"
-       +(myCap===CAP_BASE?" (עוזר: "+(myCap+HELPER_B)+", עמדה: "+CAP_STATION+", צוות: ללא הגבלה)":"")
-       +(myCap===CAP_STATION?" (עוזר: "+(myCap+HELPER_B)+", צוות: ללא הגבלה)":"")}</div>}
-     {myCap>=CAP_TEAM&&<div style={{fontSize:9,color:C.gn,marginBottom:4,fontWeight:700}}>👥 צוות מלא — ללא הגבלת כוסות!</div>}
-     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-      {[{n:"💧 מינימום",r:"1🍋+5💧",v:cupsBare,c:"#1976D2"},
-       {n:"⚖️ מאוזן",r:"3🍋+1🍯+1🧊",v:cupsB,c:C.gn},
-       {n:"⭐ פרמיום",r:"4🍋+1🍯+1🧊",v:cupsP,c:C.lD}
-      ].map((x,i)=>{const capped=Math.min(x.v,myCap);const overCap=x.v>myCap;return(
-       <div key={i} style={{background:"#FFF",borderRadius:8,padding:"8px 6px",textAlign:"center",border:i===1?"2px solid #43A047":"1px solid #E0E0E0"}}>
-       <div style={{fontSize:9,color:x.c,fontWeight:700}}>{x.n}</div><div style={{fontSize:8,color:C.tL}}>{x.r}</div>
-       <div style={{fontSize:20,fontWeight:800,color:x.c}}>{capped}</div>
-       {overCap&&<div style={{fontSize:8,color:C.rd}}>{"(מלאי: "+x.v+", מגבלה: "+myCap+")"}</div>}
-      </div>);})}</div></Card>
-    <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>{"⬆️ שדרוגים (קבועים)"}</div>
-     {hasUps&&<div style={{marginBottom:8}}>{up.map(uid=>{const u=UPG.find(x=>x.id===uid);return u?
-      <div key={uid} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 8px",background:"linear-gradient(135deg,#E8F5E9,#C8E6C9)",borderRadius:8,marginBottom:3,fontSize:12}}>
-       <span>{u.n}</span><span style={{fontSize:10,color:C.gn,fontWeight:700}}>✅</span></div>:null;})}</div>}
-     {UPG.filter(u=>u.ad<=dy+1&&!up.includes(u.id)).map(u=><div key={u.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:"#F5F5F5",borderRadius:10,marginBottom:4}}>
-      <div><div style={{fontSize:13,fontWeight:700}}>{u.n}</div><div style={{fontSize:10,color:C.tM}}>{u.d}</div></div>
-      <Btn onClick={()=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);}}} small color={C.pu} disabled={rem<u.c}>{"₪"+u.c}</Btn></div>)}
-     {UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).length>0&&<div style={{fontSize:9,color:C.tM,marginTop:4,padding:"4px 8px",background:"#FAFAFA",borderRadius:6}}>
-      {"🔒 בקרוב: "+UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).map(u=>u.n+" (מיום "+u.ad+")").join(", ")}</div>}
-    </Card>
-    <Card style={{border:!hasCash&&ln===0?"3px solid "+C.rd:"1px solid "+C.bd,background:!hasCash&&ln===0?"#FFF3E0":C.cd}}>
-     <div style={{fontWeight:700,fontSize:12,marginBottom:3}}>{"🏦 הלוואה (8%/יום!)"}</div>
-     {!hasCash&&ln===0&&<div style={{fontSize:11,color:C.rd,marginBottom:6,fontWeight:700}}>💡 אין כסף? קח הלוואה!</div>}
-     {ln===0?<div style={{display:"flex",gap:3}}>{[10,20,30,40].map(a=><Btn key={a} onClick={()=>{setLn(a);setCa(p=>p+a);setLoanEverTaken(true);}} small color={!hasCash?C.ac:C.tL} style={{flex:1}}>{"₪"+a}</Btn>)}</div>
-     :<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
-      <span>{"חוב: ₪"+ln.toFixed(1)+" (גדל 8%/יום!)"}</span>
-      <Btn onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} small color={C.gn} disabled={ca<ln}>החזר</Btn></div>}</Card>
-    {!remOk&&sp>0&&<div style={{background:"#FFEBEE",borderRadius:10,padding:"8px 12px",marginBottom:8,border:"1px solid #EF9A9A",fontSize:12,color:C.rd,textAlign:"center"}}>
-     ⚠️ אין מספיק כסף! הורד פריטים או קח הלוואה</div>}
-    {!hasCash&&sp===0&&<div style={{background:"#FFF3E0",borderRadius:10,padding:"8px 12px",marginBottom:8,fontSize:12,color:C.ac,textAlign:"center"}}>
-     💸 במינוס. אפשר להמשיך בלי לקנות, או לקחת הלוואה</div>}
-    <Btn onClick={confEve} color={C.gn} disabled={!canGo} style={{width:"100%"}}>{dy===0?"☀️ ליום 1! →":"☀️ יום "+(dy+1)+" →"}</Btn>
-   </div>})()}
+    return <div key="evening" className="screen phase-enter" style={{paddingBottom:200}}>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <div className="row-between mb-12">
+      <div>
+        <div className="eyebrow">שלב 2 — לפני יום {dy+1}</div>
+        <h1 style={{fontSize:26}}>שוק חומרי גלם</h1>
+      </div>
+      <span className="pill lemon"><I.Shop size={12}/> שוק</span>
+    </div>
+    <div className="card p-16 mb-12" style={{background:'linear-gradient(135deg,var(--paper) 0%,var(--lemon-50) 100%)', borderColor:'var(--lemon-300)'}}>
+      <div style={{display:'grid', gridTemplateColumns:'1fr auto 1fr auto 1fr', alignItems:'center', gap:8}}>
+        <div className="text-center">
+          <div className="muted tiny">קופה</div>
+          <div className="num bold" style={{fontSize:18}}>₪{ca.toFixed(0)}</div>
+        </div>
+        <I.Minus size={16} color="var(--ink-400)"/>
+        <div className="text-center">
+          <div className="muted tiny">הוצאה</div>
+          <div className="num bold" style={{fontSize:18, color: sp>0?'var(--bad)':'var(--ink-500)'}}>₪{sp.toFixed(2)}</div>
+        </div>
+        <I.Equals size={16} color="var(--ink-400)"/>
+        <div className="text-center">
+          <div className="muted tiny">יישאר</div>
+          <div className="num bold" style={{fontSize:18, color: rem<0?'var(--bad)':'var(--leaf-600)'}}>₪{rem.toFixed(2)}</div>
+        </div>
+      </div>
+    </div>
+    {hasIntel && <div className="card p-12 mb-12" style={{background:'var(--good-bg)', borderColor:'#BFE0BC'}}>
+      <div style={{display:'flex', alignItems:'center', gap:8}}>
+        <I.Sun size={18} color="var(--lemon-600)"/>
+        <div style={{flex:1}}>
+          <div className="bold small">תחזית (רמה {iD.lv}): {iD.w}, {iD.temp}°C</div>
+          <div className="muted tiny">
+            {iD.pT?`מחירים: לימון ${iD.pT.l} דבש ${iD.pT.h} קרח ${iD.pT.i}`:'דיוק חלקי — ייתכנו טעויות'}
+          </div>
+        </div>
+        {iD.evHint && <span className="pill plum" style={{maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{iD.evHint}</span>}
+      </div>
+    </div>}
+    {!hasIntel && <div className="card p-12 mb-12" style={{background:'var(--warn-bg)', borderColor:'#F0D080'}}>
+      <div className="row gap-8"><I.Eye size={16} color="var(--warn)"/><span className="small bold" style={{color:'var(--warn)'}}>אין מודיעין — קונים בעיוורון</span></div>
+    </div>}
+    <div className="section">
+      <SectionHeader title="חומרי גלם" aside="כמה לקנות לכל סוג"/>
+      <div className="col gap-8">
+        {[
+          {e:'🍋', lb:'לימונים', p:tP.lemon, v:bL, s:setBL, mx:100, st:lm, color:'var(--lemon-500)', bg:'', note:'מתקלקלים אחרי 3 ימים', af:tmL, icon:<I.Lemon size={20} color="var(--lemon-600)"/>},
+          {e:'🍯', lb:'דבש', p:tP.honey, v:bH, s:setBH, mx:100, st:hn, color:'var(--honey-500)', bg:'honey', note:'נשמר לנצח • יקר אבל חשוב', af:tmH, icon:<I.Honey size={20} color="var(--honey-500)"/>},
+          {e:'🧊', lb:'קרח', p:tP.ice, v:bI, s:setBI, mx:500, st:ic, color:'var(--ice-500)', bg:'ice', note:'נמס בסוף היום • קנה מחדש', af:tmI, icon:<I.Ice size={20} color="var(--ice-500)"/>, warn: !up.includes("cooler")},
+        ].map(p => {
+          const av = Math.min(p.mx, Math.floor((rem+p.v*p.p)/p.p));
+          return <div key={p.lb} className="card p-12" style={{borderColor: p.v>0?p.color+'55':'var(--ink-200)'}}>
+            <div style={{display:'grid', gridTemplateColumns:'40px 1fr auto', gap:10, alignItems:'center'}}>
+              <div className={"ing-icon "+p.bg}>{p.icon}</div>
+              <div>
+                <div style={{display:'flex', alignItems:'baseline', gap:6}}>
+                  <span className="bold small">{p.lb}</span>
+                  <span className="muted tiny num">₪{p.p.toFixed(2)}/יח'</span>
+                </div>
+                <div className="muted tiny">
+                  מלאי: <span className="bold" style={{color:'var(--ink-700)'}}>{p.st}</span>
+                  {p.warn ? <span style={{color:'var(--bad)', marginRight:6}}> • ייעלם בערב</span> : <span style={{marginRight:6}}> • {p.note}</span>}
+                  {p.v > 0 && <span style={{marginRight:6}}>→ <b>{p.af}</b></span>}
+                </div>
+              </div>
+              <Stepper value={p.v} onChange={(n)=>p.s(Math.min(av, Math.max(0, n)))} min={0} max={av} fast/>
+            </div>
+            {p.v > 0 && <div style={{marginTop:8, paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between'}}>
+              <span className="muted tiny">עלות פריט</span>
+              <span className="num bold tiny" style={{color: p.color}}>₪{(p.v*p.p).toFixed(2)}</span>
+            </div>}
+          </div>;
+        })}
+      </div>
+    </div>
+    <div className="section">
+      <SectionHeader title="כוסות מחר (לפי מלאי אחרי רכישה)" icon={<I.Cup size={16} color="var(--leaf-600)"/>}/>
+      <div className="card p-12">
+        {myCap<CAP_TEAM && <div className="muted tiny mb-8">מגבלת הגשה: <b>{myCap}</b> כוסות {myCap===CAP_BASE?`(עוזר: ${myCap+HELPER_B}, עמדה: ${CAP_STATION}, צוות: ללא הגבלה)`:myCap===CAP_STATION?`(עוזר: ${myCap+HELPER_B}, צוות: ללא הגבלה)`:''}</div>}
+        {myCap>=CAP_TEAM && <div className="small mb-8" style={{color:'var(--good)', fontWeight:700}}>👥 צוות מלא — ללא הגבלת כוסות!</div>}
+        <div className="choice-grid cols-3">
+          {[
+            {n:'מינימום', e:'🥤', sub:'1🍋+5💧', v:cupsBare},
+            {n:'מאוזן', e:'⚖️', sub:'3🍋+1🍯+1🧊', v:cupsB},
+            {n:'פרמיום', e:'⭐', sub:'4🍋+1🍯+1🧊', v:cupsP},
+          ].map((x,i) => {
+            const capped = Math.min(x.v, myCap);
+            return <div key={i} className="card-flat p-12 text-center">
+              <div style={{fontSize:20}}>{x.e}</div>
+              <div className="bold small">{x.n}</div>
+              <div className="muted tiny">{x.sub}</div>
+              <div className="num x-bold" style={{fontSize:24, color:'var(--lemon-700)', marginTop:4}}>{capped}</div>
+              {x.v > myCap && <div className="tiny" style={{color:'var(--bad)'}}>(מלאי: {x.v})</div>}
+            </div>;
+          })}
+        </div>
+      </div>
+    </div>
+    <div className="section">
+      <SectionHeader title="שדרוגים קבועים" aside="פעם אחת — לכל המשחק" icon={<I.Sparkle size={16} color="var(--plum-500)"/>}/>
+      <div className="card">
+        {UPG.filter(u=>u.ad<=dy+1).map((u,i,arr) => {
+          const owned = up.includes(u.id);
+          return <div key={u.id} style={{display:'grid', gridTemplateColumns:'1fr auto auto', gap:10, alignItems:'center', padding:12, borderBottom: i<arr.length-1?'1px solid var(--ink-100)':'none'}}>
+            <div>
+              <div className="bold small">{u.n}</div>
+              <div className="muted tiny">{u.d}</div>
+            </div>
+            <span className="pill plum num">₪{u.c}</span>
+            {owned ? <span className="pill leaf"><I.Check size={11}/> בבעלות</span> :
+              <button className="btn btn-soft btn-xs" onClick={()=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);}}} disabled={rem<u.c}>קנה</button>}
+          </div>;
+        })}
+        {UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).length>0 && <div className="tiny muted" style={{padding:'8px 12px', borderTop:'1px solid var(--ink-100)'}}>
+          🔒 בקרוב: {UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).map(u=>u.n+` (יום ${u.ad})`).join(', ')}
+        </div>}
+      </div>
+    </div>
+    <div className="section">
+      <div className="card p-12" style={{background: ln>0?'var(--bad-bg)':'var(--paper-2)'}}>
+        <div className="row-between">
+          <div className="row gap-8">
+            <I.Bank size={18} color={ln>0?'var(--bad)':'var(--ink-500)'}/>
+            <div>
+              <div className="bold small">הלוואה (8% ריבית/יום)</div>
+              <div className="muted tiny">עד ₪{LOAN_MAX} • למצבי חירום</div>
+            </div>
+          </div>
+          <span className="num bold" style={{color: ln>0?'var(--bad)':'var(--ink-500)'}}>₪{ln.toFixed(0)}</span>
+        </div>
+        {ln===0 ? <div style={{display:'flex', gap:6, marginTop:8}}>
+          {[10,20,30,40].map(a => <button key={a} className="btn btn-ghost btn-xs" onClick={()=>{setLn(a);setCa(p=>p+a);setLoanEverTaken(true);}} style={{flex:1}}>+₪{a}</button>)}
+        </div> : <div style={{display:'flex', justifyContent:'flex-end', marginTop:8}}>
+          <button className="btn btn-primary btn-sm" onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} disabled={ca<ln}>החזר ₪{ln.toFixed(0)}</button>
+        </div>}
+      </div>
+    </div>
+    {!remOk && sp>0 && <div className="card p-12 mb-12" style={{background:'var(--bad-bg)', borderColor:'#F2C7B5'}}>
+      <span className="small bold" style={{color:'var(--bad)'}}><I.Info size={12}/> אין מספיק כסף — הורד פריטים או קח הלוואה</span>
+    </div>}
+    <BottomBar
+      steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={1}
+      cta={dy===0?'ליום 1':`ליום ${dy+1}`}
+      ctaVariant="primary"
+      onCta={confEve}
+      ctaDisabled={!canGo}
+      secondary={<I.ArrowL size={16}/>}
+      onSecondary={()=>setPh('eveIntel')}/>
+   </div>;})()}
    {}
    {ph==="gameover"&&(()=>{const tR=res.reduce((s,r)=>s+r.rev,0),tE=res.reduce((s,r)=>s+r.exp,0);
     const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr-ln,st=fp<0?1:fp<30?2:fp<70?3:fp<120?4:5;
@@ -1946,51 +2628,76 @@ function LemonadeGame(){
     const bD=res.length>0?res.reduce((b,r)=>r.profit>b.profit?r:b,res[0]):null;
     const wD=res.length>0?res.reduce((w,r)=>r.profit<w.profit?r:w,res[0]):null;
     const confettiColors=['#FFD700','#FF6F00','#4CAF50','#E53935','#1976D2','#7B1FA2','#FF4081'];
-    return <div key="gameover" className="phase-enter" style={{paddingTop:12,position:"relative",overflow:"hidden"}}>
-     {/* Confetti */}
+    return <div key="gameover" className="screen phase-enter" style={{position:'relative', overflow:'hidden', paddingBottom:200}}>
      {fp>=0 && Array.from({length:20}).map((_,i)=>(
        <div key={i} style={{position:"absolute",top:-10,left:(5+i*4.7)+"%",width:8,height:8,
          borderRadius:i%2===0?"50%":"2px",background:confettiColors[i%confettiColors.length],
          animation:`confetti ${2+Math.random()*2}s ease-out forwards`,
-         animationDelay:(Math.random()*1.5)+"s",opacity:0.8,zIndex:0}} />
+         animationDelay:(Math.random()*1.5)+"s",opacity:0.8,zIndex:0}}/>
      ))}
-     <div style={{textAlign:"center",marginBottom:16,position:"relative",zIndex:1}}>
-      <div style={{fontSize:56,animation:"pop .5s ease",filter:"drop-shadow(0 4px 12px rgba(255,215,0,.4))"}}>🏆</div>
-      <h2 style={{fontSize:24,margin:"6px 0",fontWeight:900}}>סוף המשחק!</h2>
-      <div style={{fontSize:36,fontWeight:900,color:fp>=0?C.gn:C.rd,
-        textShadow:fp>=0?"0 2px 12px rgba(67,160,71,.2)":"0 2px 12px rgba(229,57,53,.2)"}}>{"₪"+fp.toFixed(0)}</div>
-      <div style={{fontSize:30,margin:"8px 0",letterSpacing:4}}>{"⭐".repeat(st)+"☆".repeat(5-st)}</div>
-      {/* Save status */}
-      {saveStatus==='saving' && <div style={{fontSize:12,color:C.tM,animation:"pulse 1s infinite"}}>💾 שומר תוצאה...</div>}
-      {saveStatus==='saved' && <div style={{fontSize:12,color:C.gn,fontWeight:700}}>✅ התוצאה נשמרה בטבלת השיאים!</div>}
-      {saveStatus==='error' && <div style={{fontSize:12,color:C.rd}}>❌ שגיאה בשמירה</div>}
-      {!authUser && supabase && <div style={{marginTop:8}}>
-        <button onClick={()=>setShowAuth(true)} style={{background:"linear-gradient(135deg,#FF6F00,#F57C00)",
-          color:"#FFF",border:"none",borderRadius:10,padding:"8px 18px",fontSize:12,fontWeight:700,
-          cursor:"pointer",fontFamily:"inherit",boxShadow:"0 3px 10px rgba(255,111,0,.3)"}}>
-          👤 התחבר כדי לשמור את הציון!</button></div>}
+     <div className="text-center" style={{padding:'24px 0', position:'relative', zIndex:1}}>
+       <I.Trophy size={72} color="var(--lemon-500)" style={{filter:'drop-shadow(0 8px 16px rgba(245,180,0,.4))'}}/>
+       <h1 style={{marginTop:12, fontSize:32}}>משחק הסתיים!</h1>
+       <div style={{display:'flex', justifyContent:'center', gap:6, marginTop:12}}>
+         {Array.from({length:5}).map((_,i) => <span key={i} style={{fontSize:32, opacity: i<st?1:0.2}}>⭐</span>)}
+       </div>
+       <div className="card p-16 mt-16" style={{display:'inline-block', minWidth:240}}>
+         <div className="muted small">רווח כולל ב-{res.length} ימים</div>
+         <div className="num" style={{fontSize:48, fontWeight:800, color: fp>=0?'var(--good)':'var(--bad)'}}>
+           {fp>=0?'+':''}₪<CountUp value={fp} duration={1100} decimals={0}/>
+         </div>
+       </div>
+       {saveStatus==='saving' && <div className="muted small mt-8">💾 שומר תוצאה...</div>}
+       {saveStatus==='saved' && <div className="small mt-8" style={{color:'var(--good)', fontWeight:700}}>✅ התוצאה נשמרה!</div>}
+       {!authUser && supabase && <div className="mt-12">
+         <button className="btn btn-warm btn-sm" onClick={()=>setShowAuth(true)}><I.User size={14}/> התחבר כדי לשמור את הציון</button>
+       </div>}
      </div>
-     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💰 סיכום כספי</div>
-      <div style={{display:"flex",gap:8,marginBottom:8}}>
-       <div style={{flex:1,background:"#E8F5E9",borderRadius:8,padding:8,textAlign:"center"}}><div style={{fontSize:10,color:C.tM}}>הכנסות</div><div style={{fontSize:20,fontWeight:800,color:C.gn}}>{"₪"+tR.toFixed(0)}</div></div>
-       <div style={{flex:1,background:"#FFEBEE",borderRadius:8,padding:8,textAlign:"center"}}><div style={{fontSize:10,color:C.tM}}>הוצאות</div><div style={{fontSize:20,fontWeight:800,color:C.rd}}>{"₪"+tE.toFixed(0)}</div></div></div>
-      {hasLoan&&<div style={{fontSize:12,color:C.rd}}>{"הלוואה: -₪"+ln.toFixed(0)}</div>}
-      <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderTop:"2px solid #333",marginTop:4,fontSize:16}}>
-       <b>רווח נקי:</b><span style={{fontWeight:800,color:fp>=0?C.gn:C.rd}}>{"₪"+fp.toFixed(0)}</span></div></Card>
-     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:6}}>📊 ניתוח יומי</div>
-      <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:11,borderCollapse:"collapse",textAlign:"center"}}>
-       <thead><tr style={{background:"#F5F5F5"}}>{["יום","נמכרו","הכנסות","הוצאות","רווח","מוניטין"].map(h=><th key={h} style={{padding:4,borderBottom:"2px solid #DDD"}}>{h}</th>)}</tr></thead>
-       <tbody>{res.map((r,i)=><tr key={i} style={{background:r.profit>=0?"#F9FFF9":"#FFF9F9",borderBottom:"1px solid #EEE"}}>
-        <td style={{padding:3,fontWeight:700}}>{"י"+r.dy}</td><td>{r.sold+"/"+r.prep}</td>
-        <td style={{color:C.gn}}>{"₪"+r.rev.toFixed(0)}</td><td style={{color:C.rd}}>{"₪"+r.exp.toFixed(0)}</td>
-        <td style={{fontWeight:700,color:r.profit>=0?C.gn:C.rd}}>{"₪"+r.profit.toFixed(0)}</td>
-        <td>{r.rA}</td></tr>)}</tbody></table></div></Card>
-     <Card><div style={{fontWeight:700,fontSize:14,marginBottom:6}}>💡 תובנות</div>
-      <div style={{fontSize:12,lineHeight:1.8,color:C.tL}}>
-       {bD&&<div>{"🏆 היום הטוב: יום "+bD.dy+" — ₪"+bD.profit.toFixed(0)}</div>}
-       {wD&&wD.dy!==bD?.dy&&<div>{"📉 הקשה: יום "+wD.dy+" — ₪"+wD.profit.toFixed(0)}</div>}
-       <div>{"🥤 כוסות: "+tS+"/"+tPp+" ("+(tPp>0?Math.round(tS/tPp*100):0)+"%)"}</div>
-       <div>{"⭐ מוניטין סופי: "+rp+"/100"}</div></div></Card>
+     {/* Bento summary */}
+     <div className="bento mb-12 stagger">
+       <div className="bento-card b-2 accent-leaf">
+         <div className="bento-label">הכנסות</div>
+         <div className="bento-value">₪{tR.toFixed(0)}</div>
+         <div className="bento-sub">{tS} כוסות נמכרו</div>
+       </div>
+       <div className="bento-card b-2 accent-rose">
+         <div className="bento-label">הוצאות</div>
+         <div className="bento-value">₪{tE.toFixed(0)}</div>
+         <div className="bento-sub">{hasLoan?`כולל ₪${ln.toFixed(0)} הלוואה`:'חומרי גלם + תפעול'}</div>
+       </div>
+       <div className="bento-card b-2 accent-lemon">
+         <div className="bento-label">מוניטין סופי</div>
+         <div className="bento-value">{rp}/100</div>
+         <div className="bento-sub">{rp>=80?'מצוין':rp>=60?'טוב':rp>=40?'בסדר':'לשפר'}</div>
+       </div>
+       {bD && <div className="bento-card b-3">
+         <div className="bento-label">היום הטוב</div>
+         <div className="bento-value">יום {bD.dy}</div>
+         <div className="bento-sub">+₪{bD.profit.toFixed(0)} רווח</div>
+       </div>}
+       {wD && wD.dy!==bD?.dy && <div className="bento-card b-3">
+         <div className="bento-label">היום הקשה</div>
+         <div className="bento-value" style={{color:'var(--bad)'}}>יום {wD.dy}</div>
+         <div className="bento-sub">₪{wD.profit.toFixed(0)} רווח</div>
+       </div>}
+     </div>
+     {/* Daily breakdown table */}
+     <div className="section">
+       <SectionHeader title="ניתוח יומי" icon={<I.Chart size={16} color="var(--ink-500)"/>}/>
+       <div className="card" style={{overflowX:'auto'}}>
+         <table style={{width:'100%', fontSize:12, borderCollapse:'collapse', textAlign:'center'}}>
+           <thead><tr style={{background:'var(--paper-2)'}}>{['יום','נמכרו','הכנסות','הוצאות','רווח','⭐'].map(h => <th key={h} style={{padding:'8px 4px', borderBottom:'1px solid var(--ink-200)', fontSize:11, fontWeight:700, color:'var(--ink-500)'}}>{h}</th>)}</tr></thead>
+           <tbody>{res.map((r,i) => <tr key={i} style={{borderBottom: i<res.length-1?'1px solid var(--ink-100)':'none'}}>
+             <td style={{padding:'8px 4px', fontWeight:700}}>{r.dy}</td>
+             <td className="num">{r.sold}/{r.prep}</td>
+             <td className="num" style={{color:'var(--good)'}}>₪{r.rev.toFixed(0)}</td>
+             <td className="num" style={{color:'var(--bad)'}}>₪{r.exp.toFixed(0)}</td>
+             <td className="num bold" style={{color: r.profit>=0?'var(--good)':'var(--bad)'}}>₪{r.profit.toFixed(0)}</td>
+             <td className="num">{r.rA}</td>
+           </tr>)}</tbody>
+         </table>
+       </div>
+     </div>
      {}
      {hasComps&&res.length>0&&res[0].compSnap&&(()=>{
       const nC=res[0].compSnap.length;
@@ -2045,100 +2752,37 @@ function LemonadeGame(){
       const legend=<div style={{display:"flex",gap:8,justifyContent:"center",fontSize:9,marginTop:2,marginBottom:10}}>
        {names.map((n,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
         <span style={{width:12,height:3,background:colors[i%colors.length],borderRadius:2,display:"inline-block"}}/>{n}</span>)}</div>;
-      return <Card style={{padding:16}}>
-       <div style={{fontWeight:800,fontSize:16,marginBottom:12,textAlign:"center"}}>🏆 ניתוח מתחרים מלא</div>
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🥇 דירוג סופי — רווח</div>
-       {allRank.map((p,i)=>(
-        <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",marginBottom:4,borderRadius:10,
-         background:p.isMe?"linear-gradient(135deg,#E8F5E9,#C8E6C9)":"#F5F5F5",
-         border:p.isMe?"2px solid #66BB6A":"1px solid #E0E0E0"}}>
-         <div style={{fontSize:20,fontWeight:800,color:i===0?"#FFD700":i===1?"#90A4AE":"#8D6E63",minWidth:30,textAlign:"center"}}>
-          {i===0?"🥇":i===1?"🥈":"🥉"}</div>
-         <div style={{flex:1}}>
-          <div style={{fontWeight:p.isMe?800:400,fontSize:14}}>{p.name}</div>
-         </div>
-         <div style={{textAlign:"left"}}>
-          <div style={{fontSize:16,fontWeight:800,color:p.val>=0?C.gn:C.rd}}>{"₪"+p.val.toFixed(0)}</div>
-          {p.loan>0&&<div style={{fontSize:8,color:C.rd}}>{"(🏦 חוב: ₪"+p.loan.toFixed(0)+")"}</div>}
-          {!p.isMe&&<div style={{fontSize:10,fontWeight:700,color:myTotProfit>p.val?C.gn:C.rd}}>
-           {(myTotProfit>p.val?"✅ +":"⚠️ ")+"₪"+Math.abs(myTotProfit-p.val).toFixed(0)}</div>}
-         </div>
-        </div>))}
-       <div style={{textAlign:"center",fontSize:13,fontWeight:800,margin:"10px 0",
-        color:myRank===1?C.gn:myRank<=2?C.ac:C.rd}}>
-        {myRank===1?"🏆 מקום ראשון! ניצחת את כולם!":myRank===2?"🥈 מקום שני — כמעט שם!":"מקום "+myRank+" מתוך "+(nC+1)+" — נסה שוב!"}</div>
-       <div style={{height:1,background:"#E0E0E0",margin:"14px 0"}}/>
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📊 הכנסות יומיות</div>
-       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>כמה כל אחד הרוויח כל יום</div>
-       {mkChart([myDailyRev,...compDailyRevs],names)}
-       {legend}
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📈 הכנסות מצטברות</div>
-       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>סך הכנסות לאורך כל המשחק — מי מוביל?</div>
-       {mkChart([myCumRev,...compCumRevs],names)}
-       {legend}
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💰 רווח יומי</div>
-       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>רווח (אחרי הוצאות) — אדום = הפסד</div>
-       {mkChart([myDailyProfit,...compDailyProfit],names)}
-       {legend}
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>📈 רווח מצטבר</div>
-       <div style={{fontSize:9,color:C.tM,marginBottom:4}}>המרוץ האמיתי — מי הרוויח הכי הרבה סך הכל?</div>
-       {mkChart([myCumProfit,...compCumProfits],names)}
-       {legend}
-       <div style={{height:1,background:"#E0E0E0",margin:"14px 0"}}/>
-       {}
-       <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 טבלת השוואה מלאה</div>
-       <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",fontSize:10,borderCollapse:"collapse",textAlign:"center"}}>
-         <thead><tr style={{background:"#F5F5F5"}}>
-          <th style={{padding:4,borderBottom:"2px solid #DDD"}}></th>
-          <th style={{padding:4,borderBottom:"2px solid #DDD",background:"#E8F5E9"}}>🍋 אתה</th>
-          {(res[0].compSnap||[]).map((c,i)=><th key={i} style={{padding:4,borderBottom:"2px solid #DDD"}}>{c.n}</th>)}
-         </tr></thead>
-         <tbody>
-          <tr style={{borderBottom:"1px solid #EEE"}}>
-           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ הכנסות</td>
-           <td style={{padding:3,fontWeight:700,color:C.gn,background:"#F9FFF9"}}>{"₪"+myTotRev.toFixed(0)}</td>
-           {compTotRevs.map((r,i)=><td key={i} style={{padding:3}}>{"₪"+r.toFixed(0)}</td>)}</tr>
-          <tr style={{borderBottom:"1px solid #EEE"}}>
-           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ רווח</td>
-           <td style={{padding:3,fontWeight:700,color:myTotProfit>=0?C.gn:C.rd,background:"#F9FFF9"}}>{"₪"+myTotProfit.toFixed(0)}</td>
-           {compTotProfits.map((r,i)=><td key={i} style={{padding:3,color:r>=0?C.gn:C.rd}}>{"₪"+r.toFixed(0)}</td>)}</tr>
-          <tr style={{borderBottom:"1px solid #EEE"}}>
-           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>סה״כ כוסות</td>
-           <td style={{padding:3,background:"#F9FFF9"}}>{tS}</td>
-           {Array.from({length:nC}).map((_,ci)=><td key={ci}>{res.reduce((s,r)=>s+(r.compSnap?.[ci]?.sold||0),0)}</td>)}</tr>
-          <tr style={{borderBottom:"1px solid #EEE"}}>
-           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>ממוצע מחיר</td>
-           <td style={{padding:3,background:"#F9FFF9"}}>{"₪"+(tS>0?(myTotRev/tS).toFixed(1):"0")}</td>
-           {Array.from({length:nC}).map((_,ci)=>{const ts=res.reduce((s,r)=>s+(r.compSnap?.[ci]?.sold||0),0);const tr2=res.reduce((s,r)=>s+(r.compSnap?.[ci]?.rev||0),0);
-            return <td key={ci}>{"₪"+(ts>0?(tr2/ts).toFixed(1):"0")}</td>;})}</tr>
-          <tr>
-           <td style={{padding:3,fontWeight:700,textAlign:"right"}}>היום הטוב ביותר</td>
-           <td style={{padding:3,background:"#F9FFF9"}}>{"י"+(bD?.dy||1)+" (₪"+(bD?.profit.toFixed(0)||0)+")"}</td>
-           {Array.from({length:nC}).map((_,ci)=>{const best=res.reduce((b,r)=>{const rv=r.compSnap?.[ci]?.rev||0;return rv>b.v?{d:r.dy,v:rv}:b;},{d:1,v:0});
-            return <td key={ci}>{"י"+best.d+" (₪"+best.v.toFixed(0)+")"}</td>;})}</tr>
-         </tbody>
-        </table>
-       </div>
-       {}
-       <div style={{marginTop:12,padding:"8px 10px",background:"#FFFDE7",borderRadius:8,fontSize:11,color:C.tL}}>
-        {"💡 "+(myRank===1?"השגת הכנסות גבוהות מכל המתחרים! האסטרטגיה שלך עבדה.":
-         myTotRev>compTotRevs[0]*0.9?"היית קרוב למוביל — נסה להוריד מחיר או לשפר מתכון.":
-         "המתחרים הצליחו יותר. נסה לבדוק מה הם עשו (קנה ניתוח מתחרים!) ולהתאים.")}
-       </div>
-      </Card>;})()}
-     <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
-       <Btn onClick={()=>setShowAch(true)} color="#FF6F00" style={{flex:"1 1 45%"}}>🏅 הישגים ({unlockedAch.length}/{ACHIEVEMENTS.length})</Btn>
-       <Btn onClick={()=>setShowLB(true)} color="#D4A017" style={{flex:"1 1 45%"}}>🏆 טבלת שיאים</Btn>
-       <Btn onClick={()=>setPh("title")} color={C.ac} style={{flex:"1 1 100%"}}>🔄 משחק חדש</Btn>
-     </div>
-     {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase} />}
-     {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName} />}
+      const maxAbsProfit = Math.max(...allRank.map(r=>Math.abs(r.val)),1);
+      return <div className="section">
+        <SectionHeader title="לוח התחרות הסופי" aside={`מקום ${myRank} מתוך ${allRank.length}`} icon={<I.Trophy size={16} color="var(--lemon-600)"/>}/>
+        <div className="card stagger" style={{overflow:'hidden'}}>
+          {allRank.map((p,i) => {
+            const barWidth = Math.abs(p.val)/maxAbsProfit*100;
+            return <div key={i} className={"leaderboard-row "+(p.isMe?'me':'')}>
+              <span className="lb-rank">{i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+              <span className="lb-name">{p.isMe && <I.User size={12} style={{marginLeft:4}}/>}{p.name}</span>
+              <span className="lb-stat num">{p.loan>0?`חוב ₪${p.loan.toFixed(0)}`:'—'}</span>
+              <div className="lb-bar-wrap">
+                <div className="lb-bar" style={{width:`${barWidth}%`, background: p.val>=0?(p.isMe?'var(--lemon-500)':'var(--leaf-400)'):'#E57373'}}></div>
+              </div>
+              <span className="lb-profit num bold" style={{color: p.val>=0?'var(--good)':'var(--bad)'}}>{p.val>=0?'+':'−'}₪{Math.abs(p.val).toFixed(0)}</span>
+            </div>;
+          })}
+        </div>
+        <div className="card-flat p-12 mt-12 small text-center" style={{color:'var(--ink-700)'}}>
+          💡 {myRank===1?'השגת רווח גבוה מכל המתחרים! האסטרטגיה שלך עבדה.':
+              myTotRev>compTotRevs[0]*0.9?'היית קרוב למוביל — נסה להוריד מחיר או לשפר מתכון.':
+              'המתחרים הצליחו יותר. נסה ניתוח מתחרים מלא בפעם הבאה.'}
+        </div>
+      </div>;})()}
+     <BottomBar
+       cta="משחק חדש"
+       ctaVariant="primary"
+       onCta={()=>setPh('title')}
+       secondary={<><I.Medal size={14}/> {unlockedAch.length}/{ACHIEVEMENTS.length}</>}
+       onSecondary={()=>setShowAch(true)}/>
+     {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onAuth={handleAuth} supabaseClient={supabase}/>}
+     {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName}/>}
     </div>;})()}
    {}
    {showDash&&<div style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.5)",overflowY:"auto"}}
