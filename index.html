@@ -381,6 +381,8 @@ const I = {
   Lock: (p) => <Icon {...p}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></Icon>,
   Bank: (p) => <Icon {...p}><path d="M3 9l9-6 9 6"/><path d="M5 9v10h14V9"/><path d="M3 21h18"/><path d="M8 12v5M12 12v5M16 12v5"/></Icon>,
   Volume: (p) => <Icon {...p}><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M16 8a5 5 0 0 1 0 8"/></Icon>,
+  VolumeOff: (p) => <Icon {...p}><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M22 9l-6 6M16 9l6 6"/></Icon>,
+  Music: (p) => <Icon {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Icon>,
   Target: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></Icon>,
   Info: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v6"/></Icon>,
   Close: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
@@ -1053,7 +1055,7 @@ const PHASE_LABELS = {
   title:'', setup:'הגדרות', eveIntel:'בריפינג ערב', evening:'שוק חומרי גלם',
   morning:'בוקר', sim:'סימולציה חיה', summary:'דוח יום', gameover:'סוף משחק', initEve:''
 };
-const SBar = ({cash, lemons, honey, ice, rep, day, loan, onDash, onSave, saveMsg, userName, onLogout, phase}) => {
+const SBar = ({cash, lemons, honey, ice, rep, day, loan, onDash, onSave, saveMsg, userName, onLogout, phase, musicOn, onToggleMusic}) => {
   const phaseLabel = PHASE_LABELS[phase] || '';
   return <div className="topbar">
     <div className="topbar-row1">
@@ -1070,6 +1072,9 @@ const SBar = ({cash, lemons, honey, ice, rep, day, loan, onDash, onSave, saveMsg
           <span>{userName}</span>
           {onLogout && <button onClick={onLogout} style={{background:'none', border:'none', color:'var(--ink-500)', fontSize:11, cursor:'pointer', padding:0, fontFamily:'inherit'}}><I.Logout size={12}/></button>}
         </div>}
+        {onToggleMusic && <button onClick={onToggleMusic} className="btn btn-ghost btn-xs" title={musicOn?'השתק מוסיקה':'הפעל מוסיקה'} style={{padding:'4px 8px'}}>
+          {musicOn ? <I.Music size={12} color="var(--lemon-600)"/> : <I.VolumeOff size={12} color="var(--ink-400)"/>}
+        </button>}
         {onSave && <button onClick={onSave} className="btn btn-ghost btn-xs" title="שמור"><I.Save size={12}/></button>}
         {saveMsg && <span className="pill" style={{fontSize:10, padding:'2px 8px'}}>{saveMsg==='saving'?'שומר…':saveMsg==='saved'?'✓':'✗'}</span>}
         {day > 0 && <div className="day-pill"><span className="dot"></span>יום {day}<span className="muted">/10</span></div>}
@@ -1348,11 +1353,46 @@ function LemonadeGame(){
  const [goalsOn,setGoalsOn]=useState(false);
  const [dayGoal,setDayGoal]=useState(null);
  const [sfxOn,setSfxOn]=useState(true);
+ const [musicOn,setMusicOn]=useState(()=>{try{return localStorage.getItem('lem-music')!=='off';}catch(e){return true;}});
+ const [musicVol,setMusicVol]=useState(()=>{try{return parseFloat(localStorage.getItem('lem-music-vol')||'0.4');}catch(e){return 0.4;}});
+ const [musicTrack,setMusicTrack]=useState(0);
+ const audioRef=useRef(null);
  const [bestCup,setBestCup]=useState(null);
  const [vipBonus,setVipBonus]=useState(false);
  const [lastVip,setLastVip]=useState(-3);
  const [showExpD,setShowExpD]=useState(false);
  const LOC=[{n:"\u{1F3DA}\uFE0F פינת רחוב",dm:0.65,rent:0,d:"שקט, ללא שכירות"},{n:"\u{1F3E0} צד הרחוב",dm:1.0,rent:3,d:"תנועה רגילה, ₪3/יום"},{n:"\u{1F3D9}\uFE0F מרכז הרחוב",dm:1.4,rent:8,d:"הרבה תנועה! ₪8/יום"}];
+ // Background music — 3 tracks that auto-cycle
+ const MUSIC_TRACKS = ['music/lemonade-dreams.mp3', 'music/general-1.mp3', 'music/general-2.mp3'];
+ useEffect(() => { try { localStorage.setItem('lem-music', musicOn?'on':'off'); } catch(e) {} }, [musicOn]);
+ useEffect(() => { try { localStorage.setItem('lem-music-vol', String(musicVol)); } catch(e) {} }, [musicVol]);
+ useEffect(() => {
+   if (!audioRef.current) return;
+   audioRef.current.volume = musicVol;
+ }, [musicVol]);
+ useEffect(() => {
+   const audio = audioRef.current;
+   if (!audio) return;
+   if (musicOn) {
+     audio.src = MUSIC_TRACKS[musicTrack];
+     audio.volume = musicVol;
+     audio.play().catch(() => {/* autoplay blocked until user interacts */});
+   } else {
+     audio.pause();
+   }
+ }, [musicOn, musicTrack]);
+ // Try to start music on first user interaction (fallback for autoplay block)
+ useEffect(() => {
+   if (!musicOn) return;
+   const tryPlay = () => {
+     const a = audioRef.current;
+     if (a && a.paused) a.play().catch(() => {});
+   };
+   const evts = ['click', 'touchstart', 'keydown'];
+   evts.forEach(e => document.addEventListener(e, tryPlay, { once: true, passive: true }));
+   return () => evts.forEach(e => document.removeEventListener(e, tryPlay));
+ }, [musicOn]);
+
  const sfx=useCallback((type)=>{if(!sfxOn)return;try{const AC=window.AudioContext||window.webkitAudioContext;const ac=new AC();
   const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);g.gain.value=0.08;
   if(type==="sell"){o.frequency.value=880;o.type="sine";}
@@ -1718,7 +1758,10 @@ function LemonadeGame(){
    minHeight:"100vh",maxWidth:680,margin:"0 auto",padding:"12px clamp(10px,3vw,24px) 90px",color:C.tx,position:"relative"}}>
    {}
    {ph==="title"&&<div key="title" className="screen phase-enter" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
-    <div style={{display:'flex', justifyContent:'flex-end', marginBottom:8}}>
+    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, gap:8}}>
+      <button onClick={()=>setMusicOn(p=>!p)} className="btn btn-ghost btn-sm" title={musicOn?'השתק מוסיקה':'הפעל מוסיקה'}>
+        {musicOn ? <I.Music size={14} color="var(--lemon-600)"/> : <I.VolumeOff size={14} color="var(--ink-400)"/>}
+      </button>
       {authUser ? (
         <div style={{display:'flex', alignItems:'center', gap:8, padding:'5px 12px', background:'var(--paper)', borderRadius:'var(--r-pill)', border:'1px solid var(--ink-200)', fontSize:12, fontWeight:700, boxShadow:'var(--sh-1)'}}>
           <div style={{width:22, height:22, borderRadius:'50%', background:'linear-gradient(135deg,#FFD54F,#F5B400)', display:'grid', placeItems:'center', fontSize:10, color:'#FFF', fontWeight:800}}>{authName.charAt(0).toUpperCase()}</div>
@@ -1802,6 +1845,24 @@ function LemonadeGame(){
     <div className="section">
       <SectionHeader title="העדפות נוספות"/>
       <div className="card" style={{padding:4}}>
+        <div style={{padding:'14px 12px', borderBottom:'1px solid var(--ink-100)'}}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div>
+              <div style={{fontSize:14, fontWeight:700, display:'flex', alignItems:'center', gap:8}}>
+                <I.Music size={16} color="var(--lemon-600)"/> מוסיקת רקע
+              </div>
+              <div className="muted tiny">3 שירים שמתחלפים אוטומטית</div>
+            </div>
+            <Toggle on={musicOn} onChange={setMusicOn}/>
+          </div>
+          {musicOn && <div style={{display:'flex', alignItems:'center', gap:10, marginTop:10, padding:'4px 0'}}>
+            <I.Volume size={14} color="var(--ink-400)"/>
+            <input type="range" min={0} max={1} step={0.05} value={musicVol} onChange={e=>setMusicVol(parseFloat(e.target.value))}
+              style={{flex:1, accentColor:'var(--lemon-500)'}}/>
+            <span className="num tiny muted" style={{minWidth:34, textAlign:'left'}}>{Math.round(musicVol*100)}%</span>
+            <button onClick={()=>setMusicTrack(t=>(t+1)%MUSIC_TRACKS.length)} className="btn btn-ghost btn-xs" title="שיר הבא"><I.Forward size={12}/></button>
+          </div>}
+        </div>
         <div style={{padding:'14px 12px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--ink-100)'}}>
           <div>
             <div style={{fontSize:14, fontWeight:700, display:'flex', alignItems:'center', gap:8}}>
@@ -1828,7 +1889,7 @@ function LemonadeGame(){
    {ph==="morning"&&dW&&(()=>{const score = Math.round(((rL+rH+rI)/CUP)*100*(rL>0?1:0.4));
     const recipeQuality = score;
     return <div key="morning" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">בוקר</div>
@@ -2064,7 +2125,7 @@ function LemonadeGame(){
    </div>;})()}
    {}
    {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">סימולציה חיה — יום {dy}</div>
@@ -2208,7 +2269,7 @@ function LemonadeGame(){
     const myRank = ranked.findIndex(r=>r.you)+1;
     const maxProfit = Math.max(...ranked.map(r=>Math.abs(r.profit)),1);
     return <div key="summary" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">סיכום יום</div>
@@ -2349,7 +2410,7 @@ function LemonadeGame(){
    {}
    {ph==="eveIntel"&&tP&&(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const remaining=ca-tc;const canGo=tc===0||tc<=ca;
     return <div key="eveIntel" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">לפני יום {dy+1}</div>
@@ -2466,7 +2527,7 @@ function LemonadeGame(){
     const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
     const remOk=rem>=0;const canGo=sp===0||remOk;
     return <div key="evening" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">שלב 2 — לפני יום {dy+1}</div>
@@ -2999,6 +3060,7 @@ function LemonadeGame(){
    }} onSkip={()=>{setShT(false);setTOn(false);}}/>}
    {showAch && <AchievementsModal onClose={()=>setShowAch(false)} unlocked={unlockedAch}/>}
    {achToasts.length > 0 && <AchievementToast achievement={achToasts[0]}/>}
+   <audio ref={audioRef} onEnded={()=>setMusicTrack(t=>(t+1)%MUSIC_TRACKS.length)} preload="auto"/>
   </div>);
 }
 
