@@ -1363,7 +1363,7 @@ function LemonadeGame(){
  const [showExpD,setShowExpD]=useState(false);
  const LOC=[{n:"\u{1F3DA}\uFE0F פינת רחוב",dm:0.65,rent:0,d:"שקט, ללא שכירות"},{n:"\u{1F3E0} צד הרחוב",dm:1.0,rent:3,d:"תנועה רגילה, ₪3/יום"},{n:"\u{1F3D9}\uFE0F מרכז הרחוב",dm:1.4,rent:8,d:"הרבה תנועה! ₪8/יום"}];
  // Background music — 3 tracks that auto-cycle
- const MUSIC_TRACKS = ['music/lemonade-dreams.mp3', 'music/general-1.mp3', 'music/general-2.mp3'];
+ const MUSIC_TRACKS = ['music/lemonade-dreams.mp3', 'music/general-1.mp3', 'music/general-2.mp3', 'music/lemon-squeeze.mp3', 'music/limon-mon-mon.mp3', 'music/buy-from-me.mp3'];
  useEffect(() => { try { localStorage.setItem('lem-music', musicOn?'on':'off'); } catch(e) {} }, [musicOn]);
  useEffect(() => { try { localStorage.setItem('lem-music-vol', String(musicVol)); } catch(e) {} }, [musicVol]);
  useEffect(() => {
@@ -1851,7 +1851,7 @@ function LemonadeGame(){
               <div style={{fontSize:14, fontWeight:700, display:'flex', alignItems:'center', gap:8}}>
                 <I.Music size={16} color="var(--lemon-600)"/> מוסיקת רקע
               </div>
-              <div className="muted tiny">3 שירים שמתחלפים אוטומטית</div>
+              <div className="muted tiny">{MUSIC_TRACKS.length} שירים שמתחלפים אוטומטית</div>
             </div>
             <Toggle on={musicOn} onChange={setMusicOn}/>
           </div>
