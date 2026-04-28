@@ -2854,29 +2854,27 @@ function LemonadeGame(){
      {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName}/>}
     </div>;})()}
    {}
-   {showDash&&<div style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.5)",overflowY:"auto"}}
-    onClick={e=>{if(e.target===e.currentTarget)setShowDash(false);}}>
-    <div style={{maxWidth:600,margin:"20px auto",background:C.bg,borderRadius:16,padding:"16px 14px",minHeight:"80vh"}}>
-     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{fontWeight:800,fontSize:18}}>📊 דשבורד ניתוח</div>
-      <button onClick={()=>setShowDash(false)} style={{background:C.rd,color:"#FFF",border:"none",borderRadius:8,
-       padding:"4px 12px",fontSize:14,fontWeight:700,cursor:"pointer"}}>✕</button></div>
-     {dayLog.length===0?<div style={{textAlign:"center",color:C.tM,padding:40}}>אין נתונים עדיין — שחק יום אחד לפחות</div>:(()=>{
-      const w=240,h=65,pad=5;const colors=[C.gn,"#7B1FA2","#1976D2","#E65100"];
+   {showDash&&<Sheet open={showDash} onClose={()=>setShowDash(false)} title={<span><I.Chart size={18} color="var(--lemon-600)"/> דשבורד ניתוח</span>}>
+     {dayLog.length===0?<div className="card-flat p-16 text-center muted">
+       <I.Chart size={32} color="var(--ink-300)"/><br/>אין נתונים עדיין — שחק יום אחד לפחות
+     </div>:(()=>{
+      const w=240,h=65,pad=5;
+      const colors=['var(--leaf-600)','var(--plum-500)','var(--ice-700)','var(--rose-700)'];
+      const colorsHex=['#2D8C4E','#7E4CB8','#2B7B9E','#B14A2A'];
       const mkLine=(data,color,sw="2")=>{if(!data||data.length<1)return null;
        const mn=Math.min(...data),mx=Math.max(...data),rg=mx-mn||1;
        return <polyline points={data.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(data.length-1,1));
         const y=h-pad-((v-mn)/rg)*(h-2*pad);return x+","+y;}).join(" ")}
-        fill="none" stroke={color} strokeWidth={sw} strokeLinejoin="round"/>;};
+        fill="none" stroke={color} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"/>;};
       const mkDots=(data,color)=>{if(!data||data.length<1)return null;
        const mn=Math.min(...data),mx=Math.max(...data),rg=mx-mn||1;
        return data.map((v,j)=>{const x=pad+j*((w-2*pad)/Math.max(data.length-1,1));
         const y=h-pad-((v-mn)/rg)*(h-2*pad);
         return <circle key={j} cx={x} cy={y} r={2} fill={color}/>;});};
       const dayLabels=dayLog.map((d,j)=>{const x=pad+j*((w-2*pad)/Math.max(dayLog.length-1,1));
-       return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="#999">{"י"+d.dy}</text>;});
+       return <text key={j} x={x} y={h+10} textAnchor="middle" fontSize="7" fill="var(--ink-400)" fontFamily="DM Mono, Heebo, monospace">{"י"+d.dy}</text>;});
       const chartWrap=(title,children)=><div style={{marginBottom:14}}>
-       <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>{title}</div>
+       <div className="bold tiny mb-4" style={{color:'var(--ink-700)'}}>{title}</div>
        <svg viewBox={"0 0 "+w+" "+(h+14)} style={{width:"100%",height:h+18}}>{children}{dayLabels}</svg></div>;
       // === Summary insights ===
       const totRev = dayLog.reduce((s,d)=>s+d.myRev,0);
@@ -2900,39 +2898,55 @@ function LemonadeGame(){
       const weatherAvg = Object.entries(weatherProfit).map(([w,x])=>({w,avg:x.sum/x.count,count:x.count}))
         .sort((a,b)=>b.avg-a.avg);
       return <div>
-       {/* Summary insights card */}
-       <Card style={{background:"linear-gradient(135deg,#E3F2FD,#BBDEFB)",border:"2px solid #64B5F6"}}>
-        <div style={{fontWeight:800,fontSize:14,marginBottom:8,textAlign:"center"}}>📊 סיכום כולל</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>💵 רווח ממוצע</div>
-          <div style={{fontSize:15,fontWeight:800,color:avgProfit>=0?C.gn:C.rd}}>{"₪"+avgProfit.toFixed(0)}</div></div>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>📐 שיעור רווח</div>
-          <div style={{fontSize:15,fontWeight:800,color:margin>=20?C.gn:margin>=0?C.ac:C.rd}}>{margin.toFixed(0)+"%"}</div></div>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>✅ ימים רווחיים</div>
-          <div style={{fontSize:15,fontWeight:800,color:C.gn}}>{profitDays+"/"+dayLog.length}</div></div>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>🥤 נמכר/הוכן</div>
-          <div style={{fontSize:13,fontWeight:800,color:C.tx}}>{totSold+"/"+totPrep}</div></div>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>🗑️ בזבוז</div>
-          <div style={{fontSize:15,fontWeight:800,color:wastePct<=10?C.gn:wastePct<=25?C.ac:C.rd}}>{wastePct.toFixed(0)+"%"}</div></div>
-         <div style={{background:"#FFF",borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:9,color:C.tM}}>⭐ מוניטין</div>
-          <div style={{fontSize:15,fontWeight:800,color:C.ac}}>{rp}</div></div>
+       {/* Bento summary tiles */}
+       <div className="bento mb-12 stagger">
+        <div className="bento-card b-3 accent-lemon">
+         <div className="bento-label">רווח ממוצע</div>
+         <div className="bento-value" style={{color:avgProfit>=0?'var(--good)':'var(--bad)'}}>₪{avgProfit.toFixed(0)}</div>
+         <div className="bento-sub">ליום</div>
         </div>
-        {bestDay&&worstDay&&bestDay.dy!==worstDay.dy&&<div style={{display:"flex",gap:6,fontSize:10}}>
-         <div style={{flex:1,background:"#E8F5E9",borderRadius:6,padding:"4px 6px",textAlign:"center"}}>
-          <span style={{color:C.gn,fontWeight:700}}>🏆 הטוב: י{bestDay.dy}</span> <span style={{color:C.tL}}>₪{bestDay.myProfit.toFixed(0)}</span></div>
-         <div style={{flex:1,background:"#FFEBEE",borderRadius:6,padding:"4px 6px",textAlign:"center"}}>
-          <span style={{color:C.rd,fontWeight:700}}>📉 הקשה: י{worstDay.dy}</span> <span style={{color:C.tL}}>₪{worstDay.myProfit.toFixed(0)}</span></div>
-        </div>}
-        {weatherAvg.length>=2&&<div style={{marginTop:6,padding:"6px 8px",background:"rgba(255,255,255,.6)",borderRadius:6,fontSize:10,textAlign:"center"}}>
-         <span style={{color:C.tM}}>מזג אוויר מנצח:</span> <b>{weatherAvg[0].w}</b> <span style={{color:C.gn}}>(₪{weatherAvg[0].avg.toFixed(0)} ממוצע)</span>
-        </div>}
-       </Card>
+        <div className="bento-card b-3 accent-leaf">
+         <div className="bento-label">שיעור רווח</div>
+         <div className="bento-value" style={{color: margin>=20?'var(--good)':margin>=0?'var(--warn)':'var(--bad)'}}>{margin.toFixed(0)}%</div>
+         <div className="bento-sub">{margin>=20?'מצוין':margin>=0?'סביר':'הפסד'}</div>
+        </div>
+        <div className="bento-card b-3">
+         <div className="bento-label">ימים רווחיים</div>
+         <div className="bento-value">{profitDays}<span className="muted" style={{fontSize:14, fontWeight:600}}>/{dayLog.length}</span></div>
+         <div className="bento-sub">{Math.round(profitDays/dayLog.length*100)}% הצלחה</div>
+        </div>
+        <div className="bento-card b-3">
+         <div className="bento-label">🥤 נמכר / הוכן</div>
+         <div className="bento-value">{totSold}<span className="muted" style={{fontSize:14, fontWeight:600}}>/{totPrep}</span></div>
+         <div className="bento-sub">{totPrep>0?Math.round(totSold/totPrep*100):0}% מכירה</div>
+        </div>
+        <div className="bento-card b-3 accent-rose">
+         <div className="bento-label">🗑️ בזבוז</div>
+         <div className="bento-value" style={{color:wastePct<=10?'var(--good)':wastePct<=25?'var(--warn)':'var(--bad)'}}>{wastePct.toFixed(0)}%</div>
+         <div className="bento-sub">{(totPrep-totSold)} כוסות</div>
+        </div>
+        <div className="bento-card b-3 accent-ice">
+         <div className="bento-label">⭐ מוניטין</div>
+         <div className="bento-value" style={{color:'var(--lemon-700)'}}>{rp}<span className="muted" style={{fontSize:14, fontWeight:600}}>/100</span></div>
+         <div className="bento-sub">{rp>=70?'מצוין':rp>=40?'בסדר':'לשפר'}</div>
+        </div>
+       </div>
+       {bestDay&&worstDay&&bestDay.dy!==worstDay.dy&&<div className="row gap-8 mb-12">
+        <div className="card p-12" style={{flex:1, background:'var(--good-bg)', borderColor:'#BFE0BC'}}>
+         <div className="tiny" style={{color:'var(--leaf-700)', fontWeight:700}}>🏆 היום הטוב</div>
+         <div className="bold small">יום {bestDay.dy}</div>
+         <div className="num bold" style={{color:'var(--good)'}}>+₪{bestDay.myProfit.toFixed(0)}</div>
+        </div>
+        <div className="card p-12" style={{flex:1, background:'var(--bad-bg)', borderColor:'#F2C7B5'}}>
+         <div className="tiny" style={{color:'var(--bad)', fontWeight:700}}>📉 היום הקשה</div>
+         <div className="bold small">יום {worstDay.dy}</div>
+         <div className="num bold" style={{color:'var(--bad)'}}>₪{worstDay.myProfit.toFixed(0)}</div>
+        </div>
+       </div>}
+       {weatherAvg.length>=2&&<div className="card-flat p-12 mb-12 text-center small">
+        <span className="muted">מזג אוויר מנצח:</span> <b>{weatherAvg[0].w}</b>
+        <span className="num" style={{color:'var(--good)', marginRight:6}}>(₪{weatherAvg[0].avg.toFixed(0)} ממוצע)</span>
+       </div>}
        {/* Expense breakdown donut */}
        {(()=>{
         const catLemon = dayLog.reduce((s,d)=>{const pr=d.prices?.lemon||0;return s+(d.recipe?.l||0)*d.myPrep*pr;},0);
@@ -2962,113 +2976,146 @@ function LemonadeGame(){
          return {d, p};
         });
         return <Card>
-         <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>🥧 פירוק הוצאות</div>
+         <SectionHeader title="🥧 פירוק הוצאות"/>
          <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <svg viewBox="0 0 120 120" style={{width:130,height:130,flexShrink:0}}>
-           {arcs.map((a,i)=><path key={i} d={a.d} fill={a.p.c} stroke="#FFF" strokeWidth="1.5"/>)}
-           <text x="60" y="58" textAnchor="middle" fontSize="10" fill="#9E8E80">סה״כ</text>
-           <text x="60" y="72" textAnchor="middle" fontSize="13" fontWeight="800" fill="#3E2723">₪{total.toFixed(0)}</text>
+          <svg viewBox="0 0 120 120" style={{width:120,height:120,flexShrink:0}}>
+           {arcs.map((a,i)=><path key={i} d={a.d} fill={a.p.c} stroke="var(--paper)" strokeWidth="1.5"/>)}
+           <text x="60" y="58" textAnchor="middle" fontSize="10" fill="var(--ink-500)">סה״כ</text>
+           <text x="60" y="74" textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--ink-900)" fontFamily="DM Mono, Heebo, monospace">₪{total.toFixed(0)}</text>
           </svg>
           <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
            {parts.map((p,i)=>{const pct=(p.v/total*100).toFixed(0);return(
             <div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11}}>
-             <div style={{width:12,height:12,borderRadius:3,background:p.c,flexShrink:0}}/>
+             <div style={{width:10,height:10,borderRadius:3,background:p.c,flexShrink:0}}/>
              <div style={{flex:1}}>{p.n}</div>
-             <div style={{fontWeight:700}}>₪{p.v.toFixed(0)}</div>
-             <div style={{color:C.tM,fontSize:10,minWidth:30,textAlign:"left"}}>{pct}%</div>
+             <div className="num bold">₪{p.v.toFixed(0)}</div>
+             <div className="muted tiny num" style={{minWidth:28,textAlign:"left"}}>{pct}%</div>
             </div>);})}
           </div>
          </div>
         </Card>;
        })()}
-       {}
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🌤️ היסטוריית מזג אוויר</div>
-        <div style={{display:"flex",gap:4,flexWrap:"wrap",fontSize:10}}>
-         {dayLog.map((d,i)=><div key={i} style={{background:"#F5F5F5",borderRadius:6,padding:"3px 6px",textAlign:"center",minWidth:50}}>
-          <div style={{fontWeight:700}}>{"י"+d.dy}</div>
-          <div>{d.weather.split(" ")[0]+" "+d.temp+"°"}</div>
-          {d.event&&<div style={{fontSize:8,color:C.ac}}>{d.event.split(" ")[0]}</div>}
-         </div>)}</div></Card>
-       {}
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💲 היסטוריית מחירים</div>
-        {chartWrap("🍋 לימון",<>{mkLine(dayLog.map(d=>d.prices.lemon),C.lD)}{mkDots(dayLog.map(d=>d.prices.lemon),C.lD)}</>)}
-        {chartWrap("🍯 דבש",<>{mkLine(dayLog.map(d=>d.prices.honey),C.hn)}{mkDots(dayLog.map(d=>d.prices.honey),C.hn)}</>)}
-        {chartWrap("🧊 קרח",<>{mkLine(dayLog.map(d=>d.prices.ice),C.iD)}{mkDots(dayLog.map(d=>d.prices.ice),C.iD)}</>)}
+       {/* Weather history */}
+       <Card>
+        <SectionHeader title="🌤️ היסטוריית מזג אוויר"/>
+        <div className="row gap-4" style={{flexWrap:'wrap'}}>
+         {dayLog.map((d,i)=><div key={i} className="card-flat" style={{padding:'5px 8px',textAlign:'center',minWidth:54,fontSize:11}}>
+          <div className="bold tiny num">י{d.dy}</div>
+          <div>{d.weather.split(" ")[0]} <span className="num">{d.temp}°</span></div>
+          {d.event&&<div className="tiny" style={{color:'var(--lemon-700)'}}>{d.event.split(" ")[0]}</div>}
+         </div>)}
+        </div>
        </Card>
-       {}
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💰 הביצועים שלי</div>
-        {chartWrap("הכנסות יומיות",<>{mkLine(dayLog.map(d=>d.myRev),C.gn)}{mkDots(dayLog.map(d=>d.myRev),C.gn)}</>)}
-        {chartWrap("רווח יומי",<>{mkLine(dayLog.map(d=>d.myProfit),C.gn)}{mkDots(dayLog.map(d=>d.myProfit),C.gn)}</>)}
-        {chartWrap("⭐ מוניטין",<>{mkLine(dayLog.map(d=>d.rep),"#FF6F00")}{mkDots(dayLog.map(d=>d.rep),"#FF6F00")}</>)}
+       {/* Price history */}
+       <Card>
+        <SectionHeader title="💲 היסטוריית מחירים" icon={<I.Chart size={14} color="var(--lemon-600)"/>}/>
+        {chartWrap('🍋 לימון',<>{mkLine(dayLog.map(d=>d.prices.lemon),'var(--lemon-600)')}{mkDots(dayLog.map(d=>d.prices.lemon),'var(--lemon-600)')}</>)}
+        {chartWrap('🍯 דבש',<>{mkLine(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}{mkDots(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}</>)}
+        {chartWrap('🧊 קרח',<>{mkLine(dayLog.map(d=>d.prices.ice),'var(--ice-700)')}{mkDots(dayLog.map(d=>d.prices.ice),'var(--ice-700)')}</>)}
        </Card>
-       {}
-       {bestCup&&<Card style={{background:"linear-gradient(135deg,#FFF9C4,#FFF8E1)",border:"1px solid #FFD600"}}>
-        <div style={{fontWeight:700,fontSize:13}}>🏆 הכוס הטובה ביותר שלך</div>
-        <div style={{fontSize:12,marginTop:4}}>{"יום "+bestCup.day+": "+bestCup.recipe.l+"🍋"+bestCup.recipe.h+"🍯"+bestCup.recipe.i+"🧊 — ציון "+bestCup.score+"/100"}</div></Card>}
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📋 היסטוריית החלטות</div>
-        <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:9,borderCollapse:"collapse",textAlign:"center"}}>
-         <thead><tr style={{background:"#F5F5F5"}}>
-          {["יום","מתכון","מחיר","הכנו","מכרנו","הכנסות","רווח","⭐"].map(h2=><th key={h2} style={{padding:3,borderBottom:"1px solid #DDD"}}>{h2}</th>)}
-         </tr></thead>
-         <tbody>{dayLog.map((d,i)=><tr key={i} style={{borderBottom:"1px solid #EEE"}}>
-          <td style={{padding:2,fontWeight:700}}>{"י"+d.dy}</td>
-          <td>{d.recipe.l+"🍋"+d.recipe.h+"🍯"+d.recipe.i+"🧊"}</td>
-          <td>{"₪"+d.price}</td><td>{d.myPrep}</td><td>{d.mySold}</td>
-          <td style={{color:C.gn}}>{"₪"+d.myRev}</td>
-          <td style={{fontWeight:700,color:d.myProfit>=0?C.gn:C.rd}}>{"₪"+d.myProfit.toFixed(0)}</td>
-          <td>{d.rep}</td>
-         </tr>)}</tbody></table></div></Card>
-       {}
+       {/* Personal performance */}
+       <Card>
+        <SectionHeader title="💰 הביצועים שלי" icon={<I.Trend size={14} color="var(--leaf-600)"/>}/>
+        {chartWrap('הכנסות יומיות',<>{mkLine(dayLog.map(d=>d.myRev),'var(--leaf-600)')}{mkDots(dayLog.map(d=>d.myRev),'var(--leaf-600)')}</>)}
+        {chartWrap('רווח יומי',<>{mkLine(dayLog.map(d=>d.myProfit),'var(--leaf-600)')}{mkDots(dayLog.map(d=>d.myProfit),'var(--leaf-600)')}</>)}
+        {chartWrap('⭐ מוניטין',<>{mkLine(dayLog.map(d=>d.rep),'var(--lemon-600)')}{mkDots(dayLog.map(d=>d.rep),'var(--lemon-600)')}</>)}
+       </Card>
+       {/* Best cup */}
+       {bestCup&&<Card style={{background:'linear-gradient(135deg,#FFF8DA,#FFEEAA)',borderColor:'var(--lemon-300)'}}>
+        <div className="bold small" style={{display:'flex',alignItems:'center',gap:6}}>
+         <I.Trophy size={14} color="var(--lemon-600)"/> הכוס הטובה ביותר שלך
+        </div>
+        <div className="small" style={{marginTop:4}}>
+         יום <b>{bestCup.day}</b>: {bestCup.recipe.l}🍋 {bestCup.recipe.h}🍯 {bestCup.recipe.i}🧊 — ציון <b className="num">{bestCup.score}/100</b>
+        </div>
+       </Card>}
+       {/* Decision history */}
+       <Card>
+        <SectionHeader title="📋 היסטוריית החלטות"/>
+        <div style={{overflowX:'auto'}}>
+         <table style={{width:'100%',fontSize:11,borderCollapse:'collapse',textAlign:'center'}}>
+          <thead>
+           <tr style={{background:'var(--paper-2)'}}>
+            {['יום','מתכון','מחיר','הכנו','מכרנו','הכנסות','רווח','⭐'].map(h2=>
+             <th key={h2} style={{padding:'6px 4px',borderBottom:'1px solid var(--ink-200)',fontSize:10,fontWeight:700,color:'var(--ink-500)'}}>{h2}</th>)}
+           </tr>
+          </thead>
+          <tbody>
+           {dayLog.map((d,i)=><tr key={i} style={{borderBottom:'1px solid var(--ink-100)'}}>
+            <td className="bold num" style={{padding:'5px 3px'}}>י{d.dy}</td>
+            <td style={{padding:'5px 3px'}}>{d.recipe.l}🍋{d.recipe.h}🍯{d.recipe.i}🧊</td>
+            <td className="num" style={{padding:'5px 3px'}}>₪{d.price}</td>
+            <td className="num" style={{padding:'5px 3px'}}>{d.myPrep}</td>
+            <td className="num" style={{padding:'5px 3px'}}>{d.mySold}</td>
+            <td className="num" style={{padding:'5px 3px',color:'var(--good)'}}>₪{d.myRev}</td>
+            <td className="num bold" style={{padding:'5px 3px',color:d.myProfit>=0?'var(--good)':'var(--bad)'}}>₪{d.myProfit.toFixed(0)}</td>
+            <td className="num" style={{padding:'5px 3px'}}>{d.rep}</td>
+           </tr>)}
+          </tbody>
+         </table>
+        </div>
+       </Card>
+       {/* Competitor comparison */}
        {hasComps&&dayLog[0]?.compSnap&&dayLog[0].compSnap.length>0&&<Card>
-        <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>🏪 השוואה למתחרים</div>
+        <SectionHeader title="🏪 השוואה למתחרים" icon={<I.Users size={14} color="var(--plum-500)"/>}/>
         {(()=>{const nC=dayLog[0].compSnap.length;
-         const names=["🍋 אתה",...dayLog[0].compSnap.map(c=>c.n)];
+         const names=['🍋 אתה',...dayLog[0].compSnap.map(c=>c.n)];
          const myCum=[];let ms=0;dayLog.forEach(d=>{ms+=d.myRev;myCum.push(ms);});
          const compCums=Array.from({length:nC}).map((_,ci)=>{let s=0;return dayLog.map(d=>{s+=(d.compSnap[ci]?.rev||0);return s;});});
          return <div>
-          {chartWrap("📈 הכנסות מצטברות",<>
+          {chartWrap('📈 הכנסות מצטברות',<>
            {mkLine(myCum,colors[0],"2.5")}
            {compCums.map((c,ci)=>mkLine(c,colors[(ci+1)%colors.length],"1.5"))}
           </>)}
-          <div style={{display:"flex",gap:6,justifyContent:"center",fontSize:9,marginTop:-8,marginBottom:8}}>
-           {names.map((n,i)=><span key={i} style={{display:"flex",alignItems:"center",gap:2}}>
-            <span style={{width:10,height:3,background:colors[i%colors.length],borderRadius:1,display:"inline-block"}}/>{n}</span>)}</div>
-          {}
-          <div style={{overflowX:"auto"}}><table style={{width:"100%",fontSize:9,borderCollapse:"collapse",textAlign:"center"}}>
-           <thead><tr style={{background:"#F5F5F5"}}>
-            <th style={{padding:2,borderBottom:"1px solid #DDD"}}>יום</th>
-            <th style={{padding:2,borderBottom:"1px solid #DDD",background:"#E8F5E9"}}>אני ₪</th>
-            {dayLog[0].compSnap.map((c,i)=><th key={i} style={{padding:2,borderBottom:"1px solid #DDD"}}>{c.n+" ₪"}</th>)}
-           </tr></thead>
-           <tbody>{dayLog.map((d,j)=><tr key={j} style={{borderBottom:"1px solid #EEE"}}>
-            <td style={{padding:2}}>{"י"+d.dy}</td>
-            <td style={{padding:2,background:"#F9FFF9",fontWeight:700}}>{d.myRev}</td>
-            {d.compSnap.map((c,i)=><td key={i} style={{padding:2}}>{c.rev}</td>)}
-           </tr>)}</tbody></table></div>
+          <div style={{display:'flex',gap:8,justifyContent:'center',fontSize:10,marginBottom:8}}>
+           {names.map((n,i)=><span key={i} style={{display:'flex',alignItems:'center',gap:3}}>
+            <span style={{width:12,height:3,background:colors[i%colors.length],borderRadius:1,display:'inline-block'}}/>{n}</span>)}
+          </div>
+          <div style={{overflowX:'auto'}}>
+           <table style={{width:'100%',fontSize:11,borderCollapse:'collapse',textAlign:'center'}}>
+            <thead>
+             <tr style={{background:'var(--paper-2)'}}>
+              <th style={{padding:'5px 3px',borderBottom:'1px solid var(--ink-200)',fontSize:10,color:'var(--ink-500)'}}>יום</th>
+              <th style={{padding:'5px 3px',borderBottom:'1px solid var(--ink-200)',fontSize:10,color:'var(--ink-700)',background:'var(--lemon-50)'}}>אני ₪</th>
+              {dayLog[0].compSnap.map((c,i)=><th key={i} style={{padding:'5px 3px',borderBottom:'1px solid var(--ink-200)',fontSize:10,color:'var(--ink-500)'}}>{c.n} ₪</th>)}
+             </tr>
+            </thead>
+            <tbody>
+             {dayLog.map((d,j)=><tr key={j} style={{borderBottom:'1px solid var(--ink-100)'}}>
+              <td className="bold num" style={{padding:'5px 3px'}}>י{d.dy}</td>
+              <td className="num bold" style={{padding:'5px 3px',background:'var(--lemon-50)'}}>{d.myRev}</td>
+              {d.compSnap.map((c,i)=><td key={i} className="num" style={{padding:'5px 3px'}}>{c.rev}</td>)}
+             </tr>)}
+            </tbody>
+           </table>
+          </div>
          </div>;})()}
        </Card>}
-       {}
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📅 אירועים</div>
-        {dayLog.filter(d=>d.event).length===0?<div style={{fontSize:11,color:C.tM}}>לא היו אירועים עד כה</div>:
-         dayLog.filter(d=>d.event).map((d,i)=><div key={i} style={{fontSize:11,padding:"2px 0",borderBottom:"1px solid #EEE"}}>
-          {"יום "+d.dy+": "+d.event}</div>)}
+       {/* Events */}
+       <Card>
+        <SectionHeader title="📅 אירועים"/>
+        {dayLog.filter(d=>d.event).length===0?<div className="muted small">לא היו אירועים עד כה</div>:
+         dayLog.filter(d=>d.event).map((d,i)=><div key={i} className="small" style={{padding:'4px 0',borderBottom:i<dayLog.filter(d=>d.event).length-1?'1px solid var(--ink-100)':'none'}}>
+          <span className="bold">יום {d.dy}:</span> <span className="muted">{d.event}</span>
+         </div>)}
        </Card>
-       {}
+       {/* Actions history */}
        {dayLog.some(d=>d.actions?.length>0||d.npcActs?.some(na=>na.acts.length>0))&&
-       <Card><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>⚡ היסטוריית פעולות</div>
-        {(()=>{const actNames={flyer:"📄 פליירים",banner:"🎈 בלונים",social:"📱 פוסט",taste:"🎁 טעימות",ads:"📢 קמפיין",rumor:"🗣️ שמועות",signs:"🚫 שלטים"};
+       <Card>
+        <SectionHeader title="⚡ היסטוריית פעולות" icon={<I.Megaphone size={14} color="var(--leaf-600)"/>}/>
+        {(()=>{const actNames={flyer:'📄 פליירים',banner:'🎈 בלונים',social:'📱 פוסט',taste:'🎁 טעימות',ads:'📢 קמפיין',rumor:'🗣️ שמועות',signs:'🚫 שלטים'};
         return dayLog.map((d,i)=>{const myActs=(d.actions||[]).map(a=>actNames[a]||a);const theirActs=d.npcActs||[];
          const hasAny=myActs.length>0||theirActs.some(na=>na.acts.length>0);
          if(!hasAny)return null;
-         return <div key={i} style={{padding:"4px 0",borderBottom:"1px solid #EEE",fontSize:10}}>
-          <div style={{fontWeight:700}}>{"יום "+d.dy}</div>
-          {(myActs.length>0)&&<div style={{color:C.gn}}>{"🍋 אתה: "+myActs.join(", ")}</div>}
+         return <div key={i} style={{padding:'6px 0',borderBottom:'1px solid var(--ink-100)',fontSize:11}}>
+          <div className="bold tiny" style={{color:'var(--ink-700)'}}>יום {d.dy}</div>
+          {(myActs.length>0)&&<div style={{color:'var(--good)',marginTop:2}}>🍋 אתה: {myActs.join(', ')}</div>}
           {theirActs.filter(na=>na.acts.length>0).map((na,j)=>
-           <div key={j} style={{color:C.pu}}>{na.n+": "+na.acts.join(", ")}</div>)}
+           <div key={j} style={{color:'var(--plum-500)',marginTop:2}}>{na.n}: {na.acts.join(', ')}</div>)}
          </div>;});})()}
        </Card>}
       </div>;})()}
-    </div></div>}
+    </Sheet>}
    {}
    {shT&&tSt<TUT.length&&<TutBubble step={TUT[tSt]} current={tSt+1} total={TUT.length} onNext={()=>{
     const ns=tSt+1;if(ns>=TUT.length){setShT(false);return;}
