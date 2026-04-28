@@ -1847,7 +1847,7 @@ function LemonadeGame(){
         {[0,1,2,3].map(n => (
           <Choice key={n} active={cm===n} onClick={()=>setCm(n)}
             title={n===0?'ללא':String(n)}
-            sub={n===0?'לבד':n===1?'דואל':'תחרות'}/>
+            sub={n===0?'לבד ברחוב':n===1?'מתחרה אחד':n+' מתחרים'}/>
         ))}
       </div>
     </div>
