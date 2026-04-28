@@ -1953,7 +1953,7 @@ function LemonadeGame(){
               <div className="muted tiny mb-4">להכין כוסות</div>
               <div className="num bold" style={{fontSize:22, marginBottom:6}}>{Math.min(cu,mxC)}</div>
               <div style={{display:'flex', justifyContent:'center'}}>
-                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>setCu(Math.min(mxC, Math.max(0,n)))} min={0} max={mxC} step={5} fast/>
+                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>setCu(Math.min(mxC, Math.max(0,n)))} min={0} max={mxC} fast/>
               </div>
             </div>
           </div>
