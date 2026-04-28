@@ -1187,6 +1187,16 @@ const TutBubble=({step,onNext,onSkip,current,total})=>{if(!step)return null;retu
   <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
    <Btn onClick={onSkip} color="#9E8E80" small>דלג על הדרכה</Btn>
    <Btn onClick={onNext} color="#FF6F00" small>{"הבנתי! ←"}</Btn></div></div>);};
+
+// Background music — random shuffle on every play and after each track
+const MUSIC_TRACKS = ['music/lemonade-dreams.mp3', 'music/general-1.mp3', 'music/general-2.mp3', 'music/lemon-squeeze.mp3', 'music/limon-mon-mon.mp3', 'music/buy-from-me.mp3'];
+const pickRandomTrack = (excludeIndex) => {
+  if (MUSIC_TRACKS.length <= 1) return 0;
+  let idx;
+  do { idx = Math.floor(Math.random() * MUSIC_TRACKS.length); } while (idx === excludeIndex);
+  return idx;
+};
+
 function LemonadeGame(){
  const [authUser, setAuthUser] = useState(null);
  const [authName, setAuthName] = useState('');
@@ -1355,21 +1365,28 @@ function LemonadeGame(){
  const [sfxOn,setSfxOn]=useState(true);
  const [musicOn,setMusicOn]=useState(()=>{try{return localStorage.getItem('lem-music')!=='off';}catch(e){return true;}});
  const [musicVol,setMusicVol]=useState(()=>{try{return parseFloat(localStorage.getItem('lem-music-vol')||'0.4');}catch(e){return 0.4;}});
- const [musicTrack,setMusicTrack]=useState(0);
+ const [musicTrack,setMusicTrack]=useState(()=>pickRandomTrack(-1));
  const audioRef=useRef(null);
+ const prevMusicOnRef=useRef(null);
  const [bestCup,setBestCup]=useState(null);
  const [vipBonus,setVipBonus]=useState(false);
  const [lastVip,setLastVip]=useState(-3);
  const [showExpD,setShowExpD]=useState(false);
  const LOC=[{n:"\u{1F3DA}\uFE0F פינת רחוב",dm:0.65,rent:0,d:"שקט, ללא שכירות"},{n:"\u{1F3E0} צד הרחוב",dm:1.0,rent:3,d:"תנועה רגילה, ₪3/יום"},{n:"\u{1F3D9}\uFE0F מרכז הרחוב",dm:1.4,rent:8,d:"הרבה תנועה! ₪8/יום"}];
- // Background music — 3 tracks that auto-cycle
- const MUSIC_TRACKS = ['music/lemonade-dreams.mp3', 'music/general-1.mp3', 'music/general-2.mp3', 'music/lemon-squeeze.mp3', 'music/limon-mon-mon.mp3', 'music/buy-from-me.mp3'];
+ // Background music — random shuffle every time it plays
  useEffect(() => { try { localStorage.setItem('lem-music', musicOn?'on':'off'); } catch(e) {} }, [musicOn]);
  useEffect(() => { try { localStorage.setItem('lem-music-vol', String(musicVol)); } catch(e) {} }, [musicVol]);
  useEffect(() => {
    if (!audioRef.current) return;
    audioRef.current.volume = musicVol;
  }, [musicVol]);
+ // Pick a fresh random track every time music transitions from off → on
+ useEffect(() => {
+   if (musicOn && prevMusicOnRef.current === false) {
+     setMusicTrack(t => pickRandomTrack(t));
+   }
+   prevMusicOnRef.current = musicOn;
+ }, [musicOn]);
  useEffect(() => {
    const audio = audioRef.current;
    if (!audio) return;
@@ -1860,7 +1877,7 @@ function LemonadeGame(){
             <input type="range" min={0} max={1} step={0.05} value={musicVol} onChange={e=>setMusicVol(parseFloat(e.target.value))}
               style={{flex:1, accentColor:'var(--lemon-500)'}}/>
             <span className="num tiny muted" style={{minWidth:34, textAlign:'left'}}>{Math.round(musicVol*100)}%</span>
-            <button onClick={()=>setMusicTrack(t=>(t+1)%MUSIC_TRACKS.length)} className="btn btn-ghost btn-xs" title="שיר הבא"><I.Forward size={12}/></button>
+            <button onClick={()=>setMusicTrack(t=>pickRandomTrack(t))} className="btn btn-ghost btn-xs" title="שיר הבא"><I.Forward size={12}/></button>
           </div>}
         </div>
         <div style={{padding:'14px 12px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--ink-100)'}}>
@@ -1953,16 +1970,8 @@ function LemonadeGame(){
         </div>
       </div>)}
     </div>}
-    {/* TABS */}
-    <div className="mb-12" style={{display:'flex', justifyContent:'center'}}>
-      <div className="tabs">
-        <button className={"tab "+(morningTab==='recipe'?'active':'')} onClick={()=>setMorningTab('recipe')}><I.Cup size={12}/> מתכון</button>
-        <button className={"tab "+(morningTab==='plan'?'active':'')} onClick={()=>setMorningTab('plan')}><I.Pin size={12}/> תכנון</button>
-        <button className={"tab "+(morningTab==='actions'?'active':'')} onClick={()=>setMorningTab('actions')}><I.Megaphone size={12}/> פעולות</button>
-      </div>
-    </div>
-    {/* RECIPE TAB */}
-    {morningTab==='recipe' && <div className="fade-in">
+    {/* RECIPE SECTION */}
+    {true && <div className="fade-in">
       <div className="section">
         <div className="card p-16">
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch'}}>
@@ -2031,8 +2040,8 @@ function LemonadeGame(){
         </div>
       </div>
     </div>}
-    {/* PLAN TAB */}
-    {morningTab==='plan' && <div className="fade-in">
+    {/* PLAN SECTION */}
+    {true && <div className="fade-in">
       <div className="section">
         <SectionHeader title="מיקום הדוכן" aside="היכן להציב היום" icon={<I.Pin size={16} color="var(--rose-500)"/>}/>
         <div className="choice-grid cols-3">
@@ -2059,8 +2068,8 @@ function LemonadeGame(){
           </div>
         </div>;})()}
     </div>}
-    {/* ACTIONS TAB */}
-    {morningTab==='actions' && <div className="fade-in">
+    {/* ACTIONS SECTION */}
+    {true && <div className="fade-in">
       <div className="section">
         <SectionHeader title="שיווק" aside={`הוצאה: ₪${actionsToday.reduce((s,a)=>s+(a.cost||0),0)}`} icon={<I.Megaphone size={16} color="var(--leaf-600)"/>}/>
         <div className="col gap-8">
@@ -3063,7 +3072,7 @@ function LemonadeGame(){
    }} onSkip={()=>{setShT(false);setTOn(false);}}/>}
    {showAch && <AchievementsModal onClose={()=>setShowAch(false)} unlocked={unlockedAch}/>}
    {achToasts.length > 0 && <AchievementToast achievement={achToasts[0]}/>}
-   <audio ref={audioRef} onEnded={()=>setMusicTrack(t=>(t+1)%MUSIC_TRACKS.length)} preload="auto"/>
+   <audio ref={audioRef} onEnded={()=>setMusicTrack(t=>pickRandomTrack(t))} preload="auto"/>
   </div>);
 }
 
