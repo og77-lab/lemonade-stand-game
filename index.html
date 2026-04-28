@@ -115,7 +115,7 @@
     .step.active .dot { background: var(--lemon-500); box-shadow: 0 0 0 4px rgba(245,180,0,0.18); width: 8px; height: 8px; }
     .step.done .dot { background: var(--leaf-500); }
     .step + .step::before { content: ''; width: 14px; height: 1px; background: var(--ink-200); margin: 0 2px; }
-    .screen { padding: 16px; padding-bottom: 140px; min-width: 0; }
+    .screen { padding: 12px 16px 110px; min-width: 0; }
     .section { margin-bottom: 18px; }
     .section-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .section-title { font-size: 15px; font-weight: 800; }
@@ -1775,7 +1775,7 @@ function LemonadeGame(){
     {showLB && <Leaderboard onClose={()=>setShowLB(false)} supabaseClient={supabase} currentUser={authUser} currentUsername={authName}/>}
    </div>}
    {}
-   {ph==="setup"&&<div key="setup" className="screen phase-enter" style={{paddingBottom:200}}>
+   {ph==="setup"&&<div key="setup" className="screen phase-enter" style={{paddingBottom:120}}>
     <button className="btn btn-ghost btn-sm" onClick={()=>setPh("title")} style={{marginBottom:16}}>
       <I.ArrowL size={14}/> חזרה
     </button>
@@ -1827,7 +1827,7 @@ function LemonadeGame(){
    {}
    {ph==="morning"&&dW&&(()=>{const score = Math.round(((rL+rH+rI)/CUP)*100*(rL>0?1:0.4));
     const recipeQuality = score;
-    return <div key="morning" className="screen phase-enter" style={{paddingBottom:200}}>
+    return <div key="morning" className="screen phase-enter" style={{paddingBottom:120}}>
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
     <div className="row-between mb-12">
       <div>
@@ -1942,18 +1942,18 @@ function LemonadeGame(){
         <SectionHeader title="מחיר וכמות"/>
         <div className="card p-12">
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
-            <div>
+            <div className="text-center">
               <div className="muted tiny mb-4">מחיר לכוס</div>
-              <div className="row gap-8" style={{justifyContent:'space-between'}}>
+              <div className="num bold" style={{fontSize:22, color:'var(--lemon-700)', marginBottom:6}}>₪{pr}</div>
+              <div style={{display:'flex', justifyContent:'center'}}>
                 <Stepper value={pr} onChange={setPr} min={1} max={20}/>
-                <span className="num bold" style={{fontSize:18, color:'var(--lemon-700)'}}>₪{pr}</span>
               </div>
             </div>
-            <div>
+            <div className="text-center">
               <div className="muted tiny mb-4">להכין כוסות</div>
-              <div className="row gap-8" style={{justifyContent:'space-between'}}>
-                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>setCu(Math.min(mxC, Math.max(0,n)))} min={0} max={mxC} step={5}/>
-                <span className="num bold" style={{fontSize:18}}>{Math.min(cu,mxC)}</span>
+              <div className="num bold" style={{fontSize:22, marginBottom:6}}>{Math.min(cu,mxC)}</div>
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>setCu(Math.min(mxC, Math.max(0,n)))} min={0} max={mxC} step={5} fast/>
               </div>
             </div>
           </div>
@@ -2063,7 +2063,7 @@ function LemonadeGame(){
       onCta={()=>{const c=Math.min(cu,mxC);setCu(c);runSim(c);}}/>
    </div>;})()}
    {}
-   {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:200}}>
+   {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:120}}>
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
     <div className="row-between mb-12">
       <div>
@@ -2207,7 +2207,7 @@ function LemonadeGame(){
     ].sort((a,b) => b.profit - a.profit);
     const myRank = ranked.findIndex(r=>r.you)+1;
     const maxProfit = Math.max(...ranked.map(r=>Math.abs(r.profit)),1);
-    return <div key="summary" className="screen phase-enter" style={{paddingBottom:200}}>
+    return <div key="summary" className="screen phase-enter" style={{paddingBottom:120}}>
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
     <div className="row-between mb-12">
       <div>
@@ -2348,7 +2348,7 @@ function LemonadeGame(){
    </div>;})()}
    {}
    {ph==="eveIntel"&&tP&&(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const remaining=ca-tc;const canGo=tc===0||tc<=ca;
-    return <div key="eveIntel" className="screen phase-enter" style={{paddingBottom:200}}>
+    return <div key="eveIntel" className="screen phase-enter" style={{paddingBottom:120}}>
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
     <div className="row-between mb-12">
       <div>
@@ -2465,7 +2465,7 @@ function LemonadeGame(){
     const cupsBare=tmL,cupsB=Math.min(Math.floor(tmL/3),tmH>0?tmH:9999,tmI>0?tmI:9999);
     const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
     const remOk=rem>=0;const canGo=sp===0||remOk;
-    return <div key="evening" className="screen phase-enter" style={{paddingBottom:200}}>
+    return <div key="evening" className="screen phase-enter" style={{paddingBottom:120}}>
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph}/>
     <div className="row-between mb-12">
       <div>
@@ -2619,7 +2619,7 @@ function LemonadeGame(){
     const bD=res.length>0?res.reduce((b,r)=>r.profit>b.profit?r:b,res[0]):null;
     const wD=res.length>0?res.reduce((w,r)=>r.profit<w.profit?r:w,res[0]):null;
     const confettiColors=['#FFD700','#FF6F00','#4CAF50','#E53935','#1976D2','#7B1FA2','#FF4081'];
-    return <div key="gameover" className="screen phase-enter" style={{position:'relative', overflow:'hidden', paddingBottom:200}}>
+    return <div key="gameover" className="screen phase-enter" style={{position:'relative', overflow:'hidden', paddingBottom:120}}>
      {fp>=0 && Array.from({length:20}).map((_,i)=>(
        <div key={i} style={{position:"absolute",top:-10,left:(5+i*4.7)+"%",width:8,height:8,
          borderRadius:i%2===0?"50%":"2px",background:confettiColors[i%confettiColors.length],
