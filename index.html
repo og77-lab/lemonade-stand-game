@@ -1974,36 +1974,34 @@ function LemonadeGame(){
     {true && <div className="fade-in">
       <div className="section">
         <div className="card p-16">
-          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch'}}>
-            <div>
-              <CupVessel lemon={rL} honey={rH} ice={rI} max={CUP}/>
-              <div className="text-center" style={{marginTop:8}}>
-                <div className="muted tiny">איכות צפויה</div>
-                <div style={{marginTop:4}}><QualityMeter score={recipeQuality}/></div>
-                <div className="bold small num" style={{marginTop:4, color: recipeQuality>70?'var(--good)':recipeQuality>40?'var(--warn)':'var(--bad)'}}>{recipeQuality}/100</div>
-              </div>
-            </div>
-            <div className="col gap-6" style={{padding:'4px 0'}}>
-              {[{e:'🍋', n:'לימון', v:rL, s:setRL, mn:1, mx:Math.min(5,lm), c:'var(--lemon-500)', req:true},
-                {e:'🍯', n:'דבש', v:rH, s:setRH, mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
-                {e:'🧊', n:'קרח', v:rI, s:setRI, mn:0, mx:Math.min(5,ic), c:'var(--ice-500)', req:false}].map(ing => (
-                <div key={ing.n} style={{display:'grid', gridTemplateColumns:'24px 1fr auto', gap:8, alignItems:'center', fontSize:12}}>
-                  <span style={{fontSize:18}}>{ing.e}</span>
-                  <div>
-                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:3, fontSize:11}}>
-                      <span className="bold">{ing.n} {ing.req && <span style={{color:'var(--bad)'}}>*</span>}</span>
-                      <span className="muted">×{ing.v}</span>
-                    </div>
-                    <div style={{height:8, borderRadius:4, background:'var(--ink-100)', overflow:'hidden'}}>
-                      <span style={{display:'block', width:`${(ing.v/CUP)*100}%`, background:ing.c, height:'100%', borderRadius:4, transition:'width .4s'}}></span>
-                    </div>
+          {/* Cup vessel + quality on top, centered */}
+          <div className="text-center" style={{marginBottom:16}}>
+            <CupVessel lemon={rL} honey={rH} ice={rI} max={CUP}/>
+            <div className="muted tiny" style={{marginTop:8}}>איכות צפויה</div>
+            <div style={{marginTop:4, display:'flex', justifyContent:'center'}}><QualityMeter score={recipeQuality}/></div>
+            <div className="bold small num" style={{marginTop:4, color: recipeQuality>70?'var(--good)':recipeQuality>40?'var(--warn)':'var(--bad)'}}>{recipeQuality}/100</div>
+          </div>
+          {/* Recipe rows full-width below */}
+          <div className="col gap-10" style={{paddingTop:12, borderTop:'1px solid var(--ink-100)'}}>
+            {[{e:'🍋', n:'לימון', v:rL, s:setRL, mn:1, mx:Math.min(5,lm), c:'var(--lemon-500)', req:true},
+              {e:'🍯', n:'דבש', v:rH, s:setRH, mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
+              {e:'🧊', n:'קרח', v:rI, s:setRI, mn:0, mx:Math.min(5,ic), c:'var(--ice-500)', req:false}].map(ing => (
+              <div key={ing.n} style={{display:'grid', gridTemplateColumns:'24px minmax(0,1fr) auto', gap:10, alignItems:'center'}}>
+                <span style={{fontSize:20}}>{ing.e}</span>
+                <div style={{minWidth:0}}>
+                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:12}}>
+                    <span className="bold">{ing.n} {ing.req && <span style={{color:'var(--bad)'}}>*</span>}</span>
+                    <span className="muted num">×{ing.v}</span>
                   </div>
-                  <Stepper value={ing.v} onChange={(n)=>{const cap=CUP-(rL+rH+rI-ing.v); ing.s(Math.max(ing.mn, Math.min(Math.min(ing.mx, cap), n)));}} min={ing.mn} max={Math.min(ing.mx, CUP-(rL+rH+rI-ing.v))}/>
+                  <div style={{height:8, borderRadius:4, background:'var(--ink-100)', overflow:'hidden'}}>
+                    <span style={{display:'block', width:`${(ing.v/CUP)*100}%`, background:ing.c, height:'100%', borderRadius:4, transition:'width .4s'}}></span>
+                  </div>
                 </div>
-              ))}
-              <div style={{paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--ink-500)'}}>
-                <span>💧 מים</span><span className="num bold">{rW}/{CUP}</span>
+                <Stepper value={ing.v} onChange={(n)=>{const cap=CUP-(rL+rH+rI-ing.v); ing.s(Math.max(ing.mn, Math.min(Math.min(ing.mx, cap), n)));}} min={ing.mn} max={Math.min(ing.mx, CUP-(rL+rH+rI-ing.v))}/>
               </div>
+            ))}
+            <div style={{paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--ink-500)'}}>
+              <span>💧 מים (אוטומטי)</span><span className="num bold">{rW}/{CUP}</span>
             </div>
           </div>
         </div>
