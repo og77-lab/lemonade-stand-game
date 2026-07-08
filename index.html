@@ -803,6 +803,18 @@ const COMP_ACT=[
  {id:"signs",n:"🚫 הסרת שלטים",c:6,catchPct:0.4,selfRepHit:15,selfFine:15,
   desc:"-20% חשיפה למתחרה. ⚠️ 40% סיכוי להיתפס: -15 מוניטין +₪15 קנס!",risk:1,counterable:true},
 ];
+// Competitor personalities — each plays with a distinct strategy.
+// priceBias: added to their cup price. qualityBias: nudges recipe richness.
+// volumeBias: multiplies how many cups they prep. iqBias: multiplies their smarts.
+// chaotic: adds extra randomness to their decisions.
+const COMP_PERSONAS=[
+ {id:"budget", n:"זולי הזול", em:"💸", color:"#E65100", tagline:"תמיד מוזיל מחירים", priceBias:-1.6, qualityBias:-0.6, volumeBias:1.35, iqBias:0.9},
+ {id:"premium", n:"שף גורמה", em:"👨‍🍳", color:"#7B1FA2", tagline:"איכות במחיר גבוה", priceBias:2.4, qualityBias:1, volumeBias:0.72, iqBias:1.12},
+ {id:"steady", n:"דוד יוסי", em:"🧓", color:"#1976D2", tagline:"יציב ואמין", priceBias:0, qualityBias:0, volumeBias:1, iqBias:1},
+ {id:"trendy", n:"טרנדי", em:"😎", color:"#00897B", tagline:"רודף אחרי הטרנד", priceBias:0.6, qualityBias:0.3, volumeBias:1.12, iqBias:1.06},
+ {id:"gambler", n:"המהמר", em:"🎲", color:"#D81B60", tagline:"בלתי צפוי לחלוטין", priceBias:0, qualityBias:0, volumeBias:1, iqBias:0.75, chaotic:true},
+ {id:"veteran", n:"הוותיקה", em:"👵", color:"#5D4037", tagline:"ניסיון של שנים", priceBias:0.3, qualityBias:0.5, volumeBias:0.95, iqBias:1.15},
+];
 const rng=s=>{
  let x=((s%2147483647)+2147483647)%2147483647;
  if(x===0)x=1;
@@ -1681,42 +1693,58 @@ function LemonadeGame(){
  const eveT=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
  const totP=res.reduce((s,r)=>s+r.profit,0);
  useEffect(()=>{if(ph==="initEve"&&cm>0){
-  setNpcState(Array.from({length:cm}).map((_,i)=>({
-   n:"מתחרה "+(i+1),cash:80,lm:40,hn:0,ic:0,rep:REP0,totRev:0,totExp:0,ups:[],ln:0,
-  })));
- }},[ph,cm]);
+  // Shuffle personas deterministically by seed, pick the first `cm`
+  const shr=rng(sd^7331);
+  const pool=[...COMP_PERSONAS];
+  for(let k=pool.length-1;k>0;k--){const j=Math.floor(shr()*(k+1));[pool[k],pool[j]]=[pool[j],pool[k]];}
+  setNpcState(Array.from({length:cm}).map((_,i)=>{
+   const p=pool[i%pool.length];
+   return{
+    n:p.em+" "+p.n, persona:p.id, cash:80,lm:40,hn:0,ic:0,rep:REP0,totRev:0,totExp:0,ups:[],ln:0,
+   };
+  }));
+ }},[ph,cm,sd]);
+ const getPersona=(id)=>COMP_PERSONAS.find(p=>p.id===id)||COMP_PERSONAS[2];
  const compD=useMemo(()=>{
   if(!dW||cm===0||npcState.length===0)return[];
   const r=rng(sd^(dy*2017));
   const iq=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
   return npcState.map((npc,i)=>{
    const ri=rng(sd^(dy*3037+i*1013));
+   const persona=getPersona(npc.persona);
+   const iqAdj=Math.max(0.2,Math.min(0.98,iq*(persona.iqBias||1)));
+   const chaosBump=persona.chaotic?(ri()-0.5)*0.4:0;
    const npcHasTeam=npc.ups.includes("team");
    const npcHasStation=npc.ups.includes("station");
    const npcBaseCap=npcHasTeam?CAP_TEAM:npcHasStation?CAP_STATION:CAP_BASE;
    const expectBusy=dW.w.fm>=0.8&&dW.temp>=22&&(dE?.dm||1)>=1;
-   const npcHiresHelper=!npcHasTeam&&expectBusy&&iq>0.4&&ri()<iq&&npc.cash>20;
+   const npcHiresHelper=!npcHasTeam&&expectBusy&&iqAdj>0.4&&ri()<iqAdj&&npc.cash>20;
    const npcCap=npcBaseCap+(npcHiresHelper?HELPER_B:0);
    const helperCost=npcHiresHelper?HELPER_C:0;
    let upgCost=0;
-   const wantUpg=ri()<iq*0.3&&npc.cash>40&&dy>=2;
+   const wantUpg=ri()<iqAdj*0.3&&npc.cash>40&&dy>=2;
    const availUpgs=UPG.filter(u=>u.ad<=dy&&!npc.ups.includes(u.id));
    const boughtUpg=wantUpg&&availUpgs.length>0?availUpgs[Math.floor(ri()*availUpgs.length)]:null;
    if(boughtUpg)upgCost=boughtUpg.c;
    const prices=gd[dy]?.p||{lemon:0.5,honey:0.8,ice:0.1};
-   const buyIntel=ri()<iq*0.7;
-   const intelCost=buyIntel?(iq>0.7?10:iq>0.5?5:2):0;
-   const knowWeather=buyIntel&&ri()<(iq*0.9);
+   const buyIntel=ri()<iqAdj*0.7;
+   const intelCost=buyIntel?(iqAdj>0.7?10:iqAdj>0.5?5:2):0;
+   const knowWeather=buyIntel&&ri()<(iqAdj*0.9);
    const expectHot=knowWeather?dW.temp>=28:ri()<0.5;
-   const nL=iq>0.7?Math.round(3+ri()*0.5):iq>0.5?Math.round(2+ri()*2):Math.round(1+ri()*3);
-   const nH=Math.min(CUP-nL, iq>0.6?1:Math.round(ri()*2));
-   const nI=Math.min(CUP-nL-nH, expectHot?(iq>0.5?2:Math.round(ri()*3)):Math.round(ri()));
+   // Recipe: quality-focused personas add lemon/honey, budget personas thin it out
+   const qB=persona.qualityBias||0;
+   let nL=iqAdj>0.7?Math.round(3+ri()*0.5):iqAdj>0.5?Math.round(2+ri()*2):Math.round(1+ri()*3);
+   nL=Math.max(1,Math.min(5,nL+Math.round(qB*0.8)));
+   let nH=Math.min(CUP-nL, iqAdj>0.6?1:Math.round(ri()*2));
+   if(qB>=1)nH=Math.min(CUP-nL,nH+1); else if(qB<=-0.5)nH=Math.max(0,nH-1);
+   const nI=Math.min(CUP-nL-nH, expectHot?(iqAdj>0.5?2:Math.round(ri()*3)):Math.round(ri()));
    const nW=CUP-nL-nH-nI;
    const npcRepBase=0.7+(npc.rep/100)*0.6;
    const npcRepNoise=(ri()-0.5)*0.3;
    const npcRepMult=Math.max(0.5,Math.min(1.5,npcRepBase+npcRepNoise));
    const estDem=Math.round(60*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*npcRepMult/(1+cm));
-   const prepTarget=iq>0.6?Math.round(estDem*(0.7+ri()*0.3)):Math.round(10+ri()*40);
+   const volB=persona.volumeBias||1;
+   const prepTarget=Math.max(3,Math.round((iqAdj>0.6?estDem*(0.7+ri()*0.3):10+ri()*40)*volB));
    const needL=Math.max(0,prepTarget*nL-npc.lm);
    const needH=Math.max(0,prepTarget*nH-npc.hn);
    const needI=prepTarget*nI;
@@ -1731,7 +1759,8 @@ function LemonadeGame(){
    const rawPrep=canAfford?prepTarget:Math.max(0,Math.floor(Math.min(npc.lm/Math.max(nL,1),npc.hn/Math.max(nH,1)||999,budget/prices.ice/Math.max(nI,1)||999)));
    const actualPrep=Math.min(rawPrep,npcCap);
    const actualMatCost=canAfford?matCost:actualPrep*cCost(nL,nH,nI,prices)+intelCost;
-   const nP=iq>0.7?Math.round(4+ri()*2):iq>0.5?Math.round(3+ri()*4):Math.round(2+ri()*5);
+   const baseNP=iqAdj>0.7?4+ri()*2:iqAdj>0.5?3+ri()*4:2+ri()*5;
+   const nP=Math.max(2,Math.round(baseNP+(persona.priceBias||0)+chaosBump*4));
    const sc=cSc(nL,nH,nI,nW,dW.temp,CT.adult);
    const myDem=Math.max(2,Math.round(estDem));
    let sold=0,rev=0,npcRepD=0;
@@ -1756,7 +1785,8 @@ function LemonadeGame(){
    let repDelta=npcRepD-soldOutPenalty;
    const newRep=Math.max(0,Math.min(100,npc.rep+repDelta));
    return{
-    n:npc.n, sold, pr:nP, rev, exp:totalExp, profit,
+    n:npc.n, persona:npc.persona, em:persona.em, tagline:persona.tagline, pColor:persona.color,
+    sold, pr:nP, rev, exp:totalExp, profit,
     rec:{l:nL,h:nH,i:nI,w:nW}, prep:actualPrep,
     repB:npc.rep, repA:newRep, repD:repDelta,
     cash:budget, cashAfter:budget+profit,
@@ -1986,7 +2016,11 @@ function LemonadeGame(){
         <div className="bold small" style={{color:'var(--plum-500)'}}><I.Spy size={12}/> מודיעין מתחרים</div>
       </div>
       {compD.map((c,i) => <div key={i} className="p-12" style={{borderBottom: i<compD.length-1?'1px solid var(--ink-100)':'none', fontSize:12}}>
-        <div className="row-between"><b>{c.n}</b><span className="muted tiny">⭐{c.repB} · ₪{c.cash.toFixed(0)}</span></div>
+        <div className="row-between">
+          <b style={{color:c.pColor}}>{c.n}</b>
+          <span className="muted tiny">⭐{c.repB} · ₪{c.cash.toFixed(0)}</span>
+        </div>
+        {c.tagline && <div className="tiny" style={{color:c.pColor, opacity:0.75, marginTop:1}}>"{c.tagline}"</div>}
         <div className="muted tiny" style={{marginTop:2}}>
           ₪{c.pr} {cIL>=2&&` · ${c.rec.l}🍋${c.rec.h}🍯${c.rec.i}🧊 · ${c.prep} כוסות`}
         </div>
