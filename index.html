@@ -1471,6 +1471,26 @@ function LemonadeGame(){
  }},[ph]);
  useEffect(()=>{window.scrollTo({top:0,behavior:"smooth"});},[ph]);
  useEffect(()=>{if(pD>0){setupM(pD);setPD(0);}},[pD,setupM]);
+ // Consume `cnt` lemons AND expire batches older than 3 days, atomically.
+ // Merged from the old useL+expL to avoid a state race that reverted the deduction.
+ const consumeAndExpire=(cnt,d)=>{
+  // Step 1: consume cnt lemons from oldest batches first
+  let rem=cnt;const na=[];
+  for(const b of la){
+   if(rem<=0){na.push(b);continue;}
+   if(b.q<=rem){rem-=b.q;}
+   else{na.push({...b,q:b.q-rem});rem=0;}
+  }
+  // Step 2: expire batches older than 3 days
+  const fresh=na.filter(b=>d-b.d<3);
+  const freshCount=fresh.reduce((s,b)=>s+b.q,0);
+  const naCount=na.reduce((s,b)=>s+b.q,0);
+  const expired=naCount-freshCount;
+  setLa(fresh);
+  setLm(freshCount);
+  return expired;
+ };
+ // Legacy aliases kept for other call sites
  const expL=d=>{const v=la.filter(b=>d-b.d<3);const t=v.reduce((s,b)=>s+b.q,0);const ex=lm-t;setLa(v);setLm(t);return ex;};
  const useL=cnt=>{let rem=cnt;const na=[];for(const b of la){if(rem<=0){na.push(b);continue;}if(b.q<=rem)rem-=b.q;else{na.push({...b,q:b.q-rem});rem=0;}}setLa(na);setLm(p=>p-cnt);};
  const runSim=aC=>{if(!dW)return;const cupsPrepped=aC!==undefined?aC:Math.min(cu,mxC);
@@ -1582,9 +1602,11 @@ function LemonadeGame(){
   const regress=nr>50?-1:nr<50?1:0;nr+=regress;
   nr=Math.max(0,Math.min(REPMAX,nr));
   const nl=ln>0?Math.round(ln*(1+LOAN_INT)*100)/100:0;
-  const js=up.includes("juicer")?Math.floor(cu/10):0;useL(Math.min(Math.max(0,cu*rL-js),lm));
+  const js=up.includes("juicer")?Math.floor(cu/10):0;
+  const lemonsToUse=Math.min(Math.max(0,cu*rL-js),lm);
+  const ex=consumeAndExpire(lemonsToUse,dy);
   setHn(p=>Math.max(0,p-cu*rH));setIc(p=>Math.max(0,p-cu*rI));setCa(p=>p+rev-dExp);setRp(nr);setLn(nl);
-  if(!up.includes("cooler"))setIc(0);else setIc(p=>Math.floor(p*0.5));const ex=expL(dy);
+  if(!up.includes("cooler"))setIc(0);else setIc(p=>Math.floor(p*0.5));
   const rEx=[...actResults];
   if(repBrk.taste>0)rEx.push("😊 איכות לימונדה: +"+repBrk.taste);
   if(repBrk.taste<0)rEx.push("😕 איכות לימונדה: "+repBrk.taste);
