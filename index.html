@@ -344,6 +344,7 @@ const I = {
   Coin: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M9 9.5c0-1 .9-1.5 3-1.5s3 .5 3 1.5-.7 1.4-3 2-3 1-3 2 1 1.5 3 1.5 3-.5 3-1.5"/><path d="M12 6v2M12 16v2"/></Icon>,
   Lemon: (p) => <Icon {...p}><ellipse cx="12" cy="13" rx="7" ry="8"/><path d="M9 5l3-2 3 2"/><path d="M12 3v2"/></Icon>,
   Honey: (p) => <Icon {...p}><path d="M5 6h14l-2 14H7z"/><path d="M3 6h18"/><path d="M9 10c.7 1 .7 2 0 3M15 10c-.7 1-.7 2 0 3"/></Icon>,
+  Sugar: (p) => <Icon {...p}><rect x="5" y="5" width="14" height="14" rx="2.5"/><path d="M9 9h.01M15 9h.01M9 15h.01M15 15h.01M12 12h.01"/></Icon>,
   Ice: (p) => <Icon {...p}><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></Icon>,
   Star: (p) => <Icon {...p}><polygon points="12 2 15 9 22 9.3 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.3 9 9 12 2"/></Icon>,
   Calendar: (p) => <Icon {...p}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></Icon>,
@@ -1104,9 +1105,9 @@ const SBar = ({cash, lemons, honey, ice, rep, day, loan, onDash, onSave, saveMsg
         <span className="stat-lbl">לימונים</span>
       </div>
       <div className="stat">
-        <I.Honey size={14} color="var(--honey-500)"/>
+        <I.Sugar size={14} color="var(--honey-500)"/>
         <span className="stat-val num">{honey}</span>
-        <span className="stat-lbl">דבש</span>
+        <span className="stat-lbl">סוכר</span>
       </div>
       <div className="stat">
         <I.Ice size={14} color="var(--ice-500)"/>
@@ -1150,7 +1151,7 @@ const PrCh=({prices,color,emoji})=>{if(!prices||prices.length<2)return null;
    <span style={{fontSize:9,color:pct>0?C.rd:pct<0?C.gn:C.tM}}>{pctStr}</span></div></div>);};
 const CupVis=({l,h,ic})=>{const w=CUP-l-h-ic,tot=CUP;
  const layers=[{n:l,e:"🍋",bg:"linear-gradient(180deg,#FFE082,#FFD54F)",bd:"#F9A825"},
-  {n:h,e:"🍯",bg:"linear-gradient(180deg,#FFCC80,#FFB74D)",bd:"#E65100"},
+  {n:h,e:"🧂",bg:"linear-gradient(180deg,#FFCC80,#FFB74D)",bd:"#E65100"},
   {n:ic,e:"🧊",bg:"linear-gradient(180deg,#B3E5FC,#81D4FA)",bd:"#0288D1"},
   {n:Math.max(0,w),e:"💧",bg:"linear-gradient(180deg,#E3F2FD,#BBDEFB)",bd:"#64B5F6"}].filter(x=>x.n>0);
  const rev=[...layers].reverse();
@@ -1166,7 +1167,7 @@ const CupVis=({l,h,ic})=>{const w=CUP-l-h-ic,tot=CUP;
    <div style={{position:"absolute",top:4,left:0,right:0,height:6,borderRadius:4,background:"linear-gradient(180deg,#CFD8DC,#B0BEC5)"}}/>
    <div style={{position:"absolute",right:-14,top:28,width:14,height:50,borderRadius:"0 8px 8px 0",border:"3px solid #B0BEC5",borderLeft:"none"}}/></div>
   <div style={{display:"flex",flexDirection:"column",gap:3,fontSize:12}}>
-   {[{n:l,e:"🍋",lb:"לימון",c:"#F9A825"},{n:h,e:"🍯",lb:"דבש",c:"#E65100"},{n:ic,e:"🧊",lb:"קרח",c:"#0288D1"},
+   {[{n:l,e:"🍋",lb:"לימון",c:"#F9A825"},{n:h,e:"🧂",lb:"סוכר",c:"#E65100"},{n:ic,e:"🧊",lb:"קרח",c:"#0288D1"},
     {n:Math.max(0,w),e:"💧",lb:"מים",c:"#64B5F6"}].map((x,i)=>(
     <div key={i} style={{display:"flex",alignItems:"center",gap:4,opacity:x.n>0?1:0.3}}>
      <span style={{fontSize:16}}>{x.e}</span><span style={{fontWeight:700,color:x.c,minWidth:14,textAlign:"center"}}>{x.n}</span>
@@ -1176,11 +1177,11 @@ const TUT=[
  {ph:"setup",t:"ברוכים הבאים לדוכן הלימונדה! 🍋",tx:"המטרה: להרוויח כמה שיותר כסף ב-10 ימים של מכירת לימונדה. תתחיל עם ₪80 ו-40 לימונים. בכל יום תקבע מתכון, מחיר, וכמות — ובערב תקנה חומרי גלם למחר. בחר מספר מתחרים (0 = לבד, קל יותר) ורמת קושי.\n\n🎯 מטרות יומיות (toggle): אתגר יומי אקראי עם בונוס דינמי.\n🔊 אפקטי קול: צלילים קצרים בסימולציה."},
  {ph:"setup2",t:"רמות קושי — מה ההבדל? ⚙️",tx:"קלה: 30% יותר לקוחות, סיכויי קנייה גבוהים, מתחרים חלשים.\nבינונית: כלכלה מאוזנת.\nקשה: 20% פחות לקוחות, קשה למכור, מתחרים עם מתכונים טובים.\nטיפ: בפעם הראשונה? בחר 0 מתחרים + קלה."},
  {ph:"eveIntel",t:"שלב 1: מודיעין ערב 🔍",tx:"לפני שתקנה חומרים, תוכל לקנות מודיעין. שים לב: המודיעין לא תמיד מדויק!\n\n🔮 שמועות (₪2, ~70% דיוק): מזג אוויר כללי — עלול לטעות!\n📡 מקורות (₪5, ~85%): מזג אוויר + כיוון מחירים + רמז על אירועים\n🕵️ סוכן (₪10, ~95%): הכל כולל מחירים, פרטי אירוע מדויקים\n\nאם יש מתחרים, אפשר גם לקנות ניתוח מתחרים. המידע יוצג בבוקר *לפני* שתקבע מחיר ותבחר פעולות — כדי שתוכל להתאים את האסטרטגיה שלך!"},
- {ph:"eveIntel2",t:"גרפי מחירים — איך לקרוא? 📊",tx:"כל מרכיב (לימון, דבש, קרח) מציג גרף קו של המחיר לאורך ימי המשחק. הנקודה האחרונה = מחיר מחר.\n\n📈 עולה = כדאי לקנות היום לפני שהמחיר עולה עוד\n📉 יורד = אולי לחכות ליום הבא\n➡️ יציב = מחיר דומה\n\nמגמות נוטות להמשיך (60% סיכוי) — אם מחיר עלה אתמול, סביר שימשיך לעלות. זה עוזר לתכנן רכישות!"},
- {ph:"evening",t:"שלב 2: השוק 🛒",tx:"כאן קונים חומרי גלם למחר. לכל סוג חיי מדף שונים:\n\n🍋 לימונים (₪0.30-0.80): המרכיב המרכזי! נשארים טריים ל-3 ימי מכירה ואז מתקלקלים — אל תקנה יותר ממה שתשתמש ב-3 ימים.\n🍯 דבש (₪0.60-1.20): יקר, אבל לא מתקלקל אף פעם — נשמר לכל המשחק! אפשר לקנות מלאי גדול מראש. מספיק 1-2 לכוס.\n🧊 קרח (₪0.05-0.20): זול אבל נמס בסוף כל יום! חייבים לקנות מחדש כל ערב.\n\n💡 בקיצור: קרח = יום אחד, לימון = 3 ימים, דבש = לנצח.\n\nלמעלה תראה כמה כסף יש, כמה מוציא, וכמה נשאר."},
- {ph:"evening2",t:"שדרוגים והלוואות 💡",tx:"⬆️ שדרוגים קבועים: נרכשים פעם אחת ופעילים לשאר המשחק (שלט, סוכך, מסחטה, עמדה נוספת...)\n\n🏦 הלוואה: עד ₪40, אבל 8% ריבית ליום! רק למצבי חירום.\n🥤 תחזית כוסות: בתחתית השוק תראה כמה כוסות תוכל להכין (מינימום/מאוזן/פרמיום).\n\nכלל אצבע: קנה מספיק ל-20-25 כוסות מאוזנות (3🍋+1🍯+1🧊)."},
+ {ph:"eveIntel2",t:"גרפי מחירים — איך לקרוא? 📊",tx:"כל מרכיב (לימון, סוכר, קרח) מציג גרף קו של המחיר לאורך ימי המשחק. הנקודה האחרונה = מחיר מחר.\n\n📈 עולה = כדאי לקנות היום לפני שהמחיר עולה עוד\n📉 יורד = אולי לחכות ליום הבא\n➡️ יציב = מחיר דומה\n\nמגמות נוטות להמשיך (60% סיכוי) — אם מחיר עלה אתמול, סביר שימשיך לעלות. זה עוזר לתכנן רכישות!"},
+ {ph:"evening",t:"שלב 2: השוק 🛒",tx:"כאן קונים חומרי גלם למחר. לכל סוג חיי מדף שונים:\n\n🍋 לימונים (₪0.30-0.80): המרכיב המרכזי! נשארים טריים ל-3 ימי מכירה ואז מתקלקלים — אל תקנה יותר ממה שתשתמש ב-3 ימים.\n🧂 סוכר (₪0.60-1.20): יקר, אבל לא מתקלקל אף פעם — נשמר לכל המשחק! אפשר לקנות מלאי גדול מראש. מספיק 1-2 לכוס.\n🧊 קרח (₪0.05-0.20): זול אבל נמס בסוף כל יום! חייבים לקנות מחדש כל ערב.\n\n💡 בקיצור: קרח = יום אחד, לימון = 3 ימים, סוכר = לנצח.\n\nלמעלה תראה כמה כסף יש, כמה מוציא, וכמה נשאר."},
+ {ph:"evening2",t:"שדרוגים והלוואות 💡",tx:"⬆️ שדרוגים קבועים: נרכשים פעם אחת ופעילים לשאר המשחק (שלט, סוכך, מסחטה, עמדה נוספת...)\n\n🏦 הלוואה: עד ₪40, אבל 8% ריבית ליום! רק למצבי חירום.\n🥤 תחזית כוסות: בתחתית השוק תראה כמה כוסות תוכל להכין (מינימום/מאוזן/פרמיום).\n\nכלל אצבע: קנה מספיק ל-20-25 כוסות מאוזנות (3🍋+1🧂+1🧊)."},
  {ph:"morning",t:"בוקר — מזג אוויר ואירועים ☀️",tx:"בבוקר תראה את מזג האוויר ומה קורה היום:\n\n🥶 קר (מתחת 18°C): כמעט אף אחד לא רוצה לימונדה.\n🌡️ קריר (18-20°C): ביקוש נמוך.\n😊 נעים (21-24°C): ביקוש סביר.\n☀️ מושלם (25-29°C): שיא הביקוש! ❄️ קרח חשוב.\n🥵 חם (30-34°C): צמאים אבל חלק נשארים בבית.\n🔥 שרב (35°C+): רוב האנשים בבית — מי שבחוץ מת מצמא.\n\n50% סיכוי לאירוע מיוחד! אירועים חיוביים (🎪 פסטיבל ×1.8) ושליליים (📢 הפגנה ×0.3) — משפיע על כולם.\n\n📍 מיקום: בתחתית המסך תבחר איפה להציב את הדוכן היום:\n🏚️ פינת רחוב — שקט (×0.65 לקוחות), ללא שכירות\n🏠 צד הרחוב — רגיל, ₪3/יום\n🏙️ מרכז הרחוב — הרבה תנועה (×1.4!), ₪8/יום\nביום גשום? אולי כדאי לחסוך שכירות. ביום פסטיבל? שווה לשלם על מרכז!\n\n🎯 אם הפעלת מטרות: תראה את מטרת היום למעלה עם הבונוס. היעד והבונוס משתנים כל יום."},
- {ph:"morning2",t:"המתכון — 6 סלוטים בכוס 🥤",tx:"כל כוס = 6 יחידות. מה שלא מלאת = מים (💧) שפוגעים בטעם!\n\n🍋 לימון (חובה לפחות 1): יותר = יותר טעם! 3-4 = מצוין.\n🍯 דבש (0-2 מומלץ): מאזן חמיצות. יותר מ-2 = מתוק מדי!\n🧊 קרח (0-2): רעננות ביום חם. מדלל טעם. ביום קר — מיותר.\n💧 מים (אוטומטי): כל סלוט ריק = מים. מדלל טעם!\n\nדוגמה מומלצת: 3🍋+1🍯+1🧊+1💧 = כוס מאוזנת."},
+ {ph:"morning2",t:"המתכון — 6 סלוטים בכוס 🥤",tx:"כל כוס = 6 יחידות. מה שלא מלאת = מים (💧) שפוגעים בטעם!\n\n🍋 לימון (חובה לפחות 1): יותר = יותר טעם! 3-4 = מצוין.\n🧂 סוכר (0-2 מומלץ): מאזן חמיצות. יותר מ-2 = מתוק מדי!\n🧊 קרח (0-2): רעננות ביום חם. מדלל טעם. ביום קר — מיותר.\n💧 מים (אוטומטי): כל סלוט ריק = מים. מדלל טעם!\n\nדוגמה מומלצת: 3🍋+1🧂+1🧊+1💧 = כוס מאוזנת."},
  {ph:"morning3",t:"מחיר, כמות, ומוניטין ⭐",tx:"💰 מחיר: אין מחיר \"נכון\" אחד — תלוי באיכות הכוס, מזג האוויר, והקהל. מחיר נמוך מדי = מפסיד כסף. גבוה מדי = פחות קונים. נסה למצוא את הנקודה המתוקה!\n🥤 כמות: המערכת מראה צפי לקוחות — הכן קצת פחות כדי שלא תבזבז.\n\n⭐ מוניטין (0-100): מתחיל ב-50. משפיע על שני דברים:\n1) כמות לקוחות שמגיעים — מוניטין גבוה מושך יותר אנשים לדוכן\n2) סיכויי קנייה — לקוחות סומכים יותר על דוכן מוכר\n\nמה משפיע על מוניטין? בסיכום יום תראה פירוט מלא:\n• 😊 איכות הלימונדה (הגורם המרכזי)\n• 💰 תמורה למחיר — כוס מעולה בזול = בונוס, בינונית ביוקר = פגיעה\n• 💨 אזילת מלאי — לקוחות שרצו ולא קיבלו\n• 📰 אירועים, 🗣️ שמועות מתחרים, 📊 נטייה טבעית למרכז\n\nחשוב: ההשפעה לא מדויקת! יש אלמנט של מזל — מוניטין 70 לא מבטיח יותר לקוחות מ-65, אבל לאורך זמן ההבדל מורגש."},
  {ph:"morning4",t:"⚡ פעולות יום — שיווק ותחרות",tx:"בבוקר תוכל לבחור פעולות שישפיעו על היום:\n\n📣 שיווק (תמיד זמין):\n📄 פליירים (₪5) — +10% לקוחות\n🎈 בלונים (₪10) — +18% לקוחות\n📱 פוסט ברשתות (₪7) — +8% + סיכוי למוניטין\n🎁 טעימות חינם (₪3) — +3 מוניטין אם הטעם טוב\n\n⚔️ נגד מתחרים (כשיש):\n📢 קמפיין תחרותי: בסיסי ₪5 (10%) / חזק ₪10 (18%) / מסיבי ₪15 (25%) — גונב לקוחות\n🗣️ שמועות ₪4 ⚠️ — -5 מוניטין למתחרה (30% סיכוי להיתפס!)\n🚫 הסרת שלטים ₪6 ⚠️ — -20% חשיפה (40% סיכוי להיתפס!)\n\n🕵️ חשוב: אם קנית ניתוח מתחרים (בשלב המודיעין בערב), תראה את כל המידע הזה בבוקר *לפני* שאתה קובע מחיר ובוחר פעולות!\n\nרמה 1: מחיר המתחרים בלבד\nרמה 2: + מתכון + כמות + פעולות שלהם\nרמה 3: + סיכול פעולות מלוכלכות (שמועות/שלטים) שלהם נגדך\n\n🛡️ גם המתחרים פועלים נגדך! בלי מודיעין לא תדע מה הם עושים."},
  {ph:"morning4b",t:"🎭 היריבים — לכל אחד אופי משלו",tx:"המתחרים שלך אינם זהים! כל אחד הוא דמות עם אסטרטגיה קבועה לאורך כל המשחק. הנה מי שאתה עשוי לפגוש:\n\n💸 זולי הזול — מוזיל מחירים ומוכר בכמויות. קשה להתחרות בו במחיר.\n👨‍🍳 שף גורמה — מתכון עשיר ומחיר גבוה. פונה לחובבי איכות.\n🧓 דוד יוסי — יציב ואמין, בלי הפתעות.\n😎 טרנדי — רודף אחרי הטרנד, קצת יקר אבל אנרגטי.\n🎲 המהמר — בלתי צפוי לחלוטין. אף פעם לא תדע מה הוא יעשה.\n👵 הוותיקה — ניסיון של שנים, חכמה ונוטה לאיכות.\n\nבכל משחק תפגוש הרכב שונה של יריבים. 🕵️ קנה ניתוח מתחרים כדי לראות את השם, הסלוגן והמהלכים של כל אחד — ולהתאים את האסטרטגיה שלך!"},
@@ -2023,7 +2024,7 @@ function LemonadeGame(){
         </div>
         {c.tagline && <div className="tiny" style={{color:c.pColor, opacity:0.75, marginTop:1}}>"{c.tagline}"</div>}
         <div className="muted tiny" style={{marginTop:2}}>
-          ₪{c.pr} {cIL>=2&&` · ${c.rec.l}🍋${c.rec.h}🍯${c.rec.i}🧊 · ${c.prep} כוסות`}
+          ₪{c.pr} {cIL>=2&&` · ${c.rec.l}🍋${c.rec.h}🧂${c.rec.i}🧊 · ${c.prep} כוסות`}
         </div>
       </div>)}
     </div>}
@@ -2041,7 +2042,7 @@ function LemonadeGame(){
           {/* Recipe rows full-width below */}
           <div className="col gap-10" style={{paddingTop:12, borderTop:'1px solid var(--ink-100)'}}>
             {[{e:'🍋', n:'לימון', v:rL, s:setRL, mn:1, mx:Math.min(5,lm), c:'var(--lemon-500)', req:true},
-              {e:'🍯', n:'דבש', v:rH, s:setRH, mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
+              {e:'🧂', n:'סוכר', v:rH, s:setRH, mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
               {e:'🧊', n:'קרח', v:rI, s:setRI, mn:0, mx:Math.min(5,ic), c:'var(--ice-500)', req:false}].map(ing => (
               <div key={ing.n} style={{display:'grid', gridTemplateColumns:'24px minmax(0,1fr) auto', gap:10, alignItems:'center'}}>
                 <span style={{fontSize:20}}>{ing.e}</span>
@@ -2504,7 +2505,7 @@ function LemonadeGame(){
         <div className="bento-sub">{lm===0?'אזל!':'במלאי'}</div>
       </div>
       <div className="bento-card b-3">
-        <div className="bento-label">🍯 דבש</div>
+        <div className="bento-label">🧂 סוכר</div>
         <div className="bento-value"><CountUp value={hn}/></div>
         <div className="bento-sub">{hn===0?'אזל':'במלאי'}</div>
       </div>
@@ -2520,7 +2521,7 @@ function LemonadeGame(){
         <span className="bold small">איך מתחילים</span>
       </div>
       <p className="tiny" style={{color:'var(--ink-700)', lineHeight:1.5}}>
-        קנה מודיעין כדי לדעת מה מצפה מחר, ואז קנה דבש וקרח בשוק.
+        קנה מודיעין כדי לדעת מה מצפה מחר, ואז קנה סוכר וקרח בשוק.
       </p>
     </div>}
     <div className="section">
@@ -2528,7 +2529,7 @@ function LemonadeGame(){
       <div className="card stagger">
         {[
           {name:'לימונים', icon:<I.Lemon size={20} color="var(--lemon-600)"/>, vals:pH.l, color:'var(--lemon-500)', bg:''},
-          {name:'דבש', icon:<I.Honey size={20} color="var(--honey-500)"/>, vals:pH.h, color:'var(--honey-500)', bg:'honey'},
+          {name:'סוכר', icon:<I.Sugar size={20} color="var(--honey-500)"/>, vals:pH.h, color:'var(--honey-500)', bg:'honey'},
           {name:'קרח', icon:<I.Ice size={20} color="var(--ice-500)"/>, vals:pH.i, color:'var(--ice-500)', bg:'ice'},
         ].map((it,i) => {
           const last = it.vals[it.vals.length-1];
@@ -2633,7 +2634,7 @@ function LemonadeGame(){
         <div style={{flex:1}}>
           <div className="bold small">תחזית (רמה {iD.lv}): {iD.w}, {iD.temp}°C</div>
           <div className="muted tiny">
-            {iD.pT?`מחירים: לימון ${iD.pT.l} דבש ${iD.pT.h} קרח ${iD.pT.i}`:'דיוק חלקי — ייתכנו טעויות'}
+            {iD.pT?`מחירים: לימון ${iD.pT.l} סוכר ${iD.pT.h} קרח ${iD.pT.i}`:'דיוק חלקי — ייתכנו טעויות'}
           </div>
         </div>
         {iD.evHint && <span className="pill plum" style={{maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{iD.evHint}</span>}
@@ -2647,7 +2648,7 @@ function LemonadeGame(){
       <div className="col gap-8">
         {[
           {e:'🍋', lb:'לימונים', p:tP.lemon, v:bL, s:setBL, mx:100, st:lm, color:'var(--lemon-500)', bg:'', note:'טרי ל-3 ימי מכירה, ואז מתקלקל', af:tmL, icon:<I.Lemon size={20} color="var(--lemon-600)"/>, fresh:true},
-          {e:'🍯', lb:'דבש', p:tP.honey, v:bH, s:setBH, mx:100, st:hn, color:'var(--honey-500)', bg:'honey', note:'לא מתקלקל — נשמר לכל המשחק', af:tmH, icon:<I.Honey size={20} color="var(--honey-500)"/>},
+          {e:'🧂', lb:'סוכר', p:tP.honey, v:bH, s:setBH, mx:100, st:hn, color:'var(--honey-500)', bg:'honey', note:'לא מתקלקל — נשמר לכל המשחק', af:tmH, icon:<I.Sugar size={20} color="var(--honey-500)"/>},
           {e:'🧊', lb:'קרח', p:tP.ice, v:bI, s:setBI, mx:500, st:ic, color:'var(--ice-500)', bg:'ice', note:'נמס בסוף כל יום — קנה מחדש כל ערב', af:tmI, icon:<I.Ice size={20} color="var(--ice-500)"/>, warn: !up.includes("cooler")},
         ].map(p => {
           const av = Math.min(p.mx, Math.floor((rem+p.v*p.p)/p.p));
@@ -2689,8 +2690,8 @@ function LemonadeGame(){
         <div className="choice-grid cols-3">
           {[
             {n:'מינימום', e:'🥤', sub:'1🍋+5💧', v:cupsBare},
-            {n:'מאוזן', e:'⚖️', sub:'3🍋+1🍯+1🧊', v:cupsB},
-            {n:'פרמיום', e:'⭐', sub:'4🍋+1🍯+1🧊', v:cupsP},
+            {n:'מאוזן', e:'⚖️', sub:'3🍋+1🧂+1🧊', v:cupsB},
+            {n:'פרמיום', e:'⭐', sub:'4🍋+1🧂+1🧊', v:cupsP},
           ].map((x,i) => {
             const capped = Math.min(x.v, myCap);
             return <div key={i} className="card-flat p-12 text-center">
@@ -3019,7 +3020,7 @@ function LemonadeGame(){
         const catOther = Math.max(0, totExp - catMat);
         const parts = [
          {n:"🍋 לימון", v:catLemon, c:"#FBC02D"},
-         {n:"🍯 דבש", v:catHoney, c:"#FF6F00"},
+         {n:"🧂 סוכר", v:catHoney, c:"#FF6F00"},
          {n:"🧊 קרח", v:catIce, c:"#4FC3F7"},
          {n:"🏠 אחר", v:catOther, c:"#9575CD"},
         ].filter(p=>p.v>0);
@@ -3073,7 +3074,7 @@ function LemonadeGame(){
        <Card>
         <SectionHeader title="💲 היסטוריית מחירים" icon={<I.Chart size={14} color="var(--lemon-600)"/>}/>
         {chartWrap('🍋 לימון',<>{mkLine(dayLog.map(d=>d.prices.lemon),'var(--lemon-600)')}{mkDots(dayLog.map(d=>d.prices.lemon),'var(--lemon-600)')}</>)}
-        {chartWrap('🍯 דבש',<>{mkLine(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}{mkDots(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}</>)}
+        {chartWrap('🧂 סוכר',<>{mkLine(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}{mkDots(dayLog.map(d=>d.prices.honey),'var(--honey-500)')}</>)}
         {chartWrap('🧊 קרח',<>{mkLine(dayLog.map(d=>d.prices.ice),'var(--ice-700)')}{mkDots(dayLog.map(d=>d.prices.ice),'var(--ice-700)')}</>)}
        </Card>
        {/* Personal performance */}
@@ -3089,7 +3090,7 @@ function LemonadeGame(){
          <I.Trophy size={14} color="var(--lemon-600)"/> הכוס הטובה ביותר שלך
         </div>
         <div className="small" style={{marginTop:4}}>
-         יום <b>{bestCup.day}</b>: {bestCup.recipe.l}🍋 {bestCup.recipe.h}🍯 {bestCup.recipe.i}🧊 — ציון <b className="num">{bestCup.score}/100</b>
+         יום <b>{bestCup.day}</b>: {bestCup.recipe.l}🍋 {bestCup.recipe.h}🧂 {bestCup.recipe.i}🧊 — ציון <b className="num">{bestCup.score}/100</b>
         </div>
        </Card>}
        {/* Decision history */}
@@ -3106,7 +3107,7 @@ function LemonadeGame(){
           <tbody>
            {dayLog.map((d,i)=><tr key={i} style={{borderBottom:'1px solid var(--ink-100)'}}>
             <td className="bold num" style={{padding:'5px 3px'}}>י{d.dy}</td>
-            <td style={{padding:'5px 3px'}}>{d.recipe.l}🍋{d.recipe.h}🍯{d.recipe.i}🧊</td>
+            <td style={{padding:'5px 3px'}}>{d.recipe.l}🍋{d.recipe.h}🧂{d.recipe.i}🧊</td>
             <td className="num" style={{padding:'5px 3px'}}>₪{d.price}</td>
             <td className="num" style={{padding:'5px 3px'}}>{d.myPrep}</td>
             <td className="num" style={{padding:'5px 3px'}}>{d.mySold}</td>
