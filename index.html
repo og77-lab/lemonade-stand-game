@@ -194,9 +194,11 @@
     .insight-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--paper); border: 1px solid var(--ink-200); font-size: 13px; }
     .insight-row[data-kind="good"] { background: linear-gradient(180deg, #F5FBF5, #EAF6EA); border-color: #BFE0BC; color: #1F5223; }
     .insight-row[data-kind="bad"] { background: linear-gradient(180deg, #FDF6F4, #FBE8E0); border-color: #F2C7B5; color: #6B2A14; }
+    .insight-row[data-kind="tip"] { background: linear-gradient(180deg, #FFFBEB, #FFF3CC); border-color: #F0D480; color: #7A5A00; }
     .insight-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.7); flex-shrink: 0; }
     .insight-row[data-kind="good"] .insight-icon { color: var(--good); }
     .insight-row[data-kind="bad"] .insight-icon { color: var(--bad); }
+    .insight-row[data-kind="tip"] .insight-icon { color: var(--warn); }
     .insight-text { font-weight: 600; line-height: 1.3; }
     .leaderboard-row { display: grid; grid-template-columns: 24px minmax(0,1fr) auto minmax(40px,1fr) auto; gap: 10px; align-items: center; padding: 12px; border-top: 1px solid var(--ink-100); font-size: 13px; overflow: hidden; }
     .leaderboard-row > * { min-width: 0; }
@@ -1529,6 +1531,8 @@ function LemonadeGame(){
   const custs=[],rand=rng(sd+dy*1000);let sold=0,rev=0,repD=0;const tK=Object.keys(CT);
   const rR=[],rRneg=[];
   const repBrk={taste:0,vfm:0,soldOut:0,actions:0};
+  // Price/quality diagnostics: why did non-buyers walk, and did buyers get a steal?
+  let lostPrice=0,lostQual=0,steals=0,soldOutCnt=0;
   for(let i=0;i<myD;i++){let cum=0,ct="adult",roll=rand();
    for(const k of tK){cum+=CT[k].pct;if(roll<cum){ct=k;break;}}
    const c=CT[ct],sc=cSc(rL,rH,rI,rW,dW.temp,c);
@@ -1537,18 +1541,22 @@ function LemonadeGame(){
    if(buys){sold++;rev+=pr;if(sc.ts>35){rx="😊";rc=c.rI[0];sp=c.sG;}else if(sc.ts>20){rx="🙂";rc=1;sp=c.sO;}
     else if(sc.ts>10){rx="😐";sp=c.sO;}else{rx="😕";rc=-1;sp=c.sB;}
     const vfm=pr/c.pM;
+    if(vfm<0.6)steals++;
     if(rc>0&&vfm<0.6){rcVfm=1;rc+=1;}
     if(rc>0&&vfm>1){rcVfm=-1;rc=Math.max(0,rc-1);}
     if(rc<0&&vfm>0.8){rcVfm=-1;rc-=1;}
     if(rc===0&&vfm>1){rcVfm=-1;rc=-1;}
     repBrk.taste+=rc-rcVfm;repBrk.vfm+=rcVfm;
    }
-   else if(sold>=cupsToUse){rx="💨";rc=-2;sp="רציתי לקנות אבל אזל!";repBrk.soldOut+=rc;
+   else if(sold>=cupsToUse){rx="💨";rc=-2;sp="רציתי לקנות אבל אזל!";repBrk.soldOut+=rc;soldOutCnt++;
     rRneg.push("💨 "+c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");}
-   else{rx="🚶";sp=c.sN;}
+   else{rx="🚶";sp=c.sN;
+    // Walked away: was price above their comfort, or was the cup just weak?
+    if(pr>c.pM)lostPrice++;else lostQual++;}
    if(rc>0)rR.push(c.em+" "+c.nm+": \""+sp+"\" (+"+rc+")");
    if(rc<0)rRneg.push(c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");
    repD+=rc;custs.push({type:ct,em:c.em,buys,rx,sc:sc.sc,ts:sc.ts,sp});}
+  const priceInfo={lostPrice,lostQual,steals,soldOut:soldOutCnt,buyers:sold,demand:myD};
   if(freeCups>0){const avgTaste=cSc(rL,rH,rI,rW,dW.temp,CT.adult).ts;
    const tBonus=avgTaste>25?3:avgTaste>15?1:-1;repD+=tBonus;repBrk.actions+=tBonus;
    rR.push("🎁 טעימות חינם: "+(tBonus>0?"+"+tBonus+" מוניטין!":"טעם חלש... "+tBonus+" מוניטין"));}
@@ -1562,19 +1570,19 @@ function LemonadeGame(){
    custs.push({type:"foodie",em:"\u{1F3A9}",buys:true,rx:vipHappy?"\u{1F31F}":"\u{1F624}",sc:vipTaste,ts:vipTaste,sp:vipHappy?"מעולה!":"ציפיתי ליותר...",isVip:true});
   }
   const mixedRR=[...rR.slice(0,3),...rRneg.slice(0,3)];
-  animSim(custs,sold,rev,repD,mixedRR,repBrk);};
- const animSim=(custs,sold,rev,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0})=>{setSS(0);setSR(0);setSC([]);setSP(0);setSDn(false);setPendSum(null);setSNB(0);setPh("sim");
+  animSim(custs,sold,rev,repD,mixedRR,repBrk,priceInfo);};
+ const animSim=(custs,sold,rev,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0},priceInfo=null)=>{setSS(0);setSR(0);setSC([]);setSP(0);setSDn(false);setPendSum(null);setSNB(0);setPh("sim");
   if(tOn&&dy===1){setTSt(11);setShT(true);}
-  if(!custs.length){setSDn(true);setSP(100);setPendSum({sold:0,rev:0,custs:[],repD:0,rR,repBrk});return;}
+  if(!custs.length){setSDn(true);setSP(100);setPendSum({sold:0,rev:0,custs:[],repD:0,rR,repBrk,priceInfo});return;}
   let idx=0;
   const spd=custs.length<=5?800:custs.length<=10?600:custs.length<=20?400:Math.max(200,Math.min(400,8000/custs.length));
   const iv=setInterval(()=>{if(idx>=custs.length){clearInterval(iv);setSP(100);setSDn(true);sfx("bell");
-   setPendSum({sold,rev,custs,repD,rR,repBrk});return;}
+   setPendSum({sold,rev,custs,repD,rR,repBrk,priceInfo});return;}
    setSC(p=>[...p.slice(-9),{...custs[idx],done:true,id:idx}]);
    if(custs[idx].buys){setSS(p=>p+1);setSR(p=>p+pr);sfx(custs[idx].isVip?"vip":"sell");}
    else if(custs[idx].rx==="🚶"){setSNB(p=>p+1);sfx("miss");}
    setSP(Math.round(idx/custs.length*100));idx++;},spd);};
- const doSum=(sold,rev,custs,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0})=>{
+ const doSum=(sold,rev,custs,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0},priceInfo=null)=>{
   const mc=cu*cCost(rL,rH,rI,dP),hc=hlp?HELPER_C:0,fc=dE?.id==="insp"&&iPd?dE.fee:0;
   let actCost=0;const actResults=[];
   actionsToday.forEach(a=>{actCost+=a.cost||0;});
@@ -1648,7 +1656,7 @@ function LemonadeGame(){
     rEx.push("\u{1F3AF} מטרה הושגה! +"+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":""));}
    else rEx.push("\u{1F3AF} מטרה לא הושגה: "+dayGoal.text);}
   if(rentC>0)rEx.push("🏠 שכירות מיקום: -₪"+rentC);
-  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak});
+  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak,priceInfo,price:pr});
   setPh("summary");};
  const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0)-ln;const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);deleteSavedGame();setPh("gameover");return;}
   setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");
@@ -2306,7 +2314,7 @@ function LemonadeGame(){
       steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={3}
       cta={sDn?'דוח יום':'סימולציה רצה…'}
       ctaVariant={sDn?'primary':'ghost'}
-      onCta={()=>{if(sDn&&pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk);}}
+      onCta={()=>{if(sDn&&pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk,pendSum.priceInfo);}}
       ctaDisabled={!sDn}/>
    </div>}
    {}
@@ -2325,6 +2333,21 @@ function LemonadeGame(){
     else if (smD.profit<0) insights.push({kind:'bad', icon:<I.Info size={14}/>, text:'הוצאות עברו את ההכנסות'});
     if (repDelta>=2) insights.push({kind:'good', icon:<I.Star size={14}/>, text:`מוניטין עלה ב-${repDelta} נק׳`});
     else if (repDelta<=-2) insights.push({kind:'bad', icon:<I.Star size={14}/>, text:`מוניטין ירד ב-${Math.abs(repDelta)} נק׳`});
+    // Price feedback — was the price too high (lost buyers) or too low (left money on the table)?
+    const pI = smD.priceInfo;
+    if (pI) {
+      const stealRate = pI.buyers>0 ? pI.steals/pI.buyers : 0;
+      if (pI.lostPrice>=3 && pI.lostPrice>pI.lostQual*1.4) {
+        insights.push({kind:'bad', icon:<I.TrendDn size={14}/>, text:`${pI.lostPrice} לקוחות עזבו כי ₪${smD.price} היה יקר להם — נסה להוריד מחיר`});
+      } else if (pI.soldOut>=3 && stealRate>=0.4 && pI.buyers>=5) {
+        insights.push({kind:'tip', icon:<I.Coin size={14}/>, text:`נמכר מהר ורוב הקונים קיבלו מציאה — אפשר להעלות מחיר מ-₪${smD.price}`});
+      } else if (stealRate>=0.55 && pI.buyers>=6 && pI.soldOut===0) {
+        insights.push({kind:'tip', icon:<I.Coin size={14}/>, text:`רוב הקונים שילמו הרבה מתחת למה שהיו מוכנים — יש מקום להעלות מחיר`});
+      }
+      if (pI.lostQual>=4 && pI.lostQual>pI.lostPrice) {
+        insights.push({kind:'bad', icon:<I.Info size={14}/>, text:`${pI.lostQual} לקוחות עזבו בגלל איכות חלשה — שפר את המתכון`});
+      }
+    }
     if (insights.length===0) insights.push({kind:'good', icon:<I.Info size={14}/>, text:'יום סטנדרטי — המשך כך'});
     // Leaderboard
     const ranked = [
