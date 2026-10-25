@@ -413,7 +413,7 @@ const ACHIEVEMENTS = [
   {id:'millionaire', em:'👑', n:'מיליונר הלימונדה', d:'רווח כולל של ₪500 במשחק אחד',
    chk: ({res, ln, gameOver}) => gameOver && res.reduce((s,r)=>s+r.profit,0) >= 500},
   {id:'five_stars', em:'⭐', n:'5 כוכבים', d:'סיים משחק עם 5 כוכבים',
-   chk: ({res, ln, gameOver}) => gameOver && res.reduce((s,r)=>s+r.profit,0) >= 120},
+   chk: ({res, cl, npcState, gameOver}) => gameOver && starsFor(res.reduce((s,r)=>s+r.profit,0), cl, npcState.length) >= 5},
   {id:'no_waste', em:'🍋', n:'לא התבזבז', d:'סיים משחק ללא לימונים שפג תוקפם',
    chk: ({res, gameOver}) => gameOver && res.length>0 && res.every(r => !r.ex || r.ex === 0)},
   {id:'first_place', em:'🏆', n:'מלך התחרות', d:'סיים משחק עם רווח גבוה מכל המתחרים',
@@ -727,9 +727,9 @@ const AchievementToast = ({achievement}) => (
 );
 
 const DAYS=10,CUP=6,CAP_BASE=30,CAP_STATION=70,CAP_TEAM=999,HELPER_B=20,HELPER_C=8,LOAN_MAX=40,LOAN_INT=0.08,REP0=50,REPMAX=100;
-const TP=[0,10,22,34,44,50,54],SR=[0,0,1,3,6,12,20],SW=[0,0,14,22,27,28,28];
+const TP=[0,10,22,34,44,50,54],SR=[0,0,3,7,12,18,24],SW=[0,10,18,25,30,33,35];
 const ITP=[0,0,-1,-3,-6,-12,-20],WTP=[0,0,-4,-10,-20,-32,-46],HFR=[0,-2,3,0,-3,-5,-5];
-const crP=r=>r<=0.33?0:r<=0.5?0.05:r<=0.75?0.15:r<=1?0.3:0.5;
+const crP=r=>r<=0.34?0:r<=0.5?0.05:r<=0.75?0.15:r<=1?0.3:0.5;
 const CT={
  child:{nm:"ילד",em:"👦",tW:0.55,fW:0.45,sTh:8,sP:1.5,swI:[18,28],swP:0.5,pM:5,rI:[1,-1],pct:0.25,sG:"!וואו טעים",sO:"בסדר...",sB:"חמוץ! 😝",sN:"יקר לי"},
  adult:{nm:"מבוגר",em:"🧑",tW:0.65,fW:0.35,sTh:15,sP:1,swI:[10,22],swP:1,pM:8,rI:[2,-2],pct:0.4,sG:"לימונדה מצוינת!",sO:"סבירה",sB:"חלשה...",sN:"לא שווה"},
@@ -853,21 +853,41 @@ const genP=(pp,ppp,r)=>{
  };
  return{
   lemon:d(pp?.lemon||0.5,ppp?.lemon,0.5,0.3,0.8),
-  honey:d(pp?.honey||0.8,ppp?.honey,0.8,0.6,1.2),
+  honey:d(pp?.honey||0.45,ppp?.honey,0.45,0.3,0.6),
   ice:d(pp?.ice||0.1,ppp?.ice,0.1,0.05,0.2)
  };
 };
 const genE=r=>{if(r()>0.5)return null;const v=r(),tot=EVT.length;let c=0;for(const e of EVT){c+=1/tot;if(v<c)return e;}return EVT[tot-1];};
-const tSc=(l,h,ic,wa,ct)=>{let tp=TP[l]*(1-crP(l>0?h/l:99))+ITP[ic]+WTP[wa];
- return Math.max(0,Math.min(60,tp-Math.max(0,SR[l]-ct.sTh)*ct.sP-(SW[h]>ct.swI[1]?(SW[h]-ct.swI[1])*ct.swP:0)));};
+// Sugar masks the lemons' sourness; each customer type also has a sweetness comfort range (swI)
+const SUG_MASK=0.5,SW_IN=6,SW_UNDER=0.8,SW_OVER=1,SOLDOUT_CAP=6;
+const tSc=(l,h,ic,wa,ct)=>{const tp=TP[l]*(1-crP(l>0?h/l:99))+ITP[ic]+WTP[wa];
+ const sw=SW[h],sour=Math.max(0,SR[l]-SUG_MASK*sw),[lo,hi]=ct.swI;
+ const sweet=sw<lo?-(lo-sw)*SW_UNDER*ct.swP:sw>hi?-(sw-hi)*SW_OVER*ct.swP:SW_IN;
+ return Math.max(0,Math.min(60,tp-Math.max(0,sour-ct.sTh)*ct.sP+sweet));};
 const fSc=(ic,h,t)=>Math.min(40,Math.max(0,iFr(ic,t)+HFR[h]));
-const cSc=(l,h,ic,wa,t,ct)=>{const ts=tSc(l,h,ic,wa,ct),fr=fSc(ic,h,t);return{sc:Math.round((ts*ct.tW+fr*ct.fW)/(60*ct.tW+40*ct.fW)*100),ts,fr};};
-const wBuy=(sc,pr,rep,ct,rand,db=0)=>{
- let pricePen=(pr/ct.pM)*0.2;
- if(pr>ct.pM){const over=(pr-ct.pM)/ct.pM;pricePen+=over*0.6;}
- const prob=Math.min(0.95,Math.max(0.03,(sc/100)*0.6+(rep/100)*0.15+0.35-pricePen+db));
- return rand()<prob;
-};
+// Freshness matters more the hotter it is: x0.5 when cold, x1 around 25°, x1.6 in a heatwave
+const freshW=t=>0.5+1.1*Math.min(1,Math.max(0,(t-16)/18));
+const cSc=(l,h,ic,wa,t,ct)=>{const ts=tSc(l,h,ic,wa,ct),fr=fSc(ic,h,t),fw=ct.fW*freshW(t);return{sc:Math.round((ts*ct.tW+fr*fw)/(60*ct.tW+40*fw)*100),ts,fr};};
+// Willingness to pay grows with heat: 14°→x0.70, 24°→x0.98, 34°+→x1.25
+const heatF=t=>0.7+0.55*Math.min(1,Math.max(0,(t-14)/20));
+const pMt=(ct,t)=>ct.pM*heatF(t);
+const buyProb=(sc,pr,rep,ct,t,db=0)=>{const pM=pMt(ct,t);let pricePen=(pr/pM)*0.2;
+ if(pr>pM)pricePen+=((pr-pM)/pM)*0.9;
+ return Math.min(0.95,Math.max(0.03,(sc/100)*0.6+(rep/100)*0.15+0.35-pricePen+db));};
+const wBuy=(sc,pr,rep,ct,t,rand,db=0)=>rand()<buyProb(sc,pr,rep,ct,t,db);
+// Reputation from one buyer: taste reaction, adjusted at most once for value for money
+const cupRep=(ts,pr,ct,t)=>{const rc=ts>35?ct.rI[0]:ts>20?1:ts>10?0:-1,vfm=pr/pMt(ct,t);
+ const adj=rc>0&&vfm<0.6?1:rc>0&&vfm>1?-1:rc<0&&vfm>0.8?-1:rc===0&&vfm>1?-1:0;
+ return{rc:rc+adj,adj};};
+// How strongly a stand pulls customers on the street: average cup quality, price vs. comfort, reputation
+const STAND_MIX=Object.values(CT);
+const standAttr=(l,h,ic,pr,rep,t)=>{const wa=Math.max(0,CUP-l-h-ic);
+ const q=STAND_MIX.reduce((s,c)=>s+c.pct*cSc(l,h,ic,wa,t,c).sc,0),pM=STAND_MIX.reduce((s,c)=>s+c.pct*pMt(c,t),0);
+ return(0.5+q/100)*Math.exp(-1.2*(pr/pM-1))*(0.6+rep/100*0.8);};
+// Stars are relative to "par": the typical profit of a solid player for the chosen difficulty and number of competitors
+const PAR={easy:[1750,1450,1200,1000],medium:[1400,950,650,450],hard:[1100,600,350,250]};
+const starsFor=(fp,cl,cm)=>{const par=(PAR[cl]||PAR.medium)[Math.max(0,Math.min(3,cm||0))];
+ return fp<0?1:fp<par*0.4?2:fp<par*0.75?3:fp<par*1.1?4:5;};
 const cCost=(l,h,ic,p)=>l*p.lemon+h*p.honey+ic*p.ice;
 const C={bg:"#FFFCF3",cd:"linear-gradient(180deg,#FFFEF7 0%,#FFFCF1 100%)",bd:"#E8DCC2",lm:"#F5B400",lD:"#D89400",hn:"#E0840F",ic:"#5EB6D8",iD:"#2B7B9E",
  gn:"#2D8C4E",rd:"#C24A2A",tx:"#2A1B0E",tL:"#4A3621",tM:"#7A6448",ac:"#E0840F",pu:"#7E4CB8"};
@@ -1186,13 +1206,13 @@ const TUT=[
  {ph:"setup2",t:"רמות קושי — מה ההבדל? ⚙️",tx:"קלה: 30% יותר לקוחות, סיכויי קנייה גבוהים, מתחרים חלשים.\nבינונית: כלכלה מאוזנת.\nקשה: 20% פחות לקוחות, קשה למכור, מתחרים עם מתכונים טובים.\nטיפ: בפעם הראשונה? בחר 0 מתחרים + קלה."},
  {ph:"eveIntel",t:"שלב 1: מודיעין ערב 🔍",tx:"לפני שתקנה חומרים, תוכל לקנות מודיעין. שים לב: המודיעין לא תמיד מדויק!\n\n🔮 שמועות (₪2, ~70% דיוק): מזג אוויר כללי — עלול לטעות!\n📡 מקורות (₪5, ~85%): מזג אוויר + כיוון מחירים + רמז על אירועים\n🕵️ סוכן (₪10, ~95%): הכל כולל מחירים, פרטי אירוע מדויקים\n\nאם יש מתחרים, אפשר גם לקנות ניתוח מתחרים. המידע יוצג בבוקר *לפני* שתקבע מחיר ותבחר פעולות — כדי שתוכל להתאים את האסטרטגיה שלך!"},
  {ph:"eveIntel2",t:"גרפי מחירים — איך לקרוא? 📊",tx:"כל מרכיב (לימון, סוכר, קרח) מציג גרף קו של המחיר לאורך ימי המשחק. הנקודה האחרונה = מחיר מחר.\n\n📈 עולה = כדאי לקנות היום לפני שהמחיר עולה עוד\n📉 יורד = אולי לחכות ליום הבא\n➡️ יציב = מחיר דומה\n\nמגמות נוטות להמשיך (60% סיכוי) — אם מחיר עלה אתמול, סביר שימשיך לעלות. זה עוזר לתכנן רכישות!"},
- {ph:"evening",t:"שלב 2: השוק 🛒",tx:"כאן קונים חומרי גלם למחר. לכל סוג חיי מדף שונים:\n\n🍋 לימונים (₪0.30-0.80): המרכיב המרכזי! נשארים טריים ל-3 ימי מכירה ואז מתקלקלים — אל תקנה יותר ממה שתשתמש ב-3 ימים.\n🧂 סוכר (₪0.60-1.20): יקר, אבל לא מתקלקל אף פעם — נשמר לכל המשחק! אפשר לקנות מלאי גדול מראש. מספיק 1-2 לכוס.\n🧊 קרח (₪0.05-0.20): זול אבל נמס בסוף כל יום! חייבים לקנות מחדש כל ערב.\n\n💡 בקיצור: קרח = יום אחד, לימון = 3 ימים, סוכר = לנצח.\n\nלמעלה תראה כמה כסף יש, כמה מוציא, וכמה נשאר."},
+ {ph:"evening",t:"שלב 2: השוק 🛒",tx:"כאן קונים חומרי גלם למחר. לכל סוג חיי מדף שונים:\n\n🍋 לימונים (₪0.30-0.80): המרכיב המרכזי! נשארים טריים ל-3 ימי מכירה ואז מתקלקלים — אל תקנה יותר ממה שתשתמש ב-3 ימים.\n🧂 סוכר (₪0.30-0.60): זול ולא מתקלקל אף פעם — נשמר לכל המשחק! אפשר לקנות מלאי גדול מראש. בדרך כלל 1 לכוס מספיק.\n🧊 קרח (₪0.05-0.20): זול אבל נמס בסוף כל יום! חייבים לקנות מחדש כל ערב.\n\n💡 בקיצור: קרח = יום אחד, לימון = 3 ימים, סוכר = לנצח.\n\nלמעלה תראה כמה כסף יש, כמה מוציא, וכמה נשאר."},
  {ph:"evening2",t:"שדרוגים והלוואות 💡",tx:"⬆️ שדרוגים קבועים: נרכשים פעם אחת ופעילים לשאר המשחק (שלט, סוכך, מסחטה, עמדה נוספת...)\n\n🏦 הלוואה: עד ₪40, אבל 8% ריבית ליום! רק למצבי חירום.\n🥤 תחזית כוסות: בתחתית השוק תראה כמה כוסות תוכל להכין (מינימום/מאוזן/פרמיום).\n\nכלל אצבע: קנה מספיק ל-20-25 כוסות מאוזנות (3🍋+1🧂+1🧊)."},
  {ph:"morning",t:"בוקר — מזג אוויר ואירועים ☀️",tx:"בבוקר תראה את מזג האוויר ומה קורה היום:\n\n🥶 קר (מתחת 18°C): כמעט אף אחד לא רוצה לימונדה.\n🌡️ קריר (18-20°C): ביקוש נמוך.\n😊 נעים (21-24°C): ביקוש סביר.\n☀️ מושלם (25-29°C): שיא הביקוש! ❄️ קרח חשוב.\n🥵 חם (30-34°C): צמאים אבל חלק נשארים בבית.\n🔥 שרב (35°C+): רוב האנשים בבית — מי שבחוץ מת מצמא.\n\n50% סיכוי לאירוע מיוחד! אירועים חיוביים (🎪 פסטיבל ×1.8) ושליליים (📢 הפגנה ×0.3) — משפיע על כולם.\n\n📍 מיקום: בתחתית המסך תבחר איפה להציב את הדוכן היום:\n🏚️ פינת רחוב — שקט (×0.65 לקוחות), ללא שכירות\n🏠 צד הרחוב — רגיל, ₪3/יום\n🏙️ מרכז הרחוב — הרבה תנועה (×1.4!), ₪8/יום\nביום גשום? אולי כדאי לחסוך שכירות. ביום פסטיבל? שווה לשלם על מרכז!\n\n🎯 אם הפעלת מטרות: תראה את מטרת היום למעלה עם הבונוס. היעד והבונוס משתנים כל יום."},
- {ph:"morning2",t:"המתכון — 6 סלוטים בכוס 🥤",tx:"כל כוס = 6 יחידות. מה שלא מלאת = מים (💧) שפוגעים בטעם!\n\n🍋 לימון (חובה לפחות 1): יותר = יותר טעם! 3-4 = מצוין.\n🧂 סוכר (0-2 מומלץ): מאזן חמיצות. יותר מ-2 = מתוק מדי!\n🧊 קרח (0-2): רעננות ביום חם. מדלל טעם. ביום קר — מיותר.\n💧 מים (אוטומטי): כל סלוט ריק = מים. מדלל טעם!\n\nדוגמה מומלצת: 3🍋+1🧂+1🧊+1💧 = כוס מאוזנת."},
- {ph:"morning3",t:"מחיר, כמות, ומוניטין ⭐",tx:"💰 מחיר: אין מחיר \"נכון\" אחד — תלוי באיכות הכוס, מזג האוויר, והקהל. מחיר נמוך מדי = מפסיד כסף. גבוה מדי = פחות קונים. נסה למצוא את הנקודה המתוקה!\n🥤 כמות: המערכת מראה צפי לקוחות — הכן קצת פחות כדי שלא תבזבז.\n\n⭐ מוניטין (0-100): מתחיל ב-50. משפיע על שני דברים:\n1) כמות לקוחות שמגיעים — מוניטין גבוה מושך יותר אנשים לדוכן\n2) סיכויי קנייה — לקוחות סומכים יותר על דוכן מוכר\n\nמה משפיע על מוניטין? בסיכום יום תראה פירוט מלא:\n• 😊 איכות הלימונדה (הגורם המרכזי)\n• 💰 תמורה למחיר — כוס מעולה בזול = בונוס, בינונית ביוקר = פגיעה\n• 💨 אזילת מלאי — לקוחות שרצו ולא קיבלו\n• 📰 אירועים, 🗣️ שמועות מתחרים, 📊 נטייה טבעית למרכז\n\nחשוב: ההשפעה לא מדויקת! יש אלמנט של מזל — מוניטין 70 לא מבטיח יותר לקוחות מ-65, אבל לאורך זמן ההבדל מורגש."},
+ {ph:"morning2",t:"המתכון — 6 סלוטים בכוס 🥤",tx:"כל כוס = 6 יחידות. מה שלא מלאת = מים (💧) שפוגעים בטעם!\n\n🍋 לימון (חובה לפחות 1): יותר = יותר טעם! 3-4 = מצוין.\n🧂 סוכר (1-2 מומלץ): מרכך את החמיצות של הלימון. ילדים אוהבים מתוק, ספורטאים ושפים פחות. יותר מדי = מתוק מדי!\n🧊 קרח (0-3): רעננות. ככל שחם יותר — הקרח חשוב יותר. מדלל טעם. ביום קר — מיותר.\n💧 מים (אוטומטי): כל סלוט ריק = מים. מדלל טעם!\n\nדוגמה מומלצת: 3🍋+1🧂+1🧊+1💧 = כוס מאוזנת."},
+ {ph:"morning3",t:"מחיר, כמות, ומוניטין ⭐",tx:"💰 מחיר: אין מחיר \"נכון\" אחד — תלוי באיכות הכוס, מזג האוויר, והקהל. מחיר נמוך מדי = מפסיד כסף. גבוה מדי = פחות קונים. נסה למצוא את הנקודה המתוקה!\n🌡️ ביום חם לקוחות מוכנים לשלם יותר, ביום קר — פחות.\n🥤 כמות: המערכת מראה צפי לקוחות — הכן קצת פחות כדי שלא תבזבז.\n\n⭐ מוניטין (0-100): מתחיל ב-50. משפיע על שני דברים:\n1) כמות לקוחות שמגיעים — מוניטין גבוה מושך יותר אנשים לדוכן\n2) סיכויי קנייה — לקוחות סומכים יותר על דוכן מוכר\n\nמה משפיע על מוניטין? בסיכום יום תראה פירוט מלא:\n• 😊 איכות הלימונדה (הגורם המרכזי)\n• 💰 תמורה למחיר — כוס מעולה בזול = בונוס, בינונית ביוקר = פגיעה\n• 💨 אזילת מלאי — לקוחות שרצו ולא קיבלו\n• 📰 אירועים, 🗣️ שמועות מתחרים, 📊 נטייה טבעית למרכז\n\nחשוב: ההשפעה לא מדויקת! יש אלמנט של מזל — מוניטין 70 לא מבטיח יותר לקוחות מ-65, אבל לאורך זמן ההבדל מורגש."},
  {ph:"morning4",t:"⚡ פעולות יום — שיווק ותחרות",tx:"בבוקר תוכל לבחור פעולות שישפיעו על היום:\n\n📣 שיווק (תמיד זמין):\n📄 פליירים (₪5) — +10% לקוחות\n🎈 בלונים (₪10) — +18% לקוחות\n📱 פוסט ברשתות (₪7) — +8% + סיכוי למוניטין\n🎁 טעימות חינם (₪3) — +3 מוניטין אם הטעם טוב\n\n⚔️ נגד מתחרים (כשיש):\n📢 קמפיין תחרותי: בסיסי ₪5 (10%) / חזק ₪10 (18%) / מסיבי ₪15 (25%) — גונב לקוחות\n🗣️ שמועות ₪4 ⚠️ — -5 מוניטין למתחרה (30% סיכוי להיתפס!)\n🚫 הסרת שלטים ₪6 ⚠️ — -20% חשיפה (40% סיכוי להיתפס!)\n\n🕵️ חשוב: אם קנית ניתוח מתחרים (בשלב המודיעין בערב), תראה את כל המידע הזה בבוקר *לפני* שאתה קובע מחיר ובוחר פעולות!\n\nרמה 1: מחיר המתחרים בלבד\nרמה 2: + מתכון + כמות + פעולות שלהם\nרמה 3: + סיכול פעולות מלוכלכות (שמועות/שלטים) שלהם נגדך\n\n🛡️ גם המתחרים פועלים נגדך! בלי מודיעין לא תדע מה הם עושים."},
- {ph:"morning4b",t:"🎭 היריבים — לכל אחד אופי משלו",tx:"המתחרים שלך אינם זהים! כל אחד הוא דמות עם אסטרטגיה קבועה לאורך כל המשחק. הנה מי שאתה עשוי לפגוש:\n\n💸 זולי הזול — מוזיל מחירים ומוכר בכמויות. קשה להתחרות בו במחיר.\n👨‍🍳 שף גורמה — מתכון עשיר ומחיר גבוה. פונה לחובבי איכות.\n🧓 דוד יוסי — יציב ואמין, בלי הפתעות.\n😎 טרנדי — רודף אחרי הטרנד, קצת יקר אבל אנרגטי.\n🎲 המהמר — בלתי צפוי לחלוטין. אף פעם לא תדע מה הוא יעשה.\n👵 הוותיקה — ניסיון של שנים, חכמה ונוטה לאיכות.\n\nבכל משחק תפגוש הרכב שונה של יריבים. 🕵️ קנה ניתוח מתחרים כדי לראות את השם, הסלוגן והמהלכים של כל אחד — ולהתאים את האסטרטגיה שלך!"},
+ {ph:"morning4b",t:"🎭 היריבים — לכל אחד אופי משלו",tx:"המתחרים שלך אינם זהים! כל אחד הוא דמות עם אסטרטגיה קבועה לאורך כל המשחק. הנה מי שאתה עשוי לפגוש:\n\n💸 זולי הזול — מוזיל מחירים ומוכר בכמויות. קשה להתחרות בו במחיר.\n👨‍🍳 שף גורמה — מתכון עשיר ומחיר גבוה. פונה לחובבי איכות.\n🧓 דוד יוסי — יציב ואמין, בלי הפתעות.\n😎 טרנדי — רודף אחרי הטרנד, קצת יקר אבל אנרגטי.\n🎲 המהמר — בלתי צפוי לחלוטין. אף פעם לא תדע מה הוא יעשה.\n👵 הוותיקה — ניסיון של שנים, חכמה ונוטה לאיכות.\n\nבכל משחק תפגוש הרכב שונה של יריבים. 🛒 לקוחות בוחרים דוכן לפי איכות הכוס, המחיר והמוניטין — כוס טובה יותר או מחיר נוח יותר מושכים לקוחות מהמתחרים.\n\n🕵️ קנה ניתוח מתחרים כדי לראות את השם, הסלוגן והמהלכים של כל אחד — ולהתאים את האסטרטגיה שלך!"},
  {ph:"morning5",t:"דשבורד ושדרוגים 🛠️",tx:"📊 כפתור הדשבורד: מופיע ב-StatusBar אחרי יום 1. לחץ עליו בכל רגע כדי לראות:\n• היסטוריית מזג אוויר ואירועים\n• גרפי מחירים לאורך המשחק\n• הכנסות, רווח ומוניטין שלך לאורך זמן\n• טבלת החלטות (מתכון/מחיר/תוצאות כל יום)\n• השוואה למתחרים (אם קנית ניתוח)\n\nבדשבורד גם:\n🏆 הכוס הטובה ביותר — איזה מתכון ויום נתנו את הציון הגבוה ביותר\n⚡ היסטוריית פעולות — מה אתה והמתחרים עשיתם (בעברית)\n\nבדשבורד גם:\n🏆 הכוס הטובה ביותר שלך\n⚡ היסטוריית פעולות — מה אתה והמתחרים עשיתם\n\n👤 עוזר (₪8 ליום): מגבלת הגשה: 30 כוסות לבד, 50 עם עוזר (₪8/יום), 70 עם עמדה נוספת (₪30, מיום 3), ללא הגבלה עם צוות מלא (₪50, מיום 4)."},
  {ph:"sim",t:"הסימולציה — מה קורה? 🎬",tx:"צפה בלקוחות מגיעים לדוכן. כל אחד טועם ומגיב:\n\n😊 מרוצה מאוד — קנה + מוניטין עולה!\n🙂 סביר — קנה\n😐 בסדר — קנה, אדיש\n😕 מאוכזב — קנה אבל מוניטין יורד\n🚶 לא קנה — מחיר גבוה או איכות נמוכה\n💨 רצה לקנות אבל אזל! — מוניטין נפגע!\n\nליד כל לקוח תראה מה אמר.\n\n🔊 אם הפעלת סאונד: צליל קצ׳ינג על כל מכירה, וצליל עצוב כשלקוח עוזב.\n⏱️ מהירות: ביום שקט (מעט לקוחות) — אנימציה איטית. ביום עמוס — מהירה.\n\n🎩 לפעמים יגיע מבקר אוכל VIP! אם ירשם — +8 מוניטין + כתבה בעיתון שמביאה ×1.3 לקוחות למחרת. אם מאוכזב — -6 מוניטין.\n\nבסוף: כפתור 📊 סיכום יום — לא עובר אוטומטית, אפשר להתעכב על המסך."},
  {ph:"sim2",t:"סוגי לקוחות + VIP 👥",tx:"ארבעה סוגים עם העדפות שונות:\n\n👦 ילדים (25%): אוהבים מתוק, רגישים לחמיצות. תקציב נמוך.\n🧑 מבוגרים (40%): הקהל העיקרי. מאוזנים, תקציב בינוני.\n🏃 ספורטאים (20%): אוהבים רעננות+טעם. מוכנים לשלם יותר.\n🧑‍🍳 שפים (15%): מומחים! מוכנים להשקיע אבל מאוכזבים קשות מאיכות ירודה.\n\nחשוב: אין מחיר מקסימום קשיח! מחיר גבוה מדי פשוט מקטין את הסיכוי שיקנו. גם תמורה למחיר משנה — כוס מצוינת במחיר נמוך = בונוס מוניטין, כוס בינונית במחיר גבוה = פגיעה במוניטין."},
@@ -1359,6 +1379,7 @@ function LemonadeGame(){
  const [morningTab,setMorningTab]=useState('recipe');
  const [dayLog,setDayLog]=useState([]);
  const [npcActions,setNpcActions]=useState([]);
+ const [compSnap,setCompSnap]=useState([]);
  const [pendSum,setPendSum]=useState(null);
  const [npcState,setNpcState]=useState([]);
  const [loc,setLoc]=useState(0);
@@ -1434,7 +1455,7 @@ function LemonadeGame(){
  const pH=useMemo(()=>{const mx=Math.min(dy+2,gd.length);
   return{l:gd.slice(0,mx).map(d=>d.p.lemon),h:gd.slice(0,mx).map(d=>d.p.honey),i:gd.slice(0,mx).map(d=>d.p.ice)};},[gd,dy]);
  useEffect(()=>{try{const v=Promise.resolve(localStorage.getItem("lem-hi")?{value:localStorage.getItem("lem-hi")}:null);if(v&&v.then)v.then(r=>{if(r&&r.value)setHi(JSON.parse(r.value));});else if(v&&v.value)setHi(JSON.parse(v.value));}catch(e){}},[]);
- const saveHi=(sc,tS,repFinal)=>{const st=sc<0?1:sc<30?2:sc<70?3:sc<120?4:5;
+ const saveHi=(sc,tS,repFinal)=>{const st=starsFor(sc,cl,cm);
   const u=[...hi,{sc:Math.round(sc),cm,cl,stars:st}].sort((a,b)=>b.sc-a.sc).slice(0,10);setHi(u);
   try{const p=Promise.resolve(localStorage.setItem("lem-hi",JSON.stringify(u)));if(p&&p.catch)p.catch(()=>{});}catch(e){}
   if(authUser && supabase) saveGameResult(sc, cl, cm, st, repFinal||rp, tS||0);
@@ -1452,7 +1473,7 @@ function LemonadeGame(){
   setDayGoal(null);setBestCup(null);setVipBonus(false);setLastVip(-3);setLoc(0);setShowExpD(false);
   setLoanEverTaken(false);setSpent({market:0,intel:0,upgrades:0});
   setPh("initEve");};
- useEffect(()=>{if(ph==="initEve"){setTP2(gd[1]?.p||{lemon:0.5,honey:0.8,ice:0.1});
+ useEffect(()=>{if(ph==="initEve"){setTP2(gd[1]?.p||{lemon:0.5,honey:0.45,ice:0.1});
   setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");if(tOn){setTSt(tutIdx("eveIntel"));setShT(true);}}},[ph,gd,tOn]);
  const setupM=useCallback(d=>{const data=gd[d];if(!data)return;setDW({temp:data.temp,w:data.w});setDP(data.p);setDE(data.e);
   setPr(5);setCu(20);setHlp(false);setActionsToday([]);
@@ -1507,11 +1528,13 @@ function LemonadeGame(){
   const boostDm=actionsToday.filter(a=>a.dm).reduce((m,a)=>m*a.dm,1);
   const vipMult=vipBonus?1.3:1;
   const dm=Math.max(5,Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM*boostDm*repMult*LOC[loc].dm*vipMult*(up.includes("sign")?1.15:1)*(up.includes("shade")&&dW.temp>=28?1.2:1)));
-  let tA=1;for(let i=0;i<cm;i++)tA+=npcA;
+  // Competitors split the street by attractiveness (cup quality, price, reputation), weighted by difficulty
+  const myA=standAttr(rL,rH,rI,pr,rp,dW.temp);
+  const myShare=1/(1+compD.reduce((s,c)=>s+npcA*c.attr/myA,0));
   const adsAct=actionsToday.find(a=>a.id==="ads");
   const stealPct=adsAct?adsAct.steal:0;
-  const baseMyD=Math.round(dm/tA);
-  const stolenFromComps=hasComps?Math.round(dm*(1-1/tA)*stealPct):0;
+  const baseMyD=Math.round(dm*myShare);
+  const stolenFromComps=hasComps?Math.round(dm*(1-myShare)*stealPct):0;
   const myD=Math.max(3,baseMyD+stolenFromComps);
   const tasteAct=actionsToday.find(a=>a.id==="taste");
   const freeCups=tasteAct?5:0;
@@ -1523,23 +1546,18 @@ function LemonadeGame(){
   for(let i=0;i<myD;i++){let cum=0,ct="adult",roll=rand();
    for(const k of tK){cum+=CT[k].pct;if(roll<cum){ct=k;break;}}
    const c=CT[ct],sc=cSc(rL,rH,rI,rW,dW.temp,c);
-   const buys=sold<cupsToUse&&wBuy(sc.sc,pr,rp,c,rand,dBB);
+   const buys=sold<cupsToUse&&wBuy(sc.sc,pr,rp,c,dW.temp,rand,dBB);
    let rx="😐",rc=0,rcVfm=0,sp="";
    if(buys){sold++;rev+=pr;if(sc.ts>35){rx="😊";rc=c.rI[0];sp=c.sG;}else if(sc.ts>20){rx="🙂";rc=1;sp=c.sO;}
     else if(sc.ts>10){rx="😐";sp=c.sO;}else{rx="😕";rc=-1;sp=c.sB;}
-    const vfm=pr/c.pM;
-    if(vfm<0.6)steals++;
-    if(rc>0&&vfm<0.6){rcVfm=1;rc+=1;}
-    if(rc>0&&vfm>1){rcVfm=-1;rc=Math.max(0,rc-1);}
-    if(rc<0&&vfm>0.8){rcVfm=-1;rc-=1;}
-    if(rc===0&&vfm>1){rcVfm=-1;rc=-1;}
+    const cr=cupRep(sc.ts,pr,c,dW.temp);rc=cr.rc;rcVfm=cr.adj;
+    if(pr/pMt(c,dW.temp)<0.6)steals++;
     repBrk.taste+=rc-rcVfm;repBrk.vfm+=rcVfm;
    }
-   else if(sold>=cupsToUse){rx="💨";rc=-2;sp="רציתי לקנות אבל אזל!";repBrk.soldOut+=rc;soldOutCnt++;
-    rRneg.push("💨 "+c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");}
+   else if(sold>=cupsToUse){rx="💨";rc=repBrk.soldOut>-SOLDOUT_CAP?-2:0;sp="רציתי לקנות אבל אזל!";repBrk.soldOut+=rc;soldOutCnt++;}
    else{rx="🚶";sp=c.sN;
     // Walked away: was price above their comfort, or was the cup just weak?
-    if(pr>c.pM)lostPrice++;else lostQual++;}
+    if(pr>pMt(c,dW.temp))lostPrice++;else lostQual++;}
    if(rc>0)rR.push(c.em+" "+c.nm+": \""+sp+"\" (+"+rc+")");
    if(rc<0)rRneg.push(c.em+" "+c.nm+": \""+sp+"\" ("+rc+")");
    repD+=rc;custs.push({type:ct,em:c.em,buys,rx,sc:sc.sc,ts:sc.ts,sp});}
@@ -1614,7 +1632,7 @@ function LemonadeGame(){
   if(dE?.rb)repBrk.actions+=(dE.rb);
   if(up.includes("cups"))repBrk.actions+=1;
   let nr=rp+repD;if(dE?.rb)nr+=dE.rb;if(up.includes("cups"))nr+=1;
-  const regress=nr>50?-1:nr<50?1:0;nr+=regress;
+  const regress=Math.round((50-nr)*0.06);nr+=regress;
   nr=Math.max(0,Math.min(REPMAX,nr));
   // Daily goal: bonus cash is income for today, bonus reputation is part of today's change
   let goalRw=0,goalMsg=null;
@@ -1634,13 +1652,20 @@ function LemonadeGame(){
   if(repBrk.taste<0)rEx.push("😕 איכות לימונדה: "+repBrk.taste);
   if(repBrk.vfm>0)rEx.push("💰 תמורה טובה למחיר: +"+repBrk.vfm);
   if(repBrk.vfm<0)rEx.push("💸 מחיר גבוה ביחס לאיכות: "+repBrk.vfm);
-  if(repBrk.soldOut<0)rEx.push("💨 אזילת מלאי ("+Math.abs(repBrk.soldOut/2)+" לקוחות נפגעו): "+repBrk.soldOut);
+  if(repBrk.soldOut<0)rEx.push("💨 אזילת מלאי ("+(priceInfo?.soldOut||0)+" לקוחות פספסו): "+repBrk.soldOut+(repBrk.soldOut<=-SOLDOUT_CAP?" (מקסימום ליום)":""));
   if(dE?.rb)rEx.push("📰 אירוע: +"+(dE.rb));
   if(up.includes("cups"))rEx.push("🥤 כוסות ממותגות: +1");
-  if(regress!==0)rEx.push("📊 נטייה למרכז: "+(regress>0?"+1":"-1"));
+  if(regress!==0)rEx.push("📊 נטייה למרכז: "+(regress>0?"+"+regress:regress));
   const totalRepChange=nr-rp;
   rEx.push(totalRepChange>=0?"📈 סה\"כ: +"+totalRepChange+" ("+rp+"→"+nr+") — "+(nr>=65?"מצוין! יותר לקוחות מחר":nr>=50?"טוב":"נמוך — פחות לקוחות מחר")
    :"📉 סה\"כ: "+totalRepChange+" ("+rp+"→"+nr+") — "+(nr>=50?"עדיין סביר":nr>=35?"בינוני — פחות לקוחות":"נמוך! הרבה פחות לקוחות מחר"));
+  // Freeze today's competitor results for the report, then advance their stock, cash, reputation and loans
+  setCompSnap(compD);
+  if(compD.length>0)setNpcState(prev=>prev.map((npc,i)=>{const cd=compD[i];if(!cd)return npc;
+   let l=cd.npcLoan,cash=cd.cashAfter;if(l>0)l=Math.round(l*(1+LOAN_INT)*100)/100;
+   if(l>0&&cash>l*1.5){cash-=l;l=0;}
+   return{...npc,cash,lm:Math.max(0,npc.lm+cd.boughtL-cd.prep*cd.rec.l),hn:Math.max(0,npc.hn+cd.boughtH-cd.prep*cd.rec.h),ic:0,rep:cd.repA,
+    totRev:npc.totRev+cd.rev,totExp:npc.totExp+cd.exp,ups:cd.boughtUpg?[...npc.ups,cd.boughtUpg]:npc.ups,ln:l};}));
   const cSnap=compD.map(c=>({n:c.n,pr:c.pr,sold:c.sold,rev:c.rev,exp:c.exp,profit:c.profit,rep:c.repA,cash:c.cashAfter,prep:c.prep}));
   setDayLog(p=>[...p,{dy,temp:dW.temp,weather:dW.w.n,event:dE?.n||null,prices:{...dP},
    myRev:rev,myExp:dExp,myProfit:profit,mySold:sold,myPrep:cu,rep:nr,repPrev:rp,
@@ -1728,11 +1753,11 @@ function LemonadeGame(){
   }));
  }},[ph,cm,sd]);
  const getPersona=(id)=>COMP_PERSONAS.find(p=>p.id===id)||COMP_PERSONAS[2];
- const compD=useMemo(()=>{
+ const compLive=useMemo(()=>{
   if(!dW||cm===0||npcState.length===0)return[];
   const r=rng(sd^(dy*2017));
   const iq=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
-  return npcState.map((npc,i)=>{
+  const plans=npcState.map((npc,i)=>{
    const ri=rng(sd^(dy*3037+i*1013));
    const persona=getPersona(npc.persona);
    const iqAdj=Math.max(0.2,Math.min(0.98,iq*(persona.iqBias||1)));
@@ -1749,7 +1774,7 @@ function LemonadeGame(){
    const availUpgs=UPG.filter(u=>u.ad<=dy&&!npc.ups.includes(u.id));
    const boughtUpg=wantUpg&&availUpgs.length>0?availUpgs[Math.floor(ri()*availUpgs.length)]:null;
    if(boughtUpg)upgCost=boughtUpg.c;
-   const prices=gd[dy]?.p||{lemon:0.5,honey:0.8,ice:0.1};
+   const prices=gd[dy]?.p||{lemon:0.5,honey:0.45,ice:0.1};
    const buyIntel=ri()<iqAdj*0.7;
    const intelCost=buyIntel?(iqAdj>0.7?10:iqAdj>0.5?5:2):0;
    const knowWeather=buyIntel&&ri()<(iqAdj*0.9);
@@ -1782,31 +1807,32 @@ function LemonadeGame(){
    const rawPrep=canAfford?prepTarget:Math.max(0,Math.floor(Math.min(npc.lm/Math.max(nL,1),npc.hn/Math.max(nH,1)||999,budget/prices.ice/Math.max(nI,1)||999)));
    const actualPrep=Math.min(rawPrep,npcCap);
    const actualMatCost=canAfford?matCost:actualPrep*cCost(nL,nH,nI,prices)+intelCost;
-   const baseNP=iqAdj>0.7?4+ri()*2:iqAdj>0.5?3+ri()*4:2+ri()*5;
+   // Smart stands price near what customers will pay today; weaker ones guess
+   const pAvg=STAND_MIX.reduce((s,c)=>s+c.pct*pMt(c,dW.temp),0);
+   const baseNP=iqAdj>0.7?pAvg*(0.8+ri()*0.25):iqAdj>0.5?pAvg*(0.6+ri()*0.5):2+ri()*6;
    const nP=Math.max(2,Math.round(baseNP+(persona.priceBias||0)+chaosBump*4));
    const sc=cSc(nL,nH,nI,nW,dW.temp,CT.adult);
-   const myDem=Math.max(2,Math.round(estDem));
+   return{npc,persona,ri,nL,nH,nI,nW,nP,sc,npcRepMult,actualPrep,actualMatCost,budget,helperCost,upgCost,boughtUpg,buyIntel,intelCost,npcCap,npcHiresHelper,npcHasStation,npcHasTeam,npcLoan,
+    boughtL:canAfford?needL:actualPrep*nL,boughtH:canAfford?needH:actualPrep*nH,attr:standAttr(nL,nH,nI,nP,npc.rep,dW.temp)};
+  });
+  // Customers split between stands by attractiveness, so the player's price and recipe matter here too
+  const sumA=standAttr(rL,rH,rI,pr,rp,dW.temp)+plans.reduce((s,p)=>s+p.attr,0);
+  return plans.map(({npc,persona,ri,nL,nH,nI,nW,nP,sc,npcRepMult,actualPrep,actualMatCost,budget,helperCost,upgCost,boughtUpg,buyIntel,intelCost,npcCap,npcHiresHelper,npcHasStation,npcHasTeam,npcLoan,boughtL,boughtH,attr})=>{
+   const myDem=Math.max(2,Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*npcRepMult*attr/sumA));
    let sold=0,rev=0,npcRepD=0;
    for(let j=0;j<myDem;j++){
     if(sold>=actualPrep)break;
-    const buys=wBuy(sc.sc,nP,npc.rep,CT.adult,()=>ri(),0);
+    const buys=wBuy(sc.sc,nP,npc.rep,CT.adult,dW.temp,()=>ri(),0);
     if(buys){
      sold++;rev+=nP;
-     let rc=0;
-     if(sc.ts>35)rc=2; else if(sc.ts>20)rc=1; else if(sc.ts>10)rc=0; else rc=-1;
-     const vfm=nP/CT.adult.pM;
-     if(rc>0&&vfm<0.6)rc+=1;
-     if(rc>0&&vfm>1)rc=Math.max(0,rc-1);
-     if(rc<0&&vfm>0.8)rc-=1;
-     if(rc===0&&vfm>1)rc=-1;
-     npcRepD+=rc;
+     npcRepD+=cupRep(sc.ts,nP,CT.adult,dW.temp).rc;
     }
    }
    const totalExp=Math.min(actualMatCost,budget)+helperCost+upgCost;
    const profit=rev-totalExp;
    const soldOutPenalty=myDem>actualPrep?Math.min(3,myDem-actualPrep):0;
    let repDelta=npcRepD-soldOutPenalty;
-   const newRep=Math.max(0,Math.min(100,npc.rep+repDelta));
+   const newRep=Math.max(0,Math.min(100,npc.rep+repDelta+Math.round((50-npc.rep-repDelta)*0.06)));
    return{
     n:npc.n, persona:npc.persona, em:persona.em, tagline:persona.tagline, pColor:persona.color,
     sold, pr:nP, rev, exp:totalExp, profit,
@@ -1815,31 +1841,11 @@ function LemonadeGame(){
     cash:budget, cashAfter:budget+profit,
     boughtIntel:buyIntel, intelCost, boughtUpg:boughtUpg?.id||null, npcCap, hiredHelper:npcHiresHelper,
     hasStation:npcHasStation, hasTeam:npcHasTeam, hasHelper:npcHiresHelper,
-    npcLoan,
+    npcLoan,attr,boughtL,boughtH,
    };
   });
- },[dW,cm,sd,dy,dE,cl,npcState,gd]);
- useEffect(()=>{
-  if(ph==="summary"&&compD.length>0&&npcState.length>0){
-   setNpcState(prev=>prev.map((npc,i)=>{
-    const cd=compD[i];if(!cd)return npc;
-    const prices=gd[dy]?.p||{lemon:0.5,honey:0.8,ice:0.1};
-    return{
-     ...npc,
-     cash:cd.cashAfter,
-     lm:Math.max(0,npc.lm+cd.rec.l*cd.prep-cd.sold*cd.rec.l),
-     hn:Math.max(0,npc.hn-cd.sold*cd.rec.h),
-     ic:0,
-     rep:cd.repA,
-     totRev:npc.totRev+cd.rev,
-     totExp:npc.totExp+cd.exp,
-     ups:cd.boughtUpg?[...npc.ups,cd.boughtUpg]:npc.ups,
-     ln:(()=>{let l=cd.npcLoan;if(l>0)l=Math.round(l*(1+LOAN_INT)*100)/100;
-      if(l>0&&cd.cashAfter>l*1.5){l=0;}return l;})(),
-    };
-   }));
-  }
- },[ph]);
+ },[dW,cm,sd,dy,dE,cl,npcState,gd,rL,rH,rI,pr,rp]);
+ const compD=ph==="summary"&&compSnap.length?compSnap:compLive;
  const hasLoan=ln>0,hasCash=ca>=0,isHot=dW?.temp>=30,isHeat=dW?.temp>=35,isCold=dW?.temp<18,isWarm=dW?.temp>=25;
  const hasIntel=!!iD,hasCompIntel=cIL>0,hasComps=cm>0,hasUps=up.length>0;
  const isLastDay=dy>=DAYS,hasRes=res.length>1,hasHi=hi.length>0;
@@ -2107,7 +2113,8 @@ function LemonadeGame(){
               </div>
             </div>
           </div>
-          {(()=>{const estD=Math.max(5,Math.round(100*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM/(1+cm*npcA)));
+          {(()=>{const myA=standAttr(rL,rH,rI,pr,rp,dW.temp),share=1/(1+compD.reduce((s,c)=>s+npcA*c.attr/myA,0));
+            const estD=Math.max(5,Math.round(100*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM*share));
             const rec=Math.min(mxC,Math.round(estD*0.7));
             return <div className="card-flat p-12" style={{marginTop:10}}>
               <div className="kpi-grid">
@@ -2805,7 +2812,7 @@ function LemonadeGame(){
    </div>;})()}
    {}
    {ph==="gameover"&&(()=>{const tR=res.reduce((s,r)=>s+r.rev,0),tE=res.reduce((s,r)=>s+r.exp,0);
-    const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr,st=fp<0?1:fp<30?2:fp<70?3:fp<120?4:5;
+    const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr,st=starsFor(fp,cl,cm);
     const tS=res.reduce((s,r)=>s+r.sold,0),tPp=res.reduce((s,r)=>s+r.prep,0);
     const bD=res.length>0?res.reduce((b,r)=>r.profit>b.profit?r:b,res[0]):null;
     const wD=res.length>0?res.reduce((w,r)=>r.profit<w.profit?r:w,res[0]):null;
