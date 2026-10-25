@@ -411,15 +411,15 @@ const ACHIEVEMENTS = [
   {id:'viral_hit', em:'🎯', n:'להיט ויראלי', d:'50+ כוסות ומוניטין 80+ באותו יום',
    chk: ({res}) => res.some(r => r.sold >= 50 && r.rA >= 80)},
   {id:'millionaire', em:'👑', n:'מיליונר הלימונדה', d:'רווח כולל של ₪500 במשחק אחד',
-   chk: ({res, ln, gameOver}) => gameOver && (res.reduce((s,r)=>s+r.profit,0)-(ln||0)) >= 500},
+   chk: ({res, ln, gameOver}) => gameOver && res.reduce((s,r)=>s+r.profit,0) >= 500},
   {id:'five_stars', em:'⭐', n:'5 כוכבים', d:'סיים משחק עם 5 כוכבים',
-   chk: ({res, ln, gameOver}) => gameOver && (res.reduce((s,r)=>s+r.profit,0)-(ln||0)) >= 120},
+   chk: ({res, ln, gameOver}) => gameOver && res.reduce((s,r)=>s+r.profit,0) >= 120},
   {id:'no_waste', em:'🍋', n:'לא התבזבז', d:'סיים משחק ללא לימונים שפג תוקפם',
    chk: ({res, gameOver}) => gameOver && res.length>0 && res.every(r => !r.ex || r.ex === 0)},
   {id:'first_place', em:'🏆', n:'מלך התחרות', d:'סיים משחק עם רווח גבוה מכל המתחרים',
    chk: ({res, ln, npcState, gameOver}) => {
      if(!gameOver || !res[0]?.compSnap || res[0].compSnap.length===0) return false;
-     const myProfit = res.reduce((s,r)=>s+r.profit,0)-(ln||0);
+     const myProfit = res.reduce((s,r)=>s+r.profit,0);
      const nC = res[0].compSnap.length;
      for(let ci=0;ci<nC;ci++){
        const cp = res.reduce((s,r)=>s+(r.compSnap?.[ci]?.profit||0),0)-(npcState?.[ci]?.ln||0);
@@ -430,7 +430,7 @@ const ACHIEVEMENTS = [
   {id:'no_loan', em:'🏦', n:'עצמאות כלכלית', d:'סיים משחק בלי לקחת הלוואה',
    chk: ({ln, loanEverTaken, gameOver}) => gameOver && !loanEverTaken},
   {id:'hard_mode', em:'💪', n:'קשוח', d:'סיים משחק ברמת קושי "קשה" עם רווח חיובי',
-   chk: ({cl, res, ln, gameOver}) => gameOver && cl==='hard' && (res.reduce((s,r)=>s+r.profit,0)-(ln||0))>=0},
+   chk: ({cl, res, ln, gameOver}) => gameOver && cl==='hard' && res.reduce((s,r)=>s+r.profit,0)>=0},
   {id:'speed_run', em:'⚡', n:'זינוק מהיר', d:'רווח חיובי כבר ביום הראשון',
    chk: ({res}) => res.length>0 && res[0].profit > 0},
   {id:'comeback', em:'🔄', n:'קאמבק', d:'יום הפסד ואז 3 ימי רווח',
@@ -1197,6 +1197,7 @@ const TUT=[
  {ph:"sim",t:"הסימולציה — מה קורה? 🎬",tx:"צפה בלקוחות מגיעים לדוכן. כל אחד טועם ומגיב:\n\n😊 מרוצה מאוד — קנה + מוניטין עולה!\n🙂 סביר — קנה\n😐 בסדר — קנה, אדיש\n😕 מאוכזב — קנה אבל מוניטין יורד\n🚶 לא קנה — מחיר גבוה או איכות נמוכה\n💨 רצה לקנות אבל אזל! — מוניטין נפגע!\n\nליד כל לקוח תראה מה אמר.\n\n🔊 אם הפעלת סאונד: צליל קצ׳ינג על כל מכירה, וצליל עצוב כשלקוח עוזב.\n⏱️ מהירות: ביום שקט (מעט לקוחות) — אנימציה איטית. ביום עמוס — מהירה.\n\n🎩 לפעמים יגיע מבקר אוכל VIP! אם ירשם — +8 מוניטין + כתבה בעיתון שמביאה ×1.3 לקוחות למחרת. אם מאוכזב — -6 מוניטין.\n\nבסוף: כפתור 📊 סיכום יום — לא עובר אוטומטית, אפשר להתעכב על המסך."},
  {ph:"sim2",t:"סוגי לקוחות + VIP 👥",tx:"ארבעה סוגים עם העדפות שונות:\n\n👦 ילדים (25%): אוהבים מתוק, רגישים לחמיצות. תקציב נמוך.\n🧑 מבוגרים (40%): הקהל העיקרי. מאוזנים, תקציב בינוני.\n🏃 ספורטאים (20%): אוהבים רעננות+טעם. מוכנים לשלם יותר.\n🧑‍🍳 שפים (15%): מומחים! מוכנים להשקיע אבל מאוכזבים קשות מאיכות ירודה.\n\nחשוב: אין מחיר מקסימום קשיח! מחיר גבוה מדי פשוט מקטין את הסיכוי שיקנו. גם תמורה למחיר משנה — כוס מצוינת במחיר נמוך = בונוס מוניטין, כוס בינונית במחיר גבוה = פגיעה במוניטין."},
 ];
+const tutIdx=ph=>TUT.findIndex(t=>t.ph===ph);
 const TutBubble=({step,onNext,onSkip,current,total})=>{if(!step)return null;return(
  <div style={{position:"fixed",bottom:14,left:"50%",transform:"translateX(-50%)",background:"#FFFDE7",
   borderRadius:16,padding:"14px 18px",boxShadow:"0 8px 30px rgba(0,0,0,.25)",border:"3px solid #FFD700",
@@ -1249,30 +1250,6 @@ function LemonadeGame(){
  const handleAuth = (user, name) => { setAuthUser(user); setAuthName(name); setShowAuth(false); };
  const handleLogout = async () => { if(supabase) await supabase.auth.signOut(); setAuthUser(null); setAuthName(''); setPh('title'); };
 
- // Achievement checker — runs when meaningful state changes
- const checkAchievements = useCallback((gameOver=false) => {
-   const ctx = { res, rp, dayLog, ln, npcState, cl, loanEverTaken, gameOver };
-   const newly = [];
-   setUnlockedAch(prev => {
-     const next = [...prev];
-     ACHIEVEMENTS.forEach(a => {
-       if (!next.includes(a.id)) {
-         try { if (a.chk(ctx)) { next.push(a.id); newly.push(a); } }
-         catch(e) {}
-       }
-     });
-     if (newly.length > 0) {
-       saveAchievements(next);
-       setAchToasts(t => [...t, ...newly]);
-     }
-     return next;
-   });
- }, [res, rp, dayLog, ln, npcState, cl, loanEverTaken]);
-
- // Check after each day's summary (res grows) and at gameover
- useEffect(() => { if (res.length > 0) checkAchievements(false); }, [res]);
- useEffect(() => { if (ph === 'gameover') checkAchievements(true); }, [ph]);
-
  // Auto-dismiss toasts
  useEffect(() => {
    if (achToasts.length === 0) return;
@@ -1312,7 +1289,7 @@ function LemonadeGame(){
      const state = { ph, dy, ca, lm, la, hn, ic, rp, up, ln, res, cm, cl, sd,
        rL, rH, rI, pr, cu, hlp, iD, tP, npcState, dayLog, npcActions,
        tOn, goalsOn, sfxOn, loc, bestCup, vipBonus, lastVip, iPd, cIL,
-       actionsToday, bL, bH, bI, bIn, bCI, showExpD, lastVip, dayGoal, hi, loanEverTaken };
+       actionsToday, bL, bH, bI, bIn, bCI, showExpD, lastVip, dayGoal, hi, loanEverTaken, spent };
      const { error } = await supabase.from('saved_games').upsert({
        user_id: authUser.id, game_state: state, updated_at: new Date().toISOString()
      }, { onConflict: 'user_id' });
@@ -1331,7 +1308,10 @@ function LemonadeGame(){
      if (error) throw error;
      if (!data) return false;
      const s = data.game_state;
-     setPh(s.ph); setDy(s.dy); setCa(s.ca); setLm(s.lm); setLa(s.la||[]);
+     setPh(s.ph); setDy(s.dy); setCa(s.ca); setLm(s.lm);
+     // Old saves have no lemon batches; treat the stock as bought on the saved day so it isn't wiped
+     setLa(s.la&&s.la.length?s.la:(s.lm>0?[{q:s.lm,d:s.dy}]:[]));
+     setSpent(s.spent||{market:0,intel:0,upgrades:0});
      setHn(s.hn); setIc(s.ic); setRp(s.rp); setUp(s.up||[]); setLn(s.ln);
      setRes(s.res||[]); setCm(s.cm); setCl(s.cl); setSd(s.sd);
      setRL(s.rL); setRH(s.rH); setRI(s.rI); setPr(s.pr); setCu(s.cu);
@@ -1345,12 +1325,12 @@ function LemonadeGame(){
      setActionsToday(s.actionsToday||[]); setBL(s.bL||0); setBH(s.bH||0);
      setBI(s.bI||0); setBIn(s.bIn||0); setBCI(s.bCI||0);
      setShowExpD(s.showExpD||false); setDayGoal(s.dayGoal||null);
-     setHi(s.hi||[]); setDW(null); setDE(null); setDP(null);
+     setDW(null); setDE(null); setDP(null);
      setLoanEverTaken(s.loanEverTaken||false);
-     // Re-setup morning data if we're in a gameplay phase
-     if (['morning','sim','summary'].includes(s.ph) && s.dy > 0) {
-       setPD(s.dy);
-     }
+     // Mid-day saves restart that day's morning (the day hasn't been settled yet).
+     // A save from the report screen means the day IS settled — continue to that evening instead of replaying it.
+     if (['morning','sim'].includes(s.ph) && s.dy > 0) setPD(s.dy);
+     else if (s.ph === 'summary') setPendLoadEve(true);
      return true;
    } catch(e) { console.error('Load error:', e); return false; }
  };
@@ -1394,6 +1374,8 @@ function LemonadeGame(){
  const [vipBonus,setVipBonus]=useState(false);
  const [lastVip,setLastVip]=useState(-3);
  const [showExpD,setShowExpD]=useState(false);
+ // Cash spent since the last day report (evening intel, market, upgrades): charged once, shown in the next day's P&L
+ const [spent,setSpent]=useState({market:0,intel:0,upgrades:0});
  const LOC=[{n:"\u{1F3DA}\uFE0F פינת רחוב",dm:0.65,rent:0,d:"שקט, ללא שכירות"},{n:"\u{1F3E0} צד הרחוב",dm:1.0,rent:3,d:"תנועה רגילה, ₪3/יום"},{n:"\u{1F3D9}\uFE0F מרכז הרחוב",dm:1.4,rent:8,d:"הרבה תנועה! ₪8/יום"}];
  // Background music — random shuffle every time it plays
  useEffect(() => { try { localStorage.setItem('lem-music', musicOn?'on':'off'); } catch(e) {} }, [musicOn]);
@@ -1445,7 +1427,7 @@ function LemonadeGame(){
   {t:"רווח של ₪{n}+",mk:r=>{const n=Math.round(15+r()*25);return{n,rw:Math.round(n*0.15+r()*2),rr:Math.round(1+n/20+r()*0.5)};},chk:(p,g)=>p.profit>=g.n},
   {t:"מוניטין מעל {n} בסוף היום",mk:r=>{const n=Math.round(48+r()*22);return{n,rw:Math.round(2+(n-48)*0.2+r()*2),rr:Math.round(1+(n-48)/15+r()*0.5)};},chk:(p,g,nr)=>nr>=g.n},
   {t:"אפס אזילת מלאי",mk:r=>({n:0,rw:Math.round(5+r()*3),rr:Math.round(1+r()*2)}),chk:(p,g,nr,cs)=>!cs.some(c=>c.rx==="\u{1F4A8}")},
-  {t:"מכירה ל-{n}+ שפים",mk:r=>{const n=Math.max(1,Math.round(r()*3));return{n,rw:Math.round(n*3+r()*3),rr:Math.round(1+n*0.7+r()*0.5)};},chk:(p,g,nr,cs)=>cs.filter(c=>c.type==="foodie"&&c.buys).length>=g.n},
+  {t:"מכירה ל-{n}+ שפים",mk:r=>{const n=Math.max(1,Math.round(r()*3));return{n,rw:Math.round(n*3+r()*3),rr:Math.round(1+n*0.7+r()*0.5)};},chk:(p,g,nr,cs)=>cs.filter(c=>c.type==="foodie"&&c.buys&&!c.isVip).length>=g.n},
  ];
  const gd=useMemo(()=>{const r=rng(sd);const d=[];let pp=null,ppp=null;
   for(let i=0;i<=DAYS+1;i++){const w=genW(r),p=genP(pp,ppp,r),e=i>0?genE(r):null;d.push({...w,p,e});ppp=pp;pp=p;}return d;},[sd]);
@@ -1468,16 +1450,16 @@ function LemonadeGame(){
   setUp([]);setLn(0);setRes([]);setID(null);setIPd(false);setSd(Date.now());
   setActionsToday([]);setDayLog([]);setShowDash(false);setNpcActions([]);
   setDayGoal(null);setBestCup(null);setVipBonus(false);setLastVip(-3);setLoc(0);setShowExpD(false);
-  setLoanEverTaken(false);
+  setLoanEverTaken(false);setSpent({market:0,intel:0,upgrades:0});
   setPh("initEve");};
  useEffect(()=>{if(ph==="initEve"){setTP2(gd[1]?.p||{lemon:0.5,honey:0.8,ice:0.1});
-  setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");if(tOn){setTSt(2);setShT(true);}}},[ph,gd,tOn]);
+  setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");if(tOn){setTSt(tutIdx("eveIntel"));setShT(true);}}},[ph,gd,tOn]);
  const setupM=useCallback(d=>{const data=gd[d];if(!data)return;setDW({temp:data.temp,w:data.w});setDP(data.p);setDE(data.e);
-  setPr(5);setCu(20);setHlp(false);setActionsToday([]);setVipBonus(false);
+  setPr(5);setCu(20);setHlp(false);setActionsToday([]);
   if(goalsOn){const gr=rng(sd+d*4321);const gi=Math.floor(gr()*GOAL_DEFS.length);const gdef=GOAL_DEFS[gi];
    const params=gdef.mk(gr);const text=gdef.t.replace("{n}",params.n);
    setDayGoal({text,chk:gdef.chk,params,rw:params.rw,rr:params.rr});}else setDayGoal(null);
-  setPh("morning");if(tOn&&d===1){setTSt(6);setShT(true);}},[gd,tOn,goalsOn,sd]);
+  setPh("morning");if(tOn&&d===1){setTSt(tutIdx("morning"));setShT(true);}},[gd,tOn,goalsOn,sd]);
  useEffect(()=>{if(ph==="morning"){setRL(Math.min(3,Math.max(1,lm>0?3:1)));setRH(hn>0?1:0);setRI(ic>0?1:0);
   if(cm>0&&npcState.length>0){const iq2=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
    setNpcActions(npcState.map((npc,i)=>{const ri=rng(sd^(dy*8461+i*3571));const acts=[];
@@ -1517,15 +1499,14 @@ function LemonadeGame(){
  const useL=cnt=>{let rem=cnt;const na=[];for(const b of la){if(rem<=0){na.push(b);continue;}if(b.q<=rem)rem-=b.q;else{na.push({...b,q:b.q-rem});rem=0;}}setLa(na);setLm(p=>p-cnt);};
  const runSim=aC=>{if(!dW)return;const cupsPrepped=aC!==undefined?aC:Math.min(cu,mxC);
   const cupsToUse=Math.min(cupsPrepped,cap);
-  if(dE?.id==="insp"&&!iPd){animSim([],0,0,0,[]);return;}
+  if((dE?.id==="insp"&&!iPd)||cupsToUse<=0){setCu(0);animSim([],0,0,0,[]);return;}
   const repRand=rng(sd+dy*8888);
   const repBase=0.7+(rp/100)*0.6;
   const repNoise=(repRand()-0.5)*0.3;
   const repMult=Math.max(0.5,Math.min(1.5,repBase+repNoise));
-  const mktgAct=actionsToday.find(a=>a.dm);
-  const boostDm=mktgAct?.dm||1;
+  const boostDm=actionsToday.filter(a=>a.dm).reduce((m,a)=>m*a.dm,1);
   const vipMult=vipBonus?1.3:1;
-  const dm=Math.max(5,Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM*boostDm*repMult*LOC[loc].dm*vipMult));
+  const dm=Math.max(5,Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM*boostDm*repMult*LOC[loc].dm*vipMult*(up.includes("sign")?1.15:1)*(up.includes("shade")&&dW.temp>=28?1.2:1)));
   let tA=1;for(let i=0;i<cm;i++)tA+=npcA;
   const adsAct=actionsToday.find(a=>a.id==="ads");
   const stealPct=adsAct?adsAct.steal:0;
@@ -1578,29 +1559,31 @@ function LemonadeGame(){
   const mixedRR=[...rR.slice(0,3),...rRneg.slice(0,3)];
   animSim(custs,sold,rev,repD,mixedRR,repBrk,priceInfo);};
  const animSim=(custs,sold,rev,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0},priceInfo=null)=>{setSS(0);setSR(0);setSC([]);setSP(0);setSDn(false);setPendSum(null);setSNB(0);setPh("sim");
-  if(tOn&&dy===1){setTSt(11);setShT(true);}
+  if(tOn&&dy===1){setTSt(tutIdx("sim"));setShT(true);}
   if(!custs.length){setSDn(true);setSP(100);setPendSum({sold:0,rev:0,custs:[],repD:0,rR,repBrk,priceInfo});return;}
   let idx=0;
   const spd=custs.length<=5?800:custs.length<=10?600:custs.length<=20?400:Math.max(200,Math.min(400,8000/custs.length));
   const iv=setInterval(()=>{if(idx>=custs.length){clearInterval(iv);setSP(100);setSDn(true);sfx("bell");
    setPendSum({sold,rev,custs,repD,rR,repBrk,priceInfo});return;}
    setSC(p=>[...p.slice(-9),{...custs[idx],done:true,id:idx}]);
-   if(custs[idx].buys){setSS(p=>p+1);setSR(p=>p+pr);sfx(custs[idx].isVip?"vip":"sell");}
+   if(custs[idx].buys&&!custs[idx].isVip){setSS(p=>p+1);setSR(p=>p+pr);sfx(custs[idx].isVip?"vip":"sell");}
    else if(custs[idx].rx==="🚶"){setSNB(p=>p+1);sfx("miss");}
    setSP(Math.round(idx/custs.length*100));idx++;},spd);};
  const doSum=(sold,rev,custs,repD,rR=[],repBrk={taste:0,vfm:0,soldOut:0,actions:0},priceInfo=null)=>{
-  const mc=cu*cCost(rL,rH,rI,dP),hc=hlp?HELPER_C:0,fc=dE?.id==="insp"&&iPd?dE.fee:0;
+  const hc=hlp&&cu>0?HELPER_C:0,fc=dE?.id==="insp"&&iPd?dE.fee:0;
+  const closed=cu===0; // stand didn't open (inspection closure or no stock)
+  const acts=closed?[]:actionsToday;
   let actCost=0;const actResults=[];
-  actionsToday.forEach(a=>{actCost+=a.cost||0;});
-  const rumorAct=actionsToday.find(a=>a.id==="rumor");
+  acts.forEach(a=>{actCost+=a.cost||0;});
+  const rumorAct=acts.find(a=>a.id==="rumor");
   if(rumorAct&&hasComps){const ri=rng(sd^(dy*4447));const caught=ri()<0.3;
    if(caught){actResults.push("🗣️ שמועות: נתפסת! -8 מוניטין, ₪10 קנס");repD-=8;actCost+=10;}
    else{actResults.push("🗣️ שמועות: הצלחה! -5 מוניטין למתחרים");}}
-  const signsAct=actionsToday.find(a=>a.id==="signs");
+  const signsAct=acts.find(a=>a.id==="signs");
   if(signsAct&&hasComps){const ri=rng(sd^(dy*5557));const caught=ri()<0.4;
    if(caught){actResults.push("🚫 הסרת שלטים: נתפסת! -15 מוניטין, ₪15 קנס");repD-=15;actCost+=15;}
    else{actResults.push("🚫 הסרת שלטים: הצלחה! -20% חשיפה למתחרים");}}
-  const socialAct=actionsToday.find(a=>a.id==="social");
+  const socialAct=acts.find(a=>a.id==="social");
   if(socialAct?.repChance){const ri=rng(sd^(dy*6661));
    if(ri()<socialAct.repChance){repD+=socialAct.repB||0;rR.push("📱 פוסט ברשתות: +"+socialAct.repB+" מוניטין!");}}
   npcActions.forEach((na,ni)=>{
@@ -1619,21 +1602,32 @@ function LemonadeGame(){
     }
    });
   });
-  const rentC=LOC[loc].rent;
-  const dExp=mc+hc+fc+actCost+rentC,profit=rev-dExp;
-  const expBreak={mc,hc,fc,actCost,rentC,fines:0};
-  if(rumorAct&&actResults.some(a=>a.includes("נתפסת")))expBreak.fines+=10;
-  if(signsAct&&actResults.some(a=>a.includes("נתפסת")))expBreak.fines+=15;
+  const rentC=closed?0:LOC[loc].rent;
+  const nl=ln>0?Math.round(ln*(1+LOAN_INT)*100)/100:0;
+  const interest=Math.round((nl-ln)*100)/100;
+  // Today's cash costs. Market/intel/upgrade purchases were already paid when bought
+  // (tracked in `spent`) — they appear in this report but are never charged twice.
+  const dayCash=hc+fc+actCost+rentC;
+  const dExp=spent.market+spent.intel+spent.upgrades+interest+dayCash;
+  let profit=rev-dExp;
+  const expBreak={market:spent.market,intel:spent.intel,upgrades:spent.upgrades,interest,hc,fc,actCost,rentC,goal:0};
   if(dE?.rb)repBrk.actions+=(dE.rb);
   if(up.includes("cups"))repBrk.actions+=1;
   let nr=rp+repD;if(dE?.rb)nr+=dE.rb;if(up.includes("cups"))nr+=1;
   const regress=nr>50?-1:nr<50?1:0;nr+=regress;
   nr=Math.max(0,Math.min(REPMAX,nr));
-  const nl=ln>0?Math.round(ln*(1+LOAN_INT)*100)/100:0;
+  // Daily goal: bonus cash is income for today, bonus reputation is part of today's change
+  let goalRw=0,goalMsg=null;
+  if(goalsOn&&dayGoal&&typeof dayGoal.chk==="function"){
+   const met=dayGoal.chk({sold,profit,rev},dayGoal.params,nr,custs);
+   if(met){goalRw=dayGoal.rw;nr=Math.min(REPMAX,nr+dayGoal.rr);
+    goalMsg="🎯 מטרה הושגה! +"+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":"");}
+   else goalMsg="🎯 מטרה לא הושגה: "+dayGoal.text;}
+  profit+=goalRw;expBreak.goal=goalRw;
   const js=up.includes("juicer")?Math.floor(cu/10):0;
   const lemonsToUse=Math.min(Math.max(0,cu*rL-js),lm);
   const ex=consumeAndExpire(lemonsToUse,dy);
-  setHn(p=>Math.max(0,p-cu*rH));setIc(p=>Math.max(0,p-cu*rI));setCa(p=>p+rev-dExp);setRp(nr);setLn(nl);
+  setHn(p=>Math.max(0,p-cu*rH));setIc(p=>Math.max(0,p-cu*rI));setCa(p=>p+rev-dayCash+goalRw);setSpent({market:0,intel:0,upgrades:0});setRp(nr);setLn(nl);
   if(!up.includes("cooler"))setIc(0);else setIc(p=>Math.floor(p*0.5));
   const rEx=[...actResults];
   if(repBrk.taste>0)rEx.push("😊 איכות לימונדה: +"+repBrk.taste);
@@ -1649,26 +1643,39 @@ function LemonadeGame(){
    :"📉 סה\"כ: "+totalRepChange+" ("+rp+"→"+nr+") — "+(nr>=50?"עדיין סביר":nr>=35?"בינוני — פחות לקוחות":"נמוך! הרבה פחות לקוחות מחר"));
   const cSnap=compD.map(c=>({n:c.n,pr:c.pr,sold:c.sold,rev:c.rev,exp:c.exp,profit:c.profit,rep:c.repA,cash:c.cashAfter,prep:c.prep}));
   setDayLog(p=>[...p,{dy,temp:dW.temp,weather:dW.w.n,event:dE?.n||null,prices:{...dP},
-   myRev:rev,myExp:mc+hc+fc+actCost,myProfit:profit,mySold:sold,myPrep:cu,rep:nr,repPrev:rp,
-   recipe:{l:rL,h:rH,i:rI},price:pr,compSnap:cSnap,actions:actionsToday.map(a=>a.id),npcActs:npcActions}]);
+   myRev:rev,myExp:dExp,myProfit:profit,mySold:sold,myPrep:cu,rep:nr,repPrev:rp,
+   recipe:{l:rL,h:rH,i:rI},price:pr,compSnap:cSnap,actions:acts.map(a=>a.id),npcActs:npcActions}]);
   setRes(p=>[...p,{dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,compSnap:cSnap}]);
   const hadVip=custs.some(c=>c.isVip);
-  if(hadVip){setLastVip(dy);if(custs.some(c=>c.isVip&&c.rx==="🌟"))setVipBonus(true);}
+  if(hadVip)setLastVip(dy);
+  // A delighted VIP critic means a newspaper article tomorrow (×1.3 customers); otherwise no article
+  setVipBonus(custs.some(c=>c.isVip&&c.rx==="🌟"));
   const cupScore=cSc(rL,rH,rI,rW,dW.temp,CT.adult).sc;
   if(!bestCup||cupScore>bestCup.score)setBestCup({day:dy,recipe:{l:rL,h:rH,i:rI},score:cupScore});
-  if(goalsOn&&dayGoal){
-   const met=dayGoal.chk({sold,profit,rev},dayGoal.params,nr,custs);
-   if(met){setCa(p=>p+dayGoal.rw);setRp(p=>Math.min(REPMAX,p+dayGoal.rr));
-    rEx.push("\u{1F3AF} מטרה הושגה! +"+(dayGoal.rw>0?"₪"+dayGoal.rw:"")+(dayGoal.rw>0&&dayGoal.rr>0?" + ":"")+(dayGoal.rr>0?dayGoal.rr+" מוניטין":""));}
-   else rEx.push("\u{1F3AF} מטרה לא הושגה: "+dayGoal.text);}
+  if(goalMsg)rEx.push(goalMsg);
   if(rentC>0)rEx.push("🏠 שכירות מיקום: -₪"+rentC);
-  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak,priceInfo,price:pr});
+  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak,priceInfo,price:pr,closed});
   setPh("summary");};
- const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0)-ln;const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);deleteSavedGame();setPh("gameover");return;}
+ const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0);const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);deleteSavedGame();setPh("gameover");return;}
   setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");
-  // Auto-save at evening
-  if(authUser && supabase) setTimeout(()=>saveGame(), 500);
  };
+ // Auto-save once the evening briefing has rendered, so the snapshot is the fresh evening state
+ useEffect(()=>{if(ph==="eveIntel"&&dy>0&&authUser&&supabase)saveGame();},[ph]);
+ const [pendLoadEve,setPendLoadEve]=useState(false);
+ useEffect(()=>{if(!pendLoadEve)return;setPendLoadEve(false);
+  if(dy>=DAYS){setPh("gameover");return;}
+  setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setPh("eveIntel");},[pendLoadEve,gd]);
+ // Achievement checker. It must sit BELOW every useState it reads: Babel compiles const→var,
+ // so state read above its declaration is undefined and the effects below would never re-fire.
+ const checkAchievements=(gameOver=false)=>{
+  const ctx={res,rp,dayLog,ln,npcState,cl,loanEverTaken,gameOver};
+  const newly=ACHIEVEMENTS.filter(a=>{if(unlockedAch.includes(a.id))return false;try{return !!a.chk(ctx);}catch(e){return false;}});
+  if(!newly.length)return;
+  const next=[...unlockedAch,...newly.map(a=>a.id)];
+  setUnlockedAch(next);saveAchievements(next);setAchToasts(t=>[...t,...newly]);
+ };
+ useEffect(()=>{if(res.length>0)checkAchievements(false);},[res]);
+ useEffect(()=>{if(ph==="gameover")checkAchievements(true);},[ph]);
  const confIntel=()=>{let tc=0;
   if(bIn>0){tc+=INTL[bIn-1].c;const td=gd[dy+1],ac=INTL[bIn-1].ac;
    const r1=rng(sd^(dy*7919)),r2=rng(sd^(dy*6271)),r3=rng(sd^(dy*5381));
@@ -1701,10 +1708,10 @@ function LemonadeGame(){
    }
    setID(iData);}else setID(null);
   if(bCI>0&&cm>0){tc+=CINTL[bCI-1].c;setCIL(bCI);}else setCIL(0);
-  if(tc>0)setCa(p=>p-tc);setPh("evening");if(tOn&&dy===0){setTSt(4);setShT(true);}};
+  if(tc>0){setCa(p=>p-tc);setSpent(s=>({...s,intel:s.intel+tc}));}setPh("evening");if(tOn&&dy===0){setTSt(tutIdx("evening"));setShT(true);}};
  const confEve=()=>{
   const tc=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
-  setCa(p=>p-tc);if(bL>0){setLm(p=>p+bL);setLa(p=>[...p,{q:bL,d:dy}]);}setHn(p=>p+bH);setIc(p=>p+bI);
+  setCa(p=>p-tc);if(tc>0)setSpent(s=>({...s,market:s.market+tc}));if(bL>0){setLm(p=>p+bL);setLa(p=>[...p,{q:bL,d:dy}]);}setHn(p=>p+bH);setIc(p=>p+bI);
   setDy(p=>p+1);setIPd(false);setPD(dy+1);};
  const eveT=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
  const totP=res.reduce((s,r)=>s+r.profit,0);
@@ -1972,9 +1979,12 @@ function LemonadeGame(){
    </div>}
    {}
    {ph==="morning"&&dW&&(()=>{const score = Math.round(((rL+rH+rI)/CUP)*100*(rL>0?1:0.4));
+    // Cash still free after today's committed costs (actions, helper, rent) — paid at end of day
+    const freeCash=ca-actionsToday.reduce((s,a)=>s+(a.cost||0),0)-(hlp?HELPER_C:0)-LOC[loc].rent;
+    const inspPending=dE?.id==="insp"&&!iPd;
     const recipeQuality = score;
     return <div key="morning" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">בוקר</div>
@@ -2022,7 +2032,7 @@ function LemonadeGame(){
     {dE?.id==='insp' && !iPd && <div className="card p-12 mb-12" style={{background:'var(--warn-bg)', borderColor:'#F0D080'}}>
       <div className="bold small mb-4">🏛️ פיקוח עירוני!</div>
       <div className="row gap-6">
-        <button className="btn btn-warm btn-sm" onClick={()=>{setCa(p=>p-8);setIPd(true);}} disabled={ca<8}>שלם ₪8</button>
+        <button className="btn btn-warm btn-sm" onClick={()=>setIPd(true)} disabled={ca<8}>שלם ₪8</button>
         <button className="btn btn-ghost btn-sm" onClick={()=>{setIPd(false);runSim(0);}}>סגור ליום</button>
       </div>
     </div>}
@@ -2147,7 +2157,8 @@ function LemonadeGame(){
             const isActive = actionsToday.some(a=>a.id===act.id);
             return <button key={act.id} className="card p-12" style={{cursor:'pointer', textAlign:'right', background: isActive?'linear-gradient(135deg,#E5F3E8,#D5EAD9)':'var(--paper)', borderColor: isActive?'var(--leaf-500)':'var(--ink-200)', width:'100%', font:'inherit', fontFamily:'inherit', color:'var(--ink-900)'}}
               onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
-                else if(ca>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c,dm:act.dm,repChance:act.repChance,repB:act.repB,freeCups:act.freeCups}]);}}>
+                else if(freeCash>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c,dm:act.dm,repChance:act.repChance,repB:act.repB,freeCups:act.freeCups}]);}}
+              disabled={!isActive&&freeCash<act.c}>
               <div className="row-between">
                 <div className="row gap-12">
                   <span style={{fontSize:22}}>{act.n.split(' ')[0]}</span>
@@ -2177,7 +2188,7 @@ function LemonadeGame(){
                 <div className="bold small mb-4">{act.n} <span className="muted tiny" style={{fontWeight:400}}>{act.desc}</span></div>
                 <div className="choice-grid cols-4">
                   <Choice active={!curLvl} onClick={()=>setActionsToday(p=>p.filter(a=>a.id!=='ads'))} title="ללא"/>
-                  {act.costs.map((c,i) => <Choice key={i} active={curLvl?.lvl===i} disabled={ca<c}
+                  {act.costs.map((c,i) => <Choice key={i} active={curLvl?.lvl===i} disabled={curLvl?.lvl!==i&&freeCash+(curLvl?.cost||0)<c}
                     onClick={()=>setActionsToday(p=>[...p.filter(a=>a.id!=='ads'),{id:'ads',cost:c,steal:act.steal[i],lvl:i}])}
                     title={act.labels[i]} sub={`₪${c}`}/>)}
                 </div>
@@ -2189,7 +2200,7 @@ function LemonadeGame(){
                 <div className="muted tiny">{act.desc}</div>
               </div>
               <button className={"btn btn-"+(isActive?'danger':'soft')+" btn-xs"} onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
-                else if(ca>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}} disabled={!isActive&&ca<act.c}>
+                else if(freeCash>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}} disabled={!isActive&&freeCash<act.c}>
                 {isActive?'בטל':`₪${act.c}`}</button>
             </div>;
           })}
@@ -2198,13 +2209,16 @@ function LemonadeGame(){
     </div>}
     <BottomBar
       steps={['בריפינג','שוק','בוקר','סימולציה','דוח']} activeStep={2}
-      cta={cu>0?`פתח ${Math.min(cu,mxC)} כוסות × ₪${pr}`:'דלג (אין מלאי)'}
-      ctaVariant="primary"
-      onCta={()=>{const c=Math.min(cu,mxC);setCu(c);runSim(c);}}/>
+      cta={inspPending?'קודם: שלם ₪8 או סגור ליום':Math.min(cu,mxC)>0?`פתח ${Math.min(cu,mxC)} כוסות × ₪${pr}`:'סגור את הדוכן היום'}
+      ctaVariant={Math.min(cu,mxC)>0?"primary":"ghost"}
+      ctaDisabled={inspPending}
+      onCta={()=>{const c=Math.min(cu,mxC);
+        if(c===0&&!window.confirm("אין כוסות מוכנות. לסגור את הדוכן היום בלי מכירות?"))return;
+        setCu(c);runSim(c);}}/>
    </div>;})()}
    {}
    {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">סימולציה חיה — יום {dy}</div>
@@ -2339,6 +2353,7 @@ function LemonadeGame(){
     else if (smD.profit<0) insights.push({kind:'bad', icon:<I.Info size={14}/>, text:'הוצאות עברו את ההכנסות'});
     if (repDelta>=2) insights.push({kind:'good', icon:<I.Star size={14}/>, text:`מוניטין עלה ב-${repDelta} נק׳`});
     else if (repDelta<=-2) insights.push({kind:'bad', icon:<I.Star size={14}/>, text:`מוניטין ירד ב-${Math.abs(repDelta)} נק׳`});
+    if (smD.closed) insights.unshift({kind:'bad', icon:<I.Info size={14}/>, text:'הדוכן היה סגור היום — לא היו מכירות'});
     // Price feedback — was the price too high (lost buyers) or too low (left money on the table)?
     const pI = smD.priceInfo;
     if (pI) {
@@ -2363,7 +2378,7 @@ function LemonadeGame(){
     const myRank = ranked.findIndex(r=>r.you)+1;
     const maxProfit = Math.max(...ranked.map(r=>Math.abs(r.profit)),1);
     return <div key="summary" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">סיכום יום</div>
@@ -2395,13 +2410,13 @@ function LemonadeGame(){
         <div className="text-center" onClick={()=>setShowExpD(p=>!p)} style={{cursor:'pointer'}}>
           <div className="muted tiny">הוצאות {showExpD?'▲':'▼'}</div>
           <div className="num bold" style={{fontSize:18, color:'var(--bad)'}}>₪{smD.exp.toFixed(0)}</div>
-          <div className="muted tiny" style={{marginTop:2}}>חומ׳+תפעול</div>
+          <div className="muted tiny" style={{marginTop:2}}>הקש לפירוט</div>
         </div>
         <span style={{fontSize:18, color:'var(--ink-400)', fontWeight:300}}>=</span>
         <div className="text-center">
           <div className="muted tiny">רווח</div>
           <div className="num bold" style={{fontSize:18, color:profitColor}}>₪{smD.profit.toFixed(0)}</div>
-          <div className="muted tiny" style={{marginTop:2}}>{smD.rev>0?Math.round((smD.profit/smD.rev)*100):0}% מרג׳</div>
+          <div className="muted tiny" style={{marginTop:2}}>{smD.rev>0?Math.round((smD.profit/smD.rev)*100):0}% שולי רווח</div>
         </div>
       </div>
       {/* Stat strip */}
@@ -2422,11 +2437,16 @@ function LemonadeGame(){
     </div>
     {showExpD && smD.expBreak && <div className="card-flat p-12 mb-12 small">
       <div className="bold mb-4" style={{color:'var(--bad)'}}>📋 פירוט הוצאות:</div>
-      {smD.expBreak.mc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🍋 חומרי גלם ({smD.prep} כוסות)</span><span className="num bold">₪{smD.expBreak.mc.toFixed(1)}</span></div>}
+      {smD.expBreak.market>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🛒 קניות בשוק (בערב שלפני)</span><span className="num bold">₪{smD.expBreak.market.toFixed(1)}</span></div>}
+      {smD.expBreak.intel>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🔍 מודיעין</span><span className="num bold">₪{smD.expBreak.intel}</span></div>}
+      {smD.expBreak.upgrades>0 && <div className="row-between" style={{padding:'2px 0'}}><span>⬆️ שדרוגים</span><span className="num bold">₪{smD.expBreak.upgrades}</span></div>}
+      {smD.expBreak.interest>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🏦 ריבית הלוואה</span><span className="num bold">₪{smD.expBreak.interest.toFixed(1)}</span></div>}
       {smD.expBreak.hc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>👤 עוזר</span><span className="num bold">₪{smD.expBreak.hc}</span></div>}
       {smD.expBreak.rentC>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🏠 שכירות ({LOC[loc].n})</span><span className="num bold">₪{smD.expBreak.rentC}</span></div>}
       {smD.expBreak.actCost>0 && <div className="row-between" style={{padding:'2px 0'}}><span>⚡ פעולות</span><span className="num bold">₪{smD.expBreak.actCost}</span></div>}
       {smD.expBreak.fc>0 && <div className="row-between" style={{padding:'2px 0'}}><span>🏛️ פיקוח</span><span className="num bold">₪{smD.expBreak.fc}</span></div>}
+      {smD.expBreak.goal>0 && <div className="row-between" style={{padding:'2px 0', color:'var(--good)'}}><span>🎯 בונוס מטרה (הכנסה)</span><span className="num bold">+₪{smD.expBreak.goal}</span></div>}
+      <div className="muted tiny" style={{marginTop:6}}>הרווח = כמה הקופה שלך גדלה היום (בלי להחשיב הלוואות שלקחת או החזרת)</div>
     </div>}
     {/* Insights */}
     <div className="section">
@@ -2504,7 +2524,7 @@ function LemonadeGame(){
    {}
    {ph==="eveIntel"&&tP&&(()=>{const tc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);const remaining=ca-tc;const canGo=tc===0||tc<=ca;
     return <div key="eveIntel" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">לפני יום {dy+1}</div>
@@ -2631,7 +2651,7 @@ function LemonadeGame(){
     la.forEach(b=>{const r=3-(dy-b.d);if(r>=1)lemonAges[Math.min(3,r)]+=b.q;});
     const lemonExpiringSoon=lemonAges[1];
     return <div key="evening" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
     <div className="row-between mb-12">
       <div>
         <div className="eyebrow">שלב 2 — לפני יום {dy+1}</div>
@@ -2746,7 +2766,7 @@ function LemonadeGame(){
             </div>
             <span className="pill plum num">₪{u.c}</span>
             {owned ? <span className="pill leaf"><I.Check size={11}/> בבעלות</span> :
-              <button className="btn btn-soft btn-xs" onClick={()=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);}}} disabled={rem<u.c}>קנה</button>}
+              <button className="btn btn-soft btn-xs" onClick={()=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);setSpent(s=>({...s,upgrades:s.upgrades+u.c}));}}} disabled={rem<u.c}>קנה</button>}
           </div>;
         })}
         {UPG.filter(u=>u.ad>dy+1&&!up.includes(u.id)).length>0 && <div className="tiny muted" style={{padding:'8px 12px', borderTop:'1px solid var(--ink-100)'}}>
@@ -2785,7 +2805,7 @@ function LemonadeGame(){
    </div>;})()}
    {}
    {ph==="gameover"&&(()=>{const tR=res.reduce((s,r)=>s+r.rev,0),tE=res.reduce((s,r)=>s+r.exp,0);
-    const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr-ln,st=fp<0?1:fp<30?2:fp<70?3:fp<120?4:5;
+    const tPr=res.reduce((s,r)=>s+r.profit,0),fp=tPr,st=fp<0?1:fp<30?2:fp<70?3:fp<120?4:5;
     const tS=res.reduce((s,r)=>s+r.sold,0),tPp=res.reduce((s,r)=>s+r.prep,0);
     const bD=res.length>0?res.reduce((b,r)=>r.profit>b.profit?r:b,res[0]):null;
     const wD=res.length>0?res.reduce((w,r)=>r.profit<w.profit?r:w,res[0]):null;
@@ -2875,7 +2895,7 @@ function LemonadeGame(){
       const myCumProfit=cumulate(myDailyProfit);
       const compCumProfits=compDailyProfit.map(cumulate);
       const myTotRev=myCumRev[myCumRev.length-1]||0;
-      const myTotProfit=(myCumProfit[myCumProfit.length-1]||0)-ln;
+      const myTotProfit=(myCumProfit[myCumProfit.length-1]||0);
       const compTotRevs=compCumRevs.map(c=>c[c.length-1]||0);
       const compTotProfits=compCumProfits.map((c,i)=>(c[c.length-1]||0)-(npcState[i]?.ln||0));
       const allRank=[{name:names[0],val:myTotProfit,isMe:true,loan:ln},...compTotProfits.map((r,i)=>({name:names[i+1],val:r,isMe:false,loan:npcState[i]?.ln||0}))];
