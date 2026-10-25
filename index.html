@@ -756,6 +756,12 @@ const tM=t=>{
  if(t<35)return 0.85;
  return 0.6;
 };
+// Combined environmental demand factor (temperature × weather × event) with the
+// deviation from a neutral day dampened, so a cold+rainy+bad-event day is a
+// setback rather than a near-total wipeout and a perfect+festival day is strong
+// but not a jackpot. Neutral days (raw≈1) are unchanged, so the economy stays balanced.
+const ENV_DAMPEN=0.7;
+const softEnv=(t,fm,ev)=>{const raw=tM(t)*fm*(ev||1);return Math.max(0.15,1+(raw-1)*ENV_DAMPEN);};
 const iFr=(ic,t)=>{const tb=t>=33?[0,0,12,22,30,35,38]:t>=28?[0,5,15,24,30,32,33]:t>=20?[0,15,22,27,28,28,28]:[0,25,27,24,18,12,8];return tb[Math.min(ic,5)];};
 const EVT_POS=[
  {id:"fest",n:"🎪 פסטיבל שכונתי",d:"הרבה אנשים ברחוב! ×1.8 תנועה",dm:1.8},
@@ -1519,7 +1525,7 @@ function LemonadeGame(){
   const mktgAct=actionsToday.find(a=>a.dm);
   const boostDm=mktgAct?.dm||1;
   const vipMult=vipBonus?1.3:1;
-  const dm=Math.max(5,Math.round(60*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM*boostDm*repMult*LOC[loc].dm*vipMult));
+  const dm=Math.max(5,Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM*boostDm*repMult*LOC[loc].dm*vipMult));
   let tA=1;for(let i=0;i<cm;i++)tA+=npcA;
   const adsAct=actionsToday.find(a=>a.id==="ads");
   const stealPct=adsAct?adsAct.steal:0;
@@ -1752,7 +1758,7 @@ function LemonadeGame(){
    const npcRepBase=0.7+(npc.rep/100)*0.6;
    const npcRepNoise=(ri()-0.5)*0.3;
    const npcRepMult=Math.max(0.5,Math.min(1.5,npcRepBase+npcRepNoise));
-   const estDem=Math.round(60*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*npcRepMult/(1+cm));
+   const estDem=Math.round(60*softEnv(dW.temp,dW.w.fm,dE?.dm)*npcRepMult/(1+cm));
    const volB=persona.volumeBias||1;
    const prepTarget=Math.max(3,Math.round((iqAdj>0.6?estDem*(0.7+ri()*0.3):10+ri()*40)*volB));
    const needL=Math.max(0,prepTarget*nL-npc.lm);
@@ -2091,7 +2097,7 @@ function LemonadeGame(){
               </div>
             </div>
           </div>
-          {(()=>{const estD=Math.max(5,Math.round(100*tM(dW.temp)*dW.w.fm*(dE?.dm||1)*dDM/(1+cm*npcA)));
+          {(()=>{const estD=Math.max(5,Math.round(100*softEnv(dW.temp,dW.w.fm,dE?.dm)*dDM/(1+cm*npcA)));
             const rec=Math.min(mxC,Math.round(estD*0.7));
             return <div className="card-flat p-12" style={{marginTop:10}}>
               <div className="kpi-grid">
