@@ -395,6 +395,136 @@
     .p-8 { padding: 8px; } .p-12 { padding: 12px; } .p-16 { padding: 16px; }
     .text-center { text-align: center; }
     .w-full { width: 100%; }
+    /* ── Page structure: a clear title, a plain-language lead, numbered blocks ── */
+    .page-head { padding: 2px 6px 14px; }
+    .page-head h1 { font-size: 30px; margin-top: 2px; }
+    .page-head .lead { font-size: 13.5px; color: var(--ink-700); margin-top: 6px; line-height: 1.5; max-width: 52ch; }
+    .block-h { display: flex; align-items: center; gap: 10px; margin: 0 2px 10px; }
+    .block-num { flex-shrink: 0; width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; font-weight: 900; font-size: 16px; background: var(--ink-900); color: #fff; box-shadow: 0 3px 0 #000; }
+    .block-title { font-size: 17px; font-weight: 900; line-height: 1.2; }
+    .block-sub { font-size: 12.5px; color: var(--ink-700); opacity: 0.85; line-height: 1.35; margin-top: 1px; }
+    .note-card { background: #fff; border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; box-shadow: var(--sh-1); border-inline-start: 5px solid var(--ink-300); }
+    .note-card.gold { border-inline-start-color: var(--lemon-500); background: linear-gradient(90deg, #FFFBE0, #fff); }
+    .note-card.blue { border-inline-start-color: var(--ice-500); }
+    .note-card.warn { border-inline-start-color: var(--warn); background: linear-gradient(90deg, #FEF3C7, #fff); }
+    /* Forecast panel: always in the same place; empty until intel is bought */
+    .forecast-panel { background: rgba(255,255,255,0.55); border: 2px dashed rgba(30,27,58,0.18); border-radius: 22px; padding: 16px; margin-bottom: 10px; transition: all 0.4s var(--ease-out); }
+    .forecast-panel.has { background: linear-gradient(160deg, #1E1B3A, #3B2F7A); border: 2px solid transparent; color: #fff; box-shadow: var(--sh-3); animation: pop 0.5s var(--spring); }
+    .fp-empty { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+    .fp-main { display: flex; align-items: center; gap: 14px; }
+    .fp-icon { font-size: 46px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    .fp-title { font-size: 22px; font-weight: 900; }
+    .fp-sub { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+    .fp-line { margin-top: 12px; padding: 9px 12px; background: rgba(255,255,255,0.12); border-radius: 12px; font-size: 13px; }
+    .fp-acc { margin-top: 10px; font-size: 12px; color: var(--lemon-300); font-weight: 700; }
+    /* Offer rows: each with its own buy button */
+    .offer-list { display: flex; flex-direction: column; gap: 8px; }
+    .offer { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; gap: 10px; align-items: center; background: #fff; border-radius: 18px; padding: 10px 12px; box-shadow: 0 3px 0 var(--ink-200); }
+    .offer.bought { background: linear-gradient(90deg, #F0FDF5, #fff); box-shadow: 0 3px 0 #A7EBC0; }
+    .offer-em { font-size: 26px; text-align: center; }
+    .offer-name { font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .offer-desc { font-size: 12px; color: var(--ink-500); margin-top: 1px; }
+    .acc-chip { font-size: 10.5px; font-weight: 800; background: var(--ink-100); color: var(--ink-700); padding: 2px 7px; border-radius: 999px; }
+    /* Ingredient cards */
+    .ing-card { background: #fff; border-radius: 20px; padding: 14px; box-shadow: 0 3px 0 var(--ink-200), var(--sh-1); transition: box-shadow 0.2s; }
+    .ing-card.on { box-shadow: 0 3px 0 #A7EBC0, var(--sh-1); }
+    .ing-top { display: flex; gap: 12px; align-items: center; }
+    .ing-info { min-width: 0; flex: 1; }
+    .ing-name { font-weight: 900; font-size: 15.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ing-price { font-size: 12px; font-weight: 600; color: var(--ink-500); }
+    .ing-life { font-size: 12px; color: var(--ink-700); margin-top: 2px; }
+    .ing-stock { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0 10px; padding: 8px; background: var(--ink-100); border-radius: 12px; font-size: 13px; }
+    .ing-stock b { font-size: 16px; }
+    .ing-arrow { color: var(--ink-400); font-weight: 900; }
+    .ing-warn { font-size: 12px; color: var(--bad); font-weight: 600; margin: -4px 0 8px; text-align: center; }
+    .ing-buy { display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; }
+    .ing-cost { position: absolute; left: 0; font-weight: 800; font-size: 13px; color: var(--ink-700); }
+    .result-card { display: flex; gap: 12px; align-items: center; margin-top: 12px; background: linear-gradient(135deg, #FFFBE0, #FFF0A6); border-radius: 20px; padding: 14px 16px; box-shadow: 0 3px 0 #F2CC40; font-size: 14px; }
+    /* Weather card */
+    .weather-card { border-radius: 24px; padding: 16px; margin-bottom: 12px; background: linear-gradient(150deg, #4FB8F0, #9ADCFF); color: #fff; box-shadow: var(--sh-3); }
+    .weather-card[data-w="heat"], .weather-card[data-w="hot"] { background: linear-gradient(150deg, #FF7A45, #FFC14D); }
+    .weather-card[data-w="cloudy"] { background: linear-gradient(150deg, #7D8BA6, #B7C2D6); }
+    .weather-card[data-w="lRain"], .weather-card[data-w="hRain"] { background: linear-gradient(150deg, #4B5A7A, #7E8DAD); }
+    .weather-card[data-w="cold"] { background: linear-gradient(150deg, #5B6B8C, #A3B2CF); }
+    .wc-main { display: flex; align-items: center; gap: 14px; }
+    .wc-icon { font-size: 52px; line-height: 1; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2)); animation: float 5s ease-in-out infinite; }
+    .wc-label { font-size: 12px; opacity: 0.85; font-weight: 700; }
+    .wc-title { font-size: 24px; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .wc-sub { font-size: 13px; opacity: 0.95; margin-top: 2px; }
+    .wc-forecast { margin-top: 12px; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,0.2); font-size: 12.5px; }
+    .wc-event { margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: #fff; color: var(--ink-900); font-size: 13px; }
+    /* Segmented tabs */
+    .seg-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; margin: 4px 0 16px; box-shadow: var(--sh-1); }
+    .seg { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px; border: none; border-radius: 15px; background: transparent; font: inherit; font-size: 12.5px; font-weight: 800; color: var(--ink-700); cursor: pointer; transition: all 0.25s var(--spring); }
+    .seg-em { font-size: 20px; line-height: 1; }
+    .seg.on { background: var(--ink-900); color: #fff; box-shadow: 0 3px 0 #000; transform: translateY(-1px); }
+    .seg-badge { position: absolute; top: 4px; left: 8px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--leaf-500); color: #fff; font-size: 10.5px; font-weight: 900; display: grid; place-items: center; }
+    .tab-pane { animation: fadeUp 0.35s var(--ease-out); }
+    .recipe-top { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; margin-bottom: 12px; }
+    .recipe-q .quality-meter { margin-top: 4px; }
+    .recipe-row { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 10px; align-items: center; }
+    .price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .buy-chances { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin-top: 14px; }
+    .bc { display: grid; grid-template-columns: 22px 1fr 34px; grid-template-rows: auto auto; align-items: center; column-gap: 6px; }
+    .bc-em { grid-row: span 2; font-size: 18px; }
+    .bc-bar { height: 8px; background: var(--ink-100); border-radius: 4px; overflow: hidden; }
+    .bc-bar > span { display: block; height: 100%; border-radius: 4px; transition: width 0.4s var(--ease-out), background 0.3s; }
+    .bc-pct { font-size: 12px; font-weight: 900; text-align: left; }
+    .bc-nm { grid-column: 2 / 4; font-size: 10.5px; color: var(--ink-500); }
+    .hint-line { margin-top: 12px; padding: 10px 12px; background: var(--ink-100); border-radius: 12px; font-size: 12.5px; line-height: 1.5; }
+    .black-hat { border-inline-start: 5px solid var(--ink-900); }
+    .black-hat.on { background: linear-gradient(90deg, #FFF1F3, #fff); border-inline-start-color: var(--bad); }
+    .risk-chip { font-size: 10.5px; font-weight: 800; color: var(--bad); background: var(--bad-bg); padding: 2px 7px; border-radius: 999px; }
+    /* Live info strip inside the bottom dock */
+    .dock-info { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; margin-bottom: 10px; color: var(--ink-700); }
+    .dock-info b { color: var(--ink-900); font-size: 14px; }
+    /* ── Simulation scene ── */
+    .sim-scene { position: relative; height: 270px; border-radius: 26px; overflow: hidden; margin-bottom: 12px; box-shadow: var(--sh-3), inset 0 0 0 3px rgba(255,255,255,0.6);
+      background: linear-gradient(180deg, #58C4FF 0%, #BDEBFF 62%, #FFF2C2 72%); }
+    .sim-scene.w-cloudy { background: linear-gradient(180deg, #8FA3BF 0%, #D5DEEA 72%); }
+    .sim-scene.w-lRain, .sim-scene.w-hRain, .sim-scene.w-cold { background: linear-gradient(180deg, #5E6F8F 0%, #A8B6CC 72%); }
+    .sim-scene.w-heat, .sim-scene.w-hot { background: linear-gradient(180deg, #FF9A5A 0%, #FFD38A 72%); }
+    .ss-sun { position: absolute; top: 20px; left: 22px; width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle, #FFF7B0 0%, #FFC800 70%); box-shadow: 0 0 50px 16px rgba(255,200,0,0.55); animation: pulse 3s ease-in-out infinite; }
+    .w-cloudy .ss-sun, .w-lRain .ss-sun, .w-hRain .ss-sun, .w-cold .ss-sun { opacity: 0.35; }
+    .ss-cloud { position: absolute; font-size: 34px; animation: cloudDr 9s ease-in-out infinite; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15)); }
+    .ss-cloud.slow { font-size: 26px; animation-duration: 14s; animation-direction: reverse; }
+    .ss-rain { position: absolute; top: -10px; width: 2px; height: 14px; border-radius: 2px; background: rgba(255,255,255,0.75); animation: rainDr 0.8s linear infinite; }
+    .ss-tree { position: absolute; bottom: 56px; font-size: 38px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2)); }
+    .ss-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, #7BCB5A 0, #5DB33E 14px, #C9B48F 14px, #B49C74 100%); }
+    .ss-stand { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); z-index: 3; text-align: center; animation: bob 2.6s ease-in-out infinite; }
+    .ss-roof { background: repeating-linear-gradient(90deg, #FFC800 0 14px, #fff 14px 28px); border-radius: 14px 14px 4px 4px; font-size: 11px; font-weight: 900; color: #6B4500; padding: 7px 18px; box-shadow: 0 4px 0 #D18D00; white-space: nowrap; }
+    .ss-body { background: linear-gradient(180deg, #FFFBE6, #FFE680); border: 3px solid #FFB800; border-top: none; border-radius: 0 0 10px 10px; width: 112px; height: 64px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .ss-body .num { font-size: 22px; font-weight: 900; color: #6B4500; }
+    .ss-cups { font-size: 11.5px; font-weight: 800; color: #8A5A00; }
+    .ss-comp { position: absolute; bottom: 52px; z-index: 2; text-align: center; opacity: 0.95; }
+    .ss-comp-roof { width: 46px; height: 11px; margin: 0 auto; background: repeating-linear-gradient(90deg, #A78BFA 0 7px, #fff 7px 14px); border-radius: 7px 7px 0 0; }
+    .ss-comp-body { width: 54px; height: 36px; background: #F5F3FF; border: 2px solid #A78BFA; border-top: none; border-radius: 0 0 6px 6px; display: grid; place-items: center; font-size: 12px; font-weight: 900; color: #5B21B6; }
+    /* The current customer walks in from the side, stops at the stand, reacts */
+    .ss-walker { position: absolute; bottom: 50px; z-index: 4; display: flex; flex-direction: column; align-items: center; animation-name: custWalk; animation-timing-function: var(--ease-out); animation-fill-mode: both; }
+    .ss-person { font-size: 38px; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.25)); animation: bob 0.4s ease-in-out infinite; }
+    .ss-bubble { background: #fff; border-radius: 16px; padding: 4px 9px; font-size: 22px; box-shadow: 0 4px 12px rgba(30,27,58,0.25); margin-bottom: 4px; position: relative; opacity: 0; animation: bubblePop 0.35s var(--spring) both; }
+    .ss-bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #fff; border-bottom: none; }
+    @keyframes custWalk { 0% { right: -16%; } 50% { right: 13%; } 100% { right: 13%; } }
+    @keyframes bubblePop { from { opacity: 0; transform: scale(0.3) translateY(10px); } to { opacity: 1; transform: none; } }
+    .ss-progress { position: absolute; bottom: 10px; left: 16px; right: 16px; height: 7px; background: rgba(255,255,255,0.5); border-radius: 4px; z-index: 5; overflow: hidden; }
+    .ss-progress > div { height: 100%; background: linear-gradient(90deg, #FFE14D, #FFB800); border-radius: 4px; transition: width 0.3s; }
+    .sim-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .sim-stat { background: #fff; border-radius: 18px; padding: 10px 8px; text-align: center; box-shadow: 0 3px 0 var(--ink-200); display: flex; flex-direction: column; gap: 2px; }
+    .sim-stat .ss-k { font-size: 11.5px; font-weight: 700; color: var(--ink-500); }
+    .sim-stat .ss-v { font-size: 26px; font-weight: 900; line-height: 1.1; }
+    .sim-stat .ss-v small { font-size: 13px; color: var(--ink-400); }
+    .sim-stat.good .ss-v { color: var(--leaf-600); } .sim-stat.gold .ss-v { color: var(--lemon-700); } .sim-stat.bad .ss-v { color: var(--bad); }
+    .quote-card { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 10px; align-items: center; background: #fff; border-radius: 20px; padding: 12px 14px; box-shadow: var(--sh-2); border-inline-start: 6px solid var(--ink-300); margin-bottom: 10px; min-height: 70px; }
+    .quote-card.buy { border-inline-start-color: var(--leaf-500); } .quote-card.no { border-inline-start-color: var(--rose-500); }
+    .quote-card.miss { border-inline-start-color: var(--lemon-500); } .quote-card.vip { border-inline-start-color: var(--plum-500); background: linear-gradient(90deg, #F5F0FF, #fff); }
+    .qc-em { font-size: 34px; text-align: center; }
+    .qc-who { font-size: 12px; font-weight: 800; color: var(--ink-500); }
+    .qc-say { font-size: 15px; font-weight: 700; color: var(--ink-900); margin-top: 2px; }
+    .qc-rx { font-size: 28px; }
+    .rx-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-bottom: 10px; }
+    .rx-strip span { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: #fff; font-size: 16px; box-shadow: 0 2px 0 var(--ink-200); animation: pop 0.3s var(--spring); }
+    .rx-strip span.buy { box-shadow: 0 2px 0 #86E0A8; } .rx-strip span.miss { box-shadow: 0 2px 0 #F2CC40; } .rx-strip span.no { box-shadow: 0 2px 0 #FBB6C4; }
+    .comp-strip { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     @media (min-width: 600px) { h1 { font-size: 38px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
   </style>
@@ -1174,7 +1304,7 @@ const Sheet = ({open, onClose, children, title}) => {
 };
 
 // BottomBar — sticky steps + CTA
-const BottomBar = ({steps, activeStep, cta, onCta, ctaDisabled, secondary, onSecondary, ctaVariant='primary'}) => (
+const BottomBar = ({steps, activeStep, cta, onCta, ctaDisabled, secondary, onSecondary, ctaVariant='primary', info}) => (
   <div className="bottombar">
     <div className="bottombar-inner">
       {steps && steps.length > 0 && <div className="steps">
@@ -1182,6 +1312,7 @@ const BottomBar = ({steps, activeStep, cta, onCta, ctaDisabled, secondary, onSec
           <span className="dot"></span><span>{s}</span>
         </div>)}
       </div>}
+      {info && <div className="dock-info">{info}</div>}
       <div style={{display:'flex', gap:8}}>
         {secondary && <button className="btn btn-ghost" onClick={onSecondary} style={{flex:'0 0 auto'}}>{secondary}</button>}
         {cta && <button className={"btn btn-"+ctaVariant+" btn-lg btn-block"} onClick={onCta} disabled={ctaDisabled} style={{flex:1}}>
@@ -1304,8 +1435,8 @@ const CupVis=({l,h,ic})=>{const w=CUP-l-h-ic,tot=CUP;
 const TUT=[
  {ph:"setup",t:"ברוכים הבאים לדוכן הלימונדה! 🍋",tx:"המטרה: להרוויח כמה שיותר ב-10 ימים. מתחילים עם ₪80 ו-40 לימונים.\n\nכל יום: 🌙 ערב — קונים מודיעין וחומרי גלם, ☀️ בוקר — קובעים מתכון ומחיר, 🎬 מוכרים, 📊 רואים דוח.\n\n💡 בפעם הראשונה: 0 מתחרים ורמה קלה."},
  {ph:"evening",t:"ערב — מודיעין וקניות 🌙",tx:"🔍 מודיעין (למעלה): חוזה את מזג האוויר והאירועים של מחר. ככל שיקר יותר — מדויק יותר. אפשר לדלג.\n\n🛒 קניות: ליד כל מחיר יש חץ ▲▼ — האם הוא עלה או ירד מאתמול (מגמות נוטות להמשיך)."},
- {ph:"evening2",t:"מה מחזיק כמה זמן? ⏳",tx:"🍋 לימון — 3 ימים ואז מתקלקל. אל תקנה יותר מדי.\n🍬 סוכר — לא מתקלקל אף פעם.\n🧊 קרח — נמס כל ערב, קונים מחדש כל יום.\n\n⬆️ שדרוגים קבועים ו-🏦 הלוואה (8% ריבית ליום!) נמצאים בתחתית המסך.\n\n💡 כלל אצבע: קנה ל-20-25 כוסות של 3🍋+1🍬+1🧊."},
- {ph:"morning",t:"בוקר — המתכון 🥤",tx:"כל כוס = 6 חלקים, מה שלא מילאת הופך למים ומדלל את הטעם.\n\n🍋 לימון — הטעם (3-4 מצוין).\n🍬 סוכר — מרכך חמיצות (1-2). ילדים אוהבים מתוק, שפים פחות.\n🧊 קרח — רעננות, חשוב יותר ככל שחם.\n\nמד האיכות מראה כמה טובה הכוס."},
+ {ph:"evening2",t:"מה מחזיק כמה זמן? ⏳",tx:"🍋 לימון — 3 ימים ואז מתקלקל. אל תקנה יותר מדי.\n🍬 סוכר — לא מתקלקל אף פעם.\n🧊 קרח — נמס כל ערב, קונים מחדש כל יום.\n\n🏦 הלוואה (8% ריבית ליום!) נמצאת בתחתית המסך. שדרוגים ושיווק קונים בבוקר.\n\n💡 כלל אצבע: קנה ל-20-25 כוסות של 3🍋+1🍬+1🧊."},
+ {ph:"morning",t:"בוקר — תכנון היום ☀️",tx:"הבוקר מחולק ל-3 לשוניות: 🥤 מתכון ומחיר, 📣 שיווק ותחרות, 🏪 הדוכן. בתחתית המסך תמיד תראה צפי חי — כמה מבקרים, קונים והכנסות — שמתעדכן מכל החלטה.\n\n🥤 המתכון: כל כוס = 6 חלקים, מה שלא מילאת הופך למים ומדלל את הטעם.\n\n🍋 לימון — הטעם (3-4 מצוין).\n🍬 סוכר — מרכך חמיצות (1-2). ילדים אוהבים מתוק, שפים פחות.\n🧊 קרח — רעננות, חשוב יותר ככל שחם.\n\nמד האיכות מראה כמה טובה הכוס."},
  {ph:"morning2",t:"מחיר וכמות 💰",tx:"ביום חם משלמים יותר, ביום קר פחות.\n\nמתחת למחיר תראה צפי קונים, עלות ורווח לכוס, ואת סיכוי הקנייה של כל סוג לקוח — שנה מחיר ותראה איך זה משתנה.\n\n⭐ מוניטין: כוס טובה במחיר הוגן מעלה אותו, מלאי שאזל מוריד. מוניטין גבוה = יותר לקוחות."},
  {ph:"morning3",t:"מיקום, עוזר ופעולות 📍",tx:"📍 מרכז הרחוב מביא הרבה יותר לקוחות אבל עולה שכירות — שווה ביום טוב.\n👤 עוזר (₪8) מגדיל את מספר הכוסות שאפשר להגיש.\n📣 שיווק מביא עוד לקוחות.\n\n⚔️ אם יש מתחרים: הלקוחות בוחרים דוכן לפי איכות, מחיר ומוניטין. ניתוח מתחרים (בערב) חושף את המחיר והמתכון שלהם."},
  {ph:"sim",t:"הסימולציה 🎬",tx:"כל לקוח טועם ומגיב:\n😊 קנה ונהנה (+מוניטין) • 😕 קנה ואוכזב (−מוניטין)\n🚶 לא קנה — יקר או לא טעים\n💨 רצה לקנות אבל אזל (−מוניטין)\n\n🎩 לפעמים מגיע מבקר VIP — אם יתלהב, מחר יגיעו יותר לקוחות."},
@@ -1464,6 +1595,7 @@ function LemonadeGame(){
  const [pref,setPref]=useState({l:3,h:1,i:1,cu:20});
  const [bL,setBL]=useState(0),[bH,setBH]=useState(0),[bI,setBI]=useState(0),[bIn,setBIn]=useState(0),[bCI,setBCI]=useState(0);
  const [sP,setSP]=useState(0),[sC,setSC]=useState([]),[sS,setSS]=useState(0),[sR,setSR]=useState(0),[sNB,setSNB]=useState(0);
+ const [simSpd,setSimSpd]=useState(600),simFastRef=useRef(false); // per-customer animation time; "skip to end" flag
  const [sDn,setSDn]=useState(false),[smD,setSmD]=useState(null),[iPd,setIPd]=useState(false),[pD,setPD]=useState(0);
  const [tOn,setTOn]=useState(false),[tSt,setTSt]=useState(0),[shT,setShT]=useState(false),[cIL,setCIL]=useState(0);
  const [actionsToday,setActionsToday]=useState([]);
@@ -1574,7 +1706,7 @@ function LemonadeGame(){
    const params=gdef.mk(gr);const text=gdef.t.replace("{n}",params.n);
    setDayGoal({text,chk:gdef.chk,params,rw:params.rw,rr:params.rr});}else setDayGoal(null);
   setPh("morning");if(tOn&&d===1){setTSt(tutIdx("morning"));setShT(true);}},[gd,tOn,goalsOn,sd]);
- useEffect(()=>{if(ph==="morning"){
+ useEffect(()=>{if(ph==="morning"){setMorningTab("recipe");
   // Keep yesterday's recipe when there is stock for it; first day starts at 3/1/1
   setRL(Math.max(1,Math.min(pref.l,lm)));setRH(Math.min(pref.h,hn));setRI(Math.min(pref.i,ic));setCu(pref.cu);
   if(cm>0&&npcState.length>0){const iq2=cl==="hard"?0.85:cl==="medium"?0.6:0.35;
@@ -1667,10 +1799,14 @@ function LemonadeGame(){
   if(tOn&&dy===1){setTSt(tutIdx("sim"));setShT(true);}
   if(!custs.length){setSDn(true);setSP(100);setPendSum({sold:0,rev:0,custs:[],repD:0,rR,repBrk,priceInfo});return;}
   let idx=0;
-  const spd=custs.length<=5?800:custs.length<=10?600:custs.length<=20?400:Math.max(200,Math.min(400,8000/custs.length));
-  const iv=setInterval(()=>{if(idx>=custs.length){clearInterval(iv);setSP(100);setSDn(true);sfx("bell");
+  const spd=custs.length<=5?1100:custs.length<=10?850:custs.length<=20?600:Math.max(320,Math.min(600,12000/custs.length));
+  simFastRef.current=false;setSimSpd(spd);
+  const iv=setInterval(()=>{if(simFastRef.current&&idx<custs.length){const rest=custs.slice(idx);idx=custs.length;
+    setSC(p=>[...p,...rest.map((c,k)=>({...c,done:true,id:custs.length-rest.length+k}))].slice(-12));
+    setSS(p=>p+rest.filter(c=>c.buys&&!c.isVip).length);setSR(p=>p+rest.filter(c=>c.buys&&!c.isVip).length*pr);setSNB(p=>p+rest.filter(c=>c.rx==="🚶").length);}
+   if(idx>=custs.length){clearInterval(iv);setSP(100);setSDn(true);sfx("bell");
    setPendSum({sold,rev,custs,repD,rR,repBrk,priceInfo});return;}
-   setSC(p=>[...p.slice(-9),{...custs[idx],done:true,id:idx}]);
+   setSC(p=>[...p.slice(-11),{...custs[idx],done:true,id:idx}]);
    if(custs[idx].buys&&!custs[idx].isVip){setSS(p=>p+1);setSR(p=>p+pr);sfx(custs[idx].isVip?"vip":"sell");}
    else if(custs[idx].rx==="🚶"){setSNB(p=>p+1);sfx("miss");}
    setSP(Math.round(idx/custs.length*100));idx++;},spd);};
@@ -1790,8 +1926,8 @@ function LemonadeGame(){
  };
  useEffect(()=>{if(res.length>0)checkAchievements(false);},[res]);
  useEffect(()=>{if(ph==="gameover")checkAchievements(true);},[ph]);
- const confIntel=()=>{let tc=0;
-  if(bIn>0){tc+=INTL[bIn-1].c;const td=gd[dy+1],ac=INTL[bIn-1].ac;
+ const confIntel=(wLv,cLv)=>{let tc=0;
+  if(wLv>0){tc+=INTL[wLv-1].c;const td=gd[dy+1],ac=INTL[wLv-1].ac;
    const r1=rng(sd^(dy*7919)),r2=rng(sd^(dy*6271)),r3=rng(sd^(dy*5381));
    const tempOk=r1()<ac, wOk=r2()<ac, prOk=r3()<ac;
    const wrongTemp=Math.max(12,Math.min(40,td.temp+Math.round((r1()-0.5)*14)));
@@ -1799,8 +1935,8 @@ function LemonadeGame(){
    const plausibleW=shownTemp>=35?[WE[6]]:shownTemp>=30?[WE[0],WE[5]]:shownTemp>=25?[WE[0],WE[1]]:
     shownTemp>=21?[WE[0],WE[1],WE[2]]:shownTemp>=18?[WE[2],WE[3]]:shownTemp>=15?[WE[2],WE[3],WE[4]]:[WE[3],WE[4],WE[7]];
    const wrongW=plausibleW[Math.floor(r2()*plausibleW.length)].n;
-   const iData={lv:bIn, temp:shownTemp, w:wOk?td.w.n:wrongW, accurate:tempOk&&wOk};
-   if(bIn>=2){const dp=gd[dy]?.p||gd[0].p,tp=td.p;
+   const iData={lv:wLv, temp:shownTemp, w:wOk?td.w.n:wrongW, accurate:tempOk&&wOk};
+   if(wLv>=2){const dp=gd[dy]?.p||gd[0].p,tp=td.p;
     const trendOk=prOk;
     iData.pT={
      l:trendOk?(tp.lemon>dp.lemon?"📈":tp.lemon<dp.lemon?"📉":"➡️"):["📈","📉","➡️"][Math.floor(r3()*3)],
@@ -1813,15 +1949,15 @@ function LemonadeGame(){
       (r2()<0.5?"📣 שמועה: אירוע חיובי צפוי":"⚠️ שמועה: אירוע שלילי צפוי");
     }else{iData.evHint=r2()<ac?"✅ לא צפוי אירוע מיוחד מחר":"📣 שמועה: יום רגיל כנראה";}
    }
-   if(bIn>=3){
+   if(wLv>=3){
     const tmrEvent=td.e;
     if(tmrEvent){
      const evOk=r3()<ac;
      iData.evDetail=evOk?("📋 "+tmrEvent.n+" — "+tmrEvent.d):("📋 אירוע צפוי (פרטים לא ברורים)");
     }else{iData.evDetail="✅ לא צפוי אירוע מיוחד מחר";}
    }
-   setID(iData);}else setID(null);
-  if(bCI>0&&cm>0){tc+=CINTL[bCI-1].c;setCIL(bCI);}else setCIL(0);
+   setID(iData);}
+  if(cLv>0&&cm>0){tc+=CINTL[cLv-1].c;setCIL(cLv);}
   if(tc>0){setCa(p=>p-tc);setSpent(s=>({...s,intel:s.intel+tc}));}setIntelDone(true);};
  const confEve=()=>{
   const tc=bL*(tP?.lemon||0)+bH*(tP?.honey||0)+bI*(tP?.ice||0);
@@ -2084,190 +2220,150 @@ function LemonadeGame(){
     <BottomBar cta="התחל משחק" onCta={startG} ctaVariant="primary"/>
    </div>}
    {}
-   {ph==="morning"&&dW&&(()=>{const score = Math.round(STAND_MIX.reduce((s,c)=>s+c.pct*cSc(rL,rH,rI,rW,dW.temp,c).sc,0));
+   {ph==="morning"&&dW&&(()=>{const recipeQuality = Math.round(STAND_MIX.reduce((s,c)=>s+c.pct*cSc(rL,rH,rI,rW,dW.temp,c).sc,0));
     // Cash still free after today's committed costs (actions, helper, rent) — paid at end of day
     const freeCash=ca-actionsToday.reduce((s,a)=>s+(a.cost||0),0)-(hlp?HELPER_C:0)-LOC[loc].rent;
     const inspPending=dE?.id==="insp"&&!iPd;
-    const recipeQuality = score;
-    return <div key="morning" className="screen phase-enter" style={{paddingBottom:120}}>
+    const fc=dayDemand(pr),expBuy=Math.round(fc.myD*buyRate(pr)),ready=Math.min(cu,mxC);
+    const rec=Math.min(mxC,Math.round(expBuy*1.1)),expSold=Math.min(expBuy,ready);
+    const costCup=dP?cCost(rL,rH,rI,dP):0,margin=pr-costCup;
+    const dayCosts=actionsToday.reduce((s,a)=>s+(a.cost||0),0)+(hlp?HELPER_C:0)+LOC[loc].rent;
+    const tab=['recipe','mkt','stand'].includes(morningTab)?morningTab:'recipe';
+    const MKT_UPG=['sign','shade','cups'],OPS_UPG=['juicer','cooler','station','team'];
+    const buyUpg=(e,u)=>{if(freeCash>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);setSpent(s=>({...s,upgrades:s.upgrades+u.c}));flyFx(e,'−₪'+u.c);}};
+    const upgTile=u=>{const owned=up.includes(u.id),locked=!owned&&u.ad>dy,[em,...nm]=u.n.split(' ');
+      return <div key={u.id} className={"shop-tile"+(owned?' owned':locked?' locked':'')}>
+        <span className="st-emoji">{em}</span>
+        <span className="st-name">{nm.join(' ')}</span>
+        <span className="st-desc">{u.d}</span>
+        {owned ? <span className="pill leaf">פעיל עד סוף המשחק</span> :
+         locked ? <span className="pill">🔒 נפתח ביום {u.ad}</span> :
+         <button className="btn btn-warm btn-sm" disabled={freeCash<u.c} onClick={(e)=>buyUpg(e,u)}>{freeCash<u.c?<>חסר ₪{Math.ceil(u.c-freeCash)}</>:<>קנה <span className="price">₪{u.c}</span></>}</button>}
+      </div>;};
+    const mktCount=actionsToday.filter(a=>MKTG_ACT.some(m=>m.id===a.id)||COMP_ACT.some(m=>m.id===a.id)).length;
+    const forecastOk=iD&&iD.temp===dW.temp&&iD.w===dW.w.n;
+    const sameish=iD&&Math.abs(iD.temp-dW.temp)<=2;
+    return <div key="morning" className="screen phase-enter">
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
-    <div className="row-between mb-12">
-      <div>
-        <div className="eyebrow">בוקר</div>
-        <h1 style={{fontSize:26}}>יום {dy} • הכנות</h1>
-      </div>
-      <span className="pill leaf"><I.Sun size={12}/> {dW.temp}°C</span>
+    <div className="page-head">
+      <div className="eyebrow">☀️ בוקר — יום {dy} מתוך {DAYS}</div>
+      <h1>תכנון היום</h1>
+      {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return <p className="lead">אתמול: <b style={{color:y.profit>=0?'var(--good)':'var(--bad)'}}>{fmtM(y.profit)}</b> רווח · {y.sold} כוסות · מוניטין {y.rB}→{y.rA}</p>;})()}
     </div>
-    {/* Yesterday recap */}
-    {(dy>1)&&res.length>0&&(()=>{const y=res[res.length-1];return(
-      <div className="card-flat p-12 mb-12 small">
-        <span className="muted">📋 אתמול:</span> <span className="bold" style={{color:y.profit>=0?'var(--good)':'var(--bad)'}}>{fmtM(y.profit)}</span>
-        <span className="muted"> רווח · </span>{y.sold} כוסות
-        <span className="muted"> · מוניטין </span>{y.rB}→{y.rA}
-      </div>);})()}
-    {vipBonus && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#FFF9C4,#FFF176)', borderColor:'#FFD600'}}>
-      <span className="bold small">📰 כתבה בעיתון! מבקר האוכל המליץ עליך — ×1.3 לקוחות היום</span>
-    </div>}
-    {goalsOn && dayGoal && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#E3F2FD,#BBDEFB)', borderColor:'#64B5F6'}}>
-      <div className="row gap-8"><I.Target size={14} color="#1976D2"/>
+    {/* Today's weather, compared with last night's forecast */}
+    <div className="weather-card" data-w={dW.w.id}>
+      <div className="wc-main">
+        <span className="wc-icon">{dW.w.n.split(' ')[0]}</span>
         <div>
-          <div className="bold small">🎯 מטרת היום: {dayGoal.text}</div>
-          <div className="tiny" style={{color:'var(--good)'}}>בונוס: {dayGoal.rw>0?'₪'+dayGoal.rw:''}{dayGoal.rw>0&&dayGoal.rr>0?' + ':''}{dayGoal.rr>0?dayGoal.rr+' מוניטין':''}</div>
+          <div className="wc-label">מזג האוויר היום</div>
+          <div className="wc-title">{dW.w.n.split(' ').slice(1).join(' ')||dW.w.n} · <span className="num">{dW.temp}°</span></div>
+          <div className="wc-sub">{isHeat?'שרב — רוב האנשים בבית, קרח קריטי':isHot?'חם — אנשים צמאים, קרח חשוב':isWarm?'מושלם לעסקים':dW.temp>=21?'נעים — ביקוש סביר':isCold?'קר — ביקוש נמוך':'קריר — ביקוש נמוך'}</div>
         </div>
       </div>
-    </div>}
-    {/* Weather + event hero card */}
-    <div className="card mb-12" style={{
-      background:`linear-gradient(135deg, ${dW.w.id==='heat'?'#FF8A65':dW.w.id==='hot'?'#FFCC80':dW.w.id==='cold'?'#90A4AE':dW.w.id==='hRain'?'#546E7A':dW.w.id==='lRain'?'#78909C':dW.w.id==='cloudy'?'#B0BEC5':dW.w.id==='nice'?'#90CAF9':'#87CEEB'} 0%, ${dW.w.id==='heat'?'#FFCC80':dW.w.id==='hot'?'#FFE0B2':dW.w.id==='cold'?'#B0BEC5':dW.w.id==='hRain'?'#78909C':dW.w.id==='lRain'?'#B0BEC5':dW.w.id==='cloudy'?'#CFD8DC':dW.w.id==='nice'?'#E8F5E9':'#E0F7FA'} 100%)`,
-      color: ['hRain','lRain','cold'].includes(dW.w.id)?'white':'var(--ink-900)',
-      padding:16, borderColor:'transparent'}}>
-      <div className="row-between">
-        <div>
-          <div className="eyebrow" style={{color: ['hRain','lRain','cold'].includes(dW.w.id)?'rgba(255,255,255,0.7)':'var(--ink-500)'}}>מזג אוויר</div>
-          <div style={{fontSize:22, fontWeight:800, marginTop:2}}>{dW.w.n.split(' ').slice(1).join(' ')||dW.w.n}</div>
-          <div className="small" style={{marginTop:4, opacity:0.9}}>
-            {isHeat?'🔥 שרב — קרח קריטי':isHot?'🥵 חם — אנשים צמאים':isWarm?'☀️ מושלם לעסקים':dW.temp>=21?'😊 נעים':isCold?'🥶 קר — ביקוש נמוך':'🌡️ קריר'}
-          </div>
-        </div>
-        <div style={{fontSize:56, lineHeight:1}}>{dW.w.n.split(' ')[0]}</div>
+      <div className="wc-forecast">
+        {iD ? <>🔮 התחזית אמרה: {String(iD.w).split(' ').slice(1).join(' ')} {iD.temp}° — <b>{forecastOk?'צדקה ✓':sameish?'כמעט צדקה':'טעתה ✗'}</b></>
+            : <>🔮 לא קנית תחזית אתמול בערב</>}
       </div>
-      {dE && <div style={{marginTop:12, padding:10, background:'rgba(255,255,255,0.85)', color:'var(--ink-900)', borderRadius:'var(--r-md)', fontSize:13}}>
-        <span className="bold">{dE.n}</span><span className="muted" style={{marginRight:6}}> • {dE.d}</span>
-      </div>}
+      {dE && <div className="wc-event"><b>{dE.n}</b> — {dE.d}</div>}
     </div>
-    {dE?.id==='insp' && !iPd && <div className="card p-12 mb-12" style={{background:'var(--warn-bg)', borderColor:'#F0D080'}}>
-      <div className="bold small mb-4">🏛️ פיקוח עירוני!</div>
-      <div className="row gap-6">
-        <button className="btn btn-warm btn-sm" onClick={()=>setIPd(true)} disabled={ca<8}>שלם ₪8</button>
-        <button className="btn btn-ghost btn-sm" onClick={()=>{setIPd(false);runSim(0);}}>סגור ליום</button>
+    {vipBonus && <div className="note-card gold">📰 כתבה בעיתון! מבקר האוכל המליץ עליך — ×1.3 לקוחות היום</div>}
+    {goalsOn && dayGoal && <div className="note-card blue">🎯 <b>מטרת היום:</b> {dayGoal.text} <span className="muted">· בונוס {dayGoal.rw>0?'₪'+dayGoal.rw:''}{dayGoal.rw>0&&dayGoal.rr>0?' + ':''}{dayGoal.rr>0?dayGoal.rr+' מוניטין':''}</span></div>}
+    {inspPending && <div className="note-card warn">
+      <div className="bold mb-8">🏛️ פיקוח עירוני! כדי לפתוח היום צריך לשלם קנס</div>
+      <div className="row gap-8">
+        <button className="btn btn-warm btn-sm" onClick={(e)=>{setIPd(true);flyFx(e,'−₪8');}} disabled={ca<8}>שלם <span className="price">₪8</span></button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{setIPd(false);runSim(0);}}>סגור את הדוכן היום</button>
       </div>
     </div>}
-    {/* Competitor intel — collapsed style */}
-    {hasCompIntel && hasComps && compD.length>0 && <div className="card mb-12" style={{background:'linear-gradient(135deg,#F8F0FE,#EFE4FA)', borderColor:'#DCC8F0'}}>
-      <div className="p-12" style={{borderBottom:'1px solid var(--ink-100)'}}>
-        <div className="bold small" style={{color:'var(--plum-500)'}}><I.Spy size={12}/> מודיעין מתחרים</div>
-      </div>
-      {compD.map((c,i) => <div key={i} className="p-12" style={{borderBottom: i<compD.length-1?'1px solid var(--ink-100)':'none', fontSize:12}}>
-        <div className="row-between">
-          <b style={{color:c.pColor}}>{c.n}</b>
-          <span className="muted tiny">⭐{c.repB} · ₪{c.cash.toFixed(0)}</span>
-        </div>
-        {c.tagline && <div className="tiny" style={{color:c.pColor, opacity:0.75, marginTop:1}}>"{c.tagline}"</div>}
-        <div className="muted tiny" style={{marginTop:2}}>
-          ₪{c.pr} {cIL>=2&&` · ${c.rec.l}🍋${c.rec.h}🍬${c.rec.i}🧊 · ${c.prep} כוסות`}
-        </div>
+    {hasCompIntel && hasComps && compD.length>0 && <div className="card mb-12">
+      <div className="p-12 bold small" style={{borderBottom:'1px solid var(--ink-100)', color:'#6D3FE0'}}>🕵️ המודיעין שקנית על המתחרים</div>
+      {compD.map((c,i) => <div key={i} className="p-12 row-between" style={{borderBottom: i<compD.length-1?'1px solid var(--ink-100)':'none', fontSize:12.5}}>
+        <div><b>{c.n}</b>{c.tagline && <div className="tiny muted">"{c.tagline}"</div>}</div>
+        <div style={{textAlign:'left'}}><b className="num">₪{c.pr}</b> לכוס{cIL>=2&&<div className="tiny muted">{c.rec.l}🍋{c.rec.h}🍬{c.rec.i}🧊 · {c.prep} כוסות</div>}</div>
       </div>)}
     </div>}
-    {/* RECIPE SECTION */}
-    {true && <div className="fade-in">
+
+    {/* Tabs: one decision area at a time */}
+    <div className="seg-tabs" role="tablist">
+      {[['recipe','🥤','מתכון ומחיר'],['mkt','📣','שיווק ותחרות'],['stand','🏪','הדוכן']].map(([k,em,lb])=>
+        <button key={k} role="tab" className={"seg"+(tab===k?' on':'')} onClick={()=>setMorningTab(k)}>
+          <span className="seg-em">{em}</span><span>{lb}</span>
+          {k==='mkt'&&mktCount>0&&<span className="seg-badge">{mktCount}</span>}
+          {k==='stand'&&(hlp||loc>0)&&<span className="seg-badge">✓</span>}
+        </button>)}
+    </div>
+
+    {tab==='recipe' && <div key="t-recipe" className="tab-pane">
       <div className="section">
+        <div className="block-h"><span className="block-num">🥤</span><div><div className="block-title">המתכון</div><div className="block-sub">כל כוס = 6 חלקים. חלק שלא מילאת = מים, ומים מדללים את הטעם</div></div></div>
         <div className="card p-16">
-          {/* Cup vessel + quality on top, centered */}
-          <div className="text-center" style={{marginBottom:16}}>
+          <div className="recipe-top">
             <CupVessel lemon={rL} honey={rH} ice={rI} max={CUP}/>
-            <div className="muted tiny" style={{marginTop:8}}>איכות צפויה</div>
-            <div style={{marginTop:4, display:'flex', justifyContent:'center'}}><QualityMeter score={recipeQuality}/></div>
-            <div className="bold small num" style={{marginTop:4, color: recipeQuality>70?'var(--good)':recipeQuality>40?'var(--warn)':'var(--bad)'}}>{recipeQuality}/100</div>
+            <div className="recipe-q">
+              <div className="muted small">איכות הכוס</div>
+              <div className="num x-bold" style={{fontSize:30, color: recipeQuality>70?'var(--good)':recipeQuality>40?'var(--warn)':'var(--bad)'}}>{recipeQuality}<span className="muted" style={{fontSize:14}}>/100</span></div>
+              <QualityMeter score={recipeQuality}/>
+              <div className="tiny muted" style={{marginTop:6}}>{recipeQuality>70?'מצוינת — לקוחות יחזרו':recipeQuality>40?'סבירה — אפשר לשפר':'חלשה — לקוחות יאוכזבו'}</div>
+            </div>
           </div>
-          {/* Recipe rows full-width below */}
           <div className="col gap-10" style={{paddingTop:12, borderTop:'1px solid var(--ink-100)'}}>
-            {[{e:'🍋', n:'לימון', v:rL, s:setRL, k:'l', mn:1, mx:Math.min(5,lm), c:'var(--lemon-500)', req:true},
-              {e:'🍬', n:'סוכר', v:rH, s:setRH, k:'h', mn:0, mx:Math.min(5,hn), c:'var(--honey-500)', req:false},
-              {e:'🧊', n:'קרח', v:rI, s:setRI, k:'i', mn:0, mx:Math.min(5,ic), c:'var(--ice-500)', req:false}].map(ing => (
-              <div key={ing.n} style={{display:'grid', gridTemplateColumns:'24px minmax(0,1fr) auto', gap:10, alignItems:'center'}}>
-                <span style={{fontSize:20}}>{ing.e}</span>
-                <div style={{minWidth:0}}>
-                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:12}}>
-                    <span className="bold">{ing.n} {ing.req && <span style={{color:'var(--bad)'}}>*</span>}</span>
-                    <span className="muted num">×{ing.v}</span>
-                  </div>
-                  <div style={{height:8, borderRadius:4, background:'var(--ink-100)', overflow:'hidden'}}>
-                    <span style={{display:'block', width:`${(ing.v/CUP)*100}%`, background:ing.c, height:'100%', borderRadius:4, transition:'width .4s'}}></span>
-                  </div>
-                </div>
+            {[{e:'🍋', n:'לימון', hint:'הטעם', v:rL, s:setRL, k:'l', mn:1, mx:Math.min(5,lm)},
+              {e:'🍬', n:'סוכר', hint:'מרכך חמיצות', v:rH, s:setRH, k:'h', mn:0, mx:Math.min(5,hn)},
+              {e:'🧊', n:'קרח', hint:'רעננות ביום חם', v:rI, s:setRI, k:'i', mn:0, mx:Math.min(5,ic)}].map(ing => (
+              <div key={ing.n} className="recipe-row">
+                <span style={{fontSize:22}}>{ing.e}</span>
+                <div style={{minWidth:0}}><div className="bold small">{ing.n}</div><div className="tiny muted">{ing.hint}</div></div>
                 <Stepper value={ing.v} onChange={(n)=>{const cap=CUP-(rL+rH+rI-ing.v),v=Math.max(ing.mn, Math.min(Math.min(ing.mx, cap), n)); ing.s(v); setPref(p=>({...p,[ing.k]:v}));}} min={ing.mn} max={Math.min(ing.mx, CUP-(rL+rH+rI-ing.v))}/>
               </div>
             ))}
-            <div style={{paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--ink-500)'}}>
-              <span>💧 מים (אוטומטי)</span><span className="num bold">{rW}/{CUP}</span>
-            </div>
+            <div className="row-between small muted" style={{paddingTop:8, borderTop:'1px solid var(--ink-100)'}}><span>💧 מים (ממלא את השאר)</span><b className="num">{rW}/{CUP}</b></div>
           </div>
         </div>
       </div>
       <div className="section">
-        <SectionHeader title="מחיר וכמות"/>
-        <div className="card p-12">
-          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap:16}}>
-            <div className="text-center">
-              <div className="muted tiny mb-4">מחיר לכוס</div>
-              <div className="num bold" style={{fontSize:22, color:'var(--lemon-700)', marginBottom:6}}>₪{pr}</div>
-              <div style={{display:'flex', justifyContent:'center'}}>
-                <Stepper value={pr} onChange={setPr} min={1} max={20}/>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="muted tiny mb-4">להכין כוסות</div>
-              <div className="num bold" style={{fontSize:22, marginBottom:6}}>{Math.min(cu,mxC)}</div>
-              <div style={{display:'flex', justifyContent:'center'}}>
-                <Stepper value={Math.min(cu,mxC)} onChange={(n)=>{const v=Math.min(mxC, Math.max(0,n));setCu(v);setPref(p=>({...p,cu:v}));}} min={0} max={mxC} fast/>
-              </div>
-            </div>
+        <div className="block-h"><span className="block-num">💰</span><div><div className="block-title">מחיר</div><div className="block-sub">ביום חם אנשים מוכנים לשלם יותר. האחוזים = מי יקנה במחיר הזה</div></div></div>
+        <div className="card p-16">
+          <div className="price-row">
+            <div><div className="muted small">מחיר לכוס</div><div className="num x-bold" style={{fontSize:30, color:'var(--lemon-700)'}}>₪{pr}</div></div>
+            <Stepper value={pr} onChange={setPr} min={1} max={20}/>
           </div>
-          {(()=>{const fc=dayDemand(pr),expBuy=Math.round(fc.myD*buyRate(pr));
-            const ready=Math.min(cu,mxC),rec=Math.min(mxC,Math.round(expBuy*1.1));
-            const costCup=dP?cCost(rL,rH,rI,dP):0,margin=pr-costCup;
-            return <div className="card-flat p-12" style={{marginTop:10}}>
-              <div className="kpi-grid">
-                <div className="text-center"><div className="muted tiny">צפי מבקרים</div><div className="num x-bold" style={{fontSize:20, color:'var(--ice-700)'}}>~{fc.myD}</div></div>
-                <div className="text-center"><div className="muted tiny">צפי קונים</div><div className="num x-bold" style={{fontSize:20, color:'var(--good)'}}>~{expBuy}</div></div>
-                <div className="text-center"><div className="muted tiny">קיבולת</div><div className="num x-bold" style={{fontSize:20, color: cap>=CAP_TEAM?'var(--good)':'var(--ink-700)'}}>{cap>=CAP_TEAM?'∞':cap}</div></div>
-              </div>
-              <div className="muted tiny text-center mt-8">{Math.round(expBuy*1.1)>mxC?`💡 צפויים ~${expBuy} קונים, אבל יש לך מלאי/קיבולת ל-${mxC} כוסות בלבד`:<>💡 מומלץ להכין ~{rec} כוסות{ready>rec+5?' — הכנת יותר, חלק עלול להיזרק':ready<rec-5?' — הכנת פחות, עלול להיגמר':''}</>}</div>
-              <div className="row-between tiny" style={{marginTop:8, paddingTop:8, borderTop:'1px solid var(--ink-100)'}}>
-                <span>עלות כוס: <b className="num">₪{costCup.toFixed(2)}</b></span>
-                <span>רווח לכוס: <b className="num" style={{color:margin>0?'var(--good)':'var(--bad)'}}>₪{margin.toFixed(2)}</b></span>
-                <span>צפי הכנסות: <b className="num">~₪{Math.round(Math.min(expBuy,ready)*pr)}</b></span>
-              </div>
-              <div className="tiny" style={{marginTop:8, display:'flex', justifyContent:'space-between', gap:4}}>
-                {typeBuy(pr).map(x=><span key={x.c.nm} title={x.c.nm} style={{color:x.p>=0.6?'var(--good)':x.p>=0.35?'var(--warn)':'var(--bad)'}}>{x.c.em} {Math.round(x.p*100)}%</span>)}
-              </div>
-              <div className="muted tiny text-center" style={{marginTop:2}}>סיכוי קנייה לכל סוג לקוח במחיר ובמתכון הנוכחיים</div>
-            </div>;})()}
+          <div className="buy-chances">
+            {typeBuy(pr).map(x=><div key={x.c.nm} className="bc">
+              <span className="bc-em">{x.c.em}</span>
+              <span className="bc-bar"><span style={{width:Math.round(x.p*100)+'%', background:x.p>=0.6?'var(--leaf-500)':x.p>=0.35?'var(--lemon-500)':'var(--rose-500)'}}/></span>
+              <span className="bc-pct num">{Math.round(x.p*100)}%</span>
+              <span className="bc-nm">{x.c.nm}</span>
+            </div>)}
+          </div>
+          <div className="row-between small" style={{marginTop:10, paddingTop:10, borderTop:'1px solid var(--ink-100)'}}>
+            <span>עלות להכין כוס: <b className="num">₪{costCup.toFixed(2)}</b></span>
+            <span>רווח על כל כוס: <b className="num" style={{color:margin>0?'var(--good)':'var(--bad)'}}>{fmtM(margin,2)}</b></span>
+          </div>
+        </div>
+      </div>
+      <div className="section">
+        <div className="block-h"><span className="block-num">🔢</span><div><div className="block-title">כמה כוסות להכין</div><div className="block-sub">כוס שלא נמכרה נזרקת. כוס חסרה = לקוח מאוכזב</div></div></div>
+        <div className="card p-16">
+          <div className="price-row">
+            <div><div className="muted small">להכין היום</div><div className="num x-bold" style={{fontSize:30}}>{ready}</div></div>
+            <Stepper value={ready} onChange={(n)=>{const v=Math.min(mxC, Math.max(0,n));setCu(v);setPref(p=>({...p,cu:v}));}} min={0} max={mxC} fast/>
+          </div>
+          <div className="hint-line">{Math.round(expBuy*1.1)>mxC
+            ?<>💡 צפויים ~{expBuy} קונים, אבל אפשר להכין רק {mxC} {mxC===cap?'(מגבלת הדוכן — עוזר בלשונית "הדוכן" מגדיל אותה)':'(לפי המלאי)'}</>
+            :<>💡 ההמלצה: ~{rec} כוסות{ready>rec+5?' — הכנת יותר, חלק ייזרק':ready<rec-5?' — הכנת פחות, ייגמר מוקדם':' ✓'}</>}
+            {rec>0&&ready!==rec&&Math.round(expBuy*1.1)<=mxC&&<button className="btn btn-soft btn-xs" style={{marginRight:8}} onClick={()=>{setCu(rec);setPref(p=>({...p,cu:rec}));}}>קבע {rec}</button>}
+          </div>
         </div>
       </div>
     </div>}
-    {/* PLAN SECTION */}
-    {true && <div className="fade-in">
+
+    {tab==='mkt' && <div key="t-mkt" className="tab-pane">
       <div className="section">
-        <SectionHeader title="מיקום הדוכן" aside="היכן להציב היום" icon={<I.Pin size={16} color="var(--rose-500)"/>}/>
-        <div className="choice-grid cols-3">
-          {LOC.map((l,i) => (
-            <Choice key={i} active={loc===i} onClick={()=>setLoc(i)}
-              emoji={i===0?'🏚️':i===1?'🏠':'🏙️'} title={l.n.replace(/^\S+\s+/,'')} sub={l.d}/>
-          ))}
-        </div>
+        <div className="block-h"><span className="block-num">⭐</span><div><div className="block-title">שיפורים קבועים</div><div className="block-sub">משלמים עכשיו, פעם אחת — עובדים עד סוף המשחק</div></div></div>
+        <div className="shop-grid">{UPG.filter(u=>MKT_UPG.includes(u.id)).map(upgTile)}</div>
       </div>
-      {!up.includes("team")&&(()=>{const baseCap=up.includes("station")?CAP_STATION:CAP_BASE;
-        return <div className="section">
-          <SectionHeader title="עוזר"/>
-          <div className="card p-12">
-            <div className="row-between">
-              <div className="row gap-12">
-                <I.Users size={20} color="var(--ink-500)"/>
-                <div>
-                  <div className="bold small">שכור עוזר ליום • ₪{HELPER_C}</div>
-                  <div className="muted tiny">קיבולת {baseCap+HELPER_B} כוסות במקום {baseCap}</div>
-                </div>
-              </div>
-              <Toggle on={hlp} onChange={setHlp}/>
-            </div>
-          </div>
-        </div>;})()}
-    </div>}
-    {/* ACTIONS SECTION */}
-    {true && <div className="fade-in">
       <div className="section">
-        <SectionHeader title="שיווק" aside={`הוצאה: ₪${actionsToday.reduce((s,a)=>s+(a.cost||0),0)}`} icon={<I.Megaphone size={16} color="var(--leaf-600)"/>}/>
+        <div className="block-h"><span className="block-num">🤍</span><div><div className="block-title">שיווק להיום</div><div className="block-sub">רק להיום · משלמים בסוף היום · מביא יותר מבקרים</div></div></div>
         <div className="shop-grid">
           {MKTG_ACT.map(act => {
             const isActive = actionsToday.some(a=>a.id===act.id),can=isActive||freeCash>=act.c;
@@ -2277,21 +2373,22 @@ function LemonadeGame(){
               <span className="st-emoji">{act.n.split(' ')[0]}</span>
               <span className="st-name">{act.n.split(' ').slice(1).join(' ')||act.n}</span>
               <span className="st-desc">{act.desc}</span>
-              {isActive ? <span className="btn btn-primary btn-sm">✓ נבחר</span> : <span className="btn btn-warm btn-sm">הוסף <span className="price">₪{act.c}</span></span>}
+              {isActive ? <span className="btn btn-primary btn-sm">✓ נבחר · בטל</span> : <span className="btn btn-warm btn-sm">הוסף <span className="price">₪{act.c}</span></span>}
             </div>;
           })}
         </div>
       </div>
-      {hasComps && <div className="section">
-        <SectionHeader title="נגד מתחרים" icon={<I.Shield size={16} color="var(--plum-500)"/>}/>
-        <div className="card p-12" style={{background:'var(--plum-100)', borderColor:'#DCC8F0'}}>
-          <div className="muted tiny mb-8">קמפיין תחרותי — גנב לקוחות מהמתחרים</div>
+      <div className="section">
+        <div className="block-h"><span className="block-num">🖤</span><div><div className="block-title">נגד המתחרים</div><div className="block-sub">רק להיום · משלמים בסוף היום · חלק מהתרגילים מסוכנים</div></div></div>
+        {!hasComps ? <div className="note-card">אין מתחרים במשחק הזה — אין נגד מי לפעול 🙂</div> :
+        <div className="col gap-10">
           {COMP_ACT.map(act => {
             const isActive = actionsToday.some(a=>a.id===act.id);
             if (act.id==='ads') {
               const curLvl = actionsToday.find(a=>a.id==='ads');
-              return <div key={act.id} style={{marginBottom:8}}>
-                <div className="bold small mb-4">{act.n} <span className="muted tiny" style={{fontWeight:400}}>{act.desc}</span></div>
+              return <div key={act.id} className="card p-12">
+                <div className="bold small">{act.n}</div>
+                <div className="tiny muted mb-8">{act.desc} · בלי סיכון</div>
                 <div className="choice-grid cols-4">
                   <Choice active={!curLvl} onClick={()=>setActionsToday(p=>p.filter(a=>a.id!=='ads'))} title="ללא"/>
                   {act.costs.map((c,i) => <Choice key={i} active={curLvl?.lvl===i} disabled={curLvl?.lvl!==i&&freeCash+(curLvl?.cost||0)<c}
@@ -2300,149 +2397,116 @@ function LemonadeGame(){
                 </div>
               </div>;
             }
-            return <div key={act.id} style={{display:'grid', gridTemplateColumns:'1fr auto', gap:8, alignItems:'center', padding:'8px 0', borderBottom:'1px solid var(--ink-100)'}}>
-              <div>
-                <div className="bold small">{act.n} <span style={{color:'var(--warn)'}}>⚠️</span></div>
-                <div className="muted tiny">{act.desc}</div>
+            return <div key={act.id} className={"card p-12 black-hat"+(isActive?' on':'')}>
+              <div className="row-between">
+                <div style={{minWidth:0}}>
+                  <div className="bold small">{act.n} <span className="risk-chip">⚠️ {Math.round(act.catchPct*100)}% להיתפס</span></div>
+                  <div className="tiny muted">{act.desc}</div>
+                </div>
+                <button className={"btn btn-"+(isActive?'danger':'ghost')+" btn-sm"} onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
+                  else if(freeCash>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}} disabled={!isActive&&freeCash<act.c}>
+                  {isActive?'✓ פעיל · בטל':<>הפעל <span className="price">₪{act.c}</span></>}</button>
               </div>
-              <button className={"btn btn-"+(isActive?'danger':'soft')+" btn-xs"} onClick={()=>{if(isActive)setActionsToday(p=>p.filter(a=>a.id!==act.id));
-                else if(freeCash>=act.c)setActionsToday(p=>[...p,{id:act.id,cost:act.c}]);}} disabled={!isActive&&freeCash<act.c}>
-                {isActive?'✓ פעיל — בטל':<>הפעל <span className="price">₪{act.c}</span></>}</button>
             </div>;
           })}
-        </div>
-      </div>}
+        </div>}
+      </div>
     </div>}
+
+    {tab==='stand' && <div key="t-stand" className="tab-pane">
+      <div className="section">
+        <div className="block-h"><span className="block-num">📍</span><div><div className="block-title">איפה לעמוד היום</div><div className="block-sub">יותר תנועה = יותר מבקרים, אבל שכירות גבוהה יותר (משלמים בסוף היום)</div></div></div>
+        <div className="choice-grid cols-3">
+          {LOC.map((l,i) => (
+            <Choice key={i} active={loc===i} onClick={()=>setLoc(i)}
+              emoji={i===0?'🏚️':i===1?'🏠':'🏙️'} title={l.n.replace(/^\S+\s+/,'')} sub={l.d}/>
+          ))}
+        </div>
+      </div>
+      {!up.includes("team")&&(()=>{const baseCap=up.includes("station")?CAP_STATION:CAP_BASE;
+        return <div className="section">
+          <div className="block-h"><span className="block-num">👤</span><div><div className="block-title">עוזר ליום</div><div className="block-sub">לבד אפשר להגיש עד {baseCap} כוסות. עם עוזר — {baseCap+HELPER_B}</div></div></div>
+          <div className="card p-12 row-between">
+            <span className="small">שכור עוזר להיום · <b className="num">₪{HELPER_C}</b> בסוף היום</span>
+            <Toggle on={hlp} onChange={setHlp}/>
+          </div>
+        </div>;})()}
+      <div className="section">
+        <div className="block-h"><span className="block-num">🔧</span><div><div className="block-title">שדרוגי ציוד</div><div className="block-sub">משלמים עכשיו, פעם אחת — עובדים עד סוף המשחק</div></div></div>
+        <div className="shop-grid">{UPG.filter(u=>OPS_UPG.includes(u.id)).map(upgTile)}</div>
+      </div>
+    </div>}
+
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={1}
-      cta={inspPending?'קודם: שלם ₪8 או סגור ליום':Math.min(cu,mxC)>0?`פתח ${Math.min(cu,mxC)} כוסות × ₪${pr}`:'סגור את הדוכן היום'}
-      ctaVariant={Math.min(cu,mxC)>0?"primary":"ghost"}
+      info={<><span>👥 ~<b className="num">{fc.myD}</b> מבקרים</span><span>🛒 ~<b className="num">{expBuy}</b> קונים</span><span>💰 ~<b className="num">₪{Math.round(expSold*pr)}</b></span>{expBuy>ready&&ready>0&&<span style={{color:'var(--warn)'}}>⚠️ {ready===1?'מוכן רק לכוס אחת':`מוכן רק ל-${ready} כוסות`}</span>}{dayCosts>0&&<span className="muted">הוצאות היום ₪{dayCosts}</span>}</>}
+      cta={inspPending?'קודם: שלם ₪8 או סגור ליום':ready>0?`פתח את הדוכן · ${ready} כוסות × ₪${pr}`:'סגור את הדוכן היום'}
+      ctaVariant={ready>0?"primary":"ghost"}
       ctaDisabled={inspPending}
-      onCta={()=>{const c=Math.min(cu,mxC);
+      onCta={()=>{const c=ready;
         if(c===0&&!window.confirm("אין כוסות מוכנות. לסגור את הדוכן היום בלי מכירות?"))return;
         setCu(c);runSim(c);}}/>
    </div>;})()}
    {}
-   {ph==="sim"&&<div key="sim" className="screen phase-enter" style={{paddingBottom:120}}>
-    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
-    <div className="row-between mb-12">
+   {ph==="sim"&&(()=>{const cur=sC[sC.length-1];const left=Math.max(0,cu-sS);
+    const wid=dW?.w.id||'sunny',rainy=wid.includes('Rain'),cloudy=wid==='cloudy'||rainy;
+    const curCls=cur?(cur.isVip?'vip':cur.buys?'buy':cur.rx==='💨'?'miss':'no'):'';
+    return <div key="sim" className="screen phase-enter">
+    <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
+    <div className="page-head row-between" style={{alignItems:'flex-end'}}>
       <div>
-        <div className="eyebrow">סימולציה חיה — יום {dy}</div>
-        <h1 style={{fontSize:24}}>הדוכן פתוח</h1>
+        <div className="eyebrow">🎬 יום {dy} · {dW?.w.n.split(' ')[0]} {dW?.temp}°</div>
+        <h1>{sDn?'היום נגמר!':'הדוכן פתוח'}</h1>
       </div>
-      <div className="row gap-6">
-        <span className="pill leaf">{dW?.w.n.split(' ')[0]} {dW?.temp}°C</span>
-        <span className="pill plum num">{sP}%</span>
-      </div>
+      {!sDn && <button className="btn btn-ghost btn-sm" onClick={()=>{simFastRef.current=true;}}>⏩ דלג לסוף</button>}
     </div>
-    {/* Stylized live scene */}
-    <div className="scene mb-12">
-      <div className="sun"></div>
-      {(dW?.w.id==='cloudy'||dW?.w.id?.includes('Rain'))&&<>
-        <div style={{position:'absolute', top:26, right:40, fontSize:26, opacity:0.85, animation:'cloudDr 8s ease-in-out infinite'}}>☁️</div>
-        <div style={{position:'absolute', top:44, left:60, fontSize:20, opacity:0.65, animation:'cloudDr 12s ease-in-out infinite reverse'}}>☁️</div>
-      </>}
-      {dW?.w.id?.includes('Rain') && Array.from({length:10}).map((_,i)=>(
-        <div key={i} style={{position:'absolute', top:-8, left:(8+i*9)+'%', fontSize:10, opacity:0.5, animation:`rainDr ${0.6+i*0.08}s linear infinite`, animationDelay:(i*0.1)+'s'}}>💧</div>
-      ))}
-      <div style={{position:'absolute', bottom:32, left:12, fontSize:24}}>🌳</div>
-      <div style={{position:'absolute', bottom:32, right:12, fontSize:24}}>🌴</div>
-      {/* Competitor stands */}
-      {compD.slice(0,3).map((c,i) => (
-        <div key={i} className="comp-stand" style={{
-          right: i===0?'15%':'auto',
-          left: i===1?'15%':i===2?'32%':'auto',
-        }}>
-          <div className="comp-stand-roof"></div>
-          <div className="comp-stand-body num">₪{c.pr}</div>
+    {/* Street scene: each customer walks up to the stand and reacts */}
+    <div className={"sim-scene w-"+wid}>
+      <div className="ss-sun"/>
+      {cloudy && <><span className="ss-cloud" style={{top:24, right:'18%'}}>☁️</span><span className="ss-cloud slow" style={{top:46, left:'14%'}}>☁️</span></>}
+      {rainy && Array.from({length:12}).map((_,i)=><span key={i} className="ss-rain" style={{left:(4+i*8)+'%', animationDelay:(i*0.13)+'s'}}/>)}
+      {compD.length<3&&<span className="ss-tree" style={{right:'1%'}}>🌳</span>}{compD.length===0&&<span className="ss-tree" style={{left:'6%'}}>🌴</span>}
+      {compD.slice(0,3).map((c,i)=><div key={i} className="ss-comp" style={i===0?{left:'3%'}:i===1?{left:'19%'}:{right:'2%'}}>
+        <div className="ss-comp-roof"/><div className="ss-comp-body num">₪{c.pr}</div></div>)}
+      <div className="ss-stand">
+        <div className="ss-roof">🍋 LEMONADE</div>
+        <div className="ss-body"><span className="num">₪{pr}</span><span className="ss-cups">🥤×{left}</span></div>
+      </div>
+      {cur && <div key={cur.id} className={"ss-walker "+curCls} style={{animationDuration:simSpd+'ms'}}>
+        <span className="ss-bubble" style={{animationDelay:Math.round(simSpd*0.5)+'ms'}}>{cur.rx}</span>
+        <span className="ss-person">{cur.em}</span>
+      </div>}
+      <div className="ss-ground"/>
+      <div className="ss-progress"><div style={{width:sP+'%'}}/></div>
+    </div>
+    {/* Live counters */}
+    <div className="sim-stats">
+      <div className="sim-stat good"><span className="ss-k">🥤 נמכרו</span><span className="ss-v num"><CountUp value={sS} duration={300}/><small>/{cu}</small></span></div>
+      <div className="sim-stat gold"><span className="ss-k">💰 הכנסות</span><span className="ss-v num">₪<CountUp value={sR} duration={300}/></span></div>
+      <div className="sim-stat bad"><span className="ss-k">🚶 לא קנו</span><span className="ss-v num"><CountUp value={sNB} duration={300}/></span></div>
+    </div>
+    {/* What the latest customer said */}
+    <div className={"quote-card "+curCls}>
+      {cur ? <>
+        <span className="qc-em">{cur.em}</span>
+        <div style={{minWidth:0}}>
+          <div className="qc-who">{cur.isVip?'🎩 מבקר אוכל VIP':(CT[cur.type]||CT.adult).nm} · <span>{cur.isVip?(cur.rx==='🌟'?'התלהב!':'התאכזב'):cur.buys?'קנה':cur.rx==='💨'?'רצה לקנות — נגמר המלאי':'לא קנה'}</span></div>
+          <div className="qc-say">"{cur.sp||'…'}"</div>
         </div>
-      ))}
-      {/* My stand */}
-      <div className="my-stand">
-        <div className="my-stand-roof">LEMONADE</div>
-        <div className="my-stand-body">
-          <div className="my-stand-price num">₪{pr}</div>
-          <div style={{fontSize:16}}>🍋</div>
-        </div>
-      </div>
-      {/* Walking customers */}
-      {sC.slice(-5).map((c,i) => {
-        const offset = ((sP + i*17) % 100);
-        return <div key={c.id||i} className="walking-cust" style={{right:`${offset}%`, opacity: 1-i*0.18}}>{c.em}</div>;
-      })}
-      <div className="road"></div>
-      <div className="scene-progress"><div style={{width:`${sP}%`}}></div></div>
+        <span className="qc-rx">{cur.rx}</span>
+      </> : <div className="muted small" style={{padding:'6px 0'}}>ממתינים ללקוח הראשון…</div>}
     </div>
-    {/* KPI tiles */}
-    <div className="kpi-grid mb-12">
-      <div className="kpi">
-        <div className="kpi-val" style={{color:'var(--leaf-600)'}}><CountUp value={sS} duration={400}/><span className="muted" style={{fontSize:14}}>/{cu}</span></div>
-        <div className="kpi-lbl">נמכרו</div>
-      </div>
-      <div className="kpi" style={{background:'linear-gradient(135deg,#FFFCF3,var(--lemon-50))'}}>
-        <div className="kpi-val num" style={{color:'var(--lemon-700)'}}>₪<CountUp value={sR} duration={400}/></div>
-        <div className="kpi-lbl">הכנסות</div>
-      </div>
-      <div className="kpi">
-        <div className="kpi-val" style={{color:'var(--bad)'}}><CountUp value={sNB} duration={400}/></div>
-        <div className="kpi-lbl">לא קנו</div>
-      </div>
-    </div>
-    {/* Competitor pulse */}
-    {hasComps && compD.length > 0 && <div className="section">
-      <div className="section-h">
-        <span className="section-title">מתחרים בזמן אמת</span>
-        <span className="section-aside">{sP}% מהיום</span>
-      </div>
-      <div className="card p-8">
-        {compD.map((c,i) => {
-          // Estimate live competitor sold based on progress
-          const liveSold = Math.round(((c.sold||0) * sP) / 100);
-          return <div key={i} className="comp-pulse-row">
-            <span className="comp-pulse-name">
-              <span className="comp-dot" style={{background: ['#7B1FA2','#0288D1','#E65100'][i%3]}}></span>
-              {c.n}
-            </span>
-            <span className="comp-pulse-price">₪{c.pr}</span>
-            <div className="comp-pulse-bar">
-              <div style={{width:`${Math.min(100, (liveSold/Math.max(1,cu))*100)}%`, background: ['#7B1FA2','#0288D1','#E65100'][i%3]}}></div>
-            </div>
-            <span className="comp-pulse-stat num">{cIL>=3?liveSold+' נמכרו':'?'}</span>
-          </div>;
-        })}
-      </div>
+    {sC.length>1 && <div className="rx-strip" title="התגובות האחרונות">{sC.slice(-12).map(c=><span key={c.id} className={c.buys?'buy':c.rx==='💨'?'miss':'no'}>{c.rx}</span>)}</div>}
+    {hasComps && compD.length>0 && <div className="comp-strip">
+      {compD.map((c,i)=><span key={i} className="pill">{c.n} · ₪{c.pr}{cIL>=3?` · ${Math.round(((c.sold||0)*sP)/100)} נמכרו`:''}</span>)}
     </div>}
-    {/* Customer feed */}
-    <div className="section">
-      <div className="section-h">
-        <span className="section-title">תור הלקוחות</span>
-        <span className="section-aside">{sC.length} ביקורים • {sS} קנו</span>
-      </div>
-      <div className="customer-feed">
-        {sC.length === 0 && <div className="card-flat p-16 text-center muted small">ממתין ללקוחות הראשונים…</div>}
-        {[...sC].reverse().slice(0,12).map((c,i) => {
-          const bought = c.buys;
-          const soldOut = c.rx === '💨';
-          const isVip = c.isVip;
-          const cls = isVip?'vip':bought?'buy':soldOut?'miss':'no';
-          return <div key={c.id||i} className={"customer-row "+cls}>
-            <span className="cust-emoji">{c.em}</span>
-            <div className="cust-meta">
-              <span className="cust-name">{isVip?'🎩 ':''}{(CT[c.type]||CT.adult).nm}</span>
-              <span className="cust-quote">"{c.sp || '…'}"</span>
-            </div>
-            <span className="cust-status">{c.rx}</span>
-          </div>;
-        })}
-      </div>
-    </div>
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={2}
-      cta={sDn?'דוח יום':'סימולציה רצה…'}
+      cta={sDn?'לדוח היום':'הלקוחות מגיעים…'}
       ctaVariant={sDn?'primary':'ghost'}
       onCta={()=>{if(sDn&&pendSum)doSum(pendSum.sold,pendSum.rev,pendSum.custs,pendSum.repD,pendSum.rR,pendSum.repBrk,pendSum.priceInfo);}}
       ctaDisabled={!sDn}/>
-   </div>}
+   </div>;})()}
    {}
    {ph==="summary"&&smD&&(()=>{
     const sellThrough = smD.prep>0 ? Math.round((smD.sold/smD.prep)*100) : 0;
@@ -2631,203 +2695,122 @@ function LemonadeGame(){
    </div>;})()}
    {}
    {ph==="evening"&&tP&&(()=>{const sp=eveT,rem=ca-sp;const tmL=lm+bL,tmH=hn+bH,tmI=ic+bI;
-    const cupsBare=tmL,cupsB=Math.min(Math.floor(tmL/3),tmH>0?tmH:9999,tmI>0?tmI:9999);
-    const cupsP=tmH>0&&tmI>0?Math.min(Math.floor(tmL/4),tmH,tmI):0;const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
     const remOk=rem>=0;const canGo=sp===0||remOk;
-    const itc=(bIn>0?INTL[bIn-1].c:0)+(bCI>0&&hasComps?CINTL[bCI-1].c:0);
-    // Lemon freshness: a batch bought on day b.d stays fresh for 3 selling days.
-    // Remaining selling days for a batch = 3 - (dy - b.d). Group current stock by remaining days.
+    const myCap=up.includes("team")?CAP_TEAM:up.includes("station")?CAP_STATION:CAP_BASE;
+    // How many cups of the player's own recipe tomorrow's stock allows
+    const cupsTmr=Math.min(Math.floor(tmL/Math.max(1,pref.l)),pref.h>0?Math.floor(tmH/pref.h):9999,pref.i>0?Math.floor(tmI/pref.i):9999);
     const lemonAges={1:0,2:0,3:0};
     la.forEach(b=>{const r=3-(dy-b.d);if(r>=1)lemonAges[Math.min(3,r)]+=b.q;});
     const lemonExpiringSoon=lemonAges[1];
-    return <div key="evening" className="screen phase-enter" style={{paddingBottom:120}}>
+    const W_INFO=['מזג אוויר וטמפרטורה','מזג אוויר + רמז אם יהיה אירוע','מזג אוויר + פרטי האירוע המדויקים'];
+    const C_INFO=['המחיר שלהם','מחיר + מתכון + כמות + התרגילים שלהם','הכל + חסימת תרגילים מלוכלכים נגדך'];
+    return <div key="evening" className="screen phase-enter">
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
-    <div className="row-between mb-12">
-      <div>
-        <div className="eyebrow">ערב — לפני יום {dy+1}</div>
-        <h1 style={{fontSize:26}}>מודיעין וקניות</h1>
-      </div>
-      <span className="pill lemon"><I.Shop size={12}/> ערב</span>
+    <div className="page-head">
+      <div className="eyebrow">🌙 ערב — לפני יום {dy+1}</div>
+      <h1>קניות למחר</h1>
+      <p className="lead">שני דברים קונים הערב: תחזית (כדי לדעת למה להתכונן) וחומרי גלם (כדי שיהיה ממה להכין לימונדה).</p>
     </div>
-    <div className="card p-16 mb-12" style={{background:'linear-gradient(135deg,var(--paper) 0%,var(--lemon-50) 100%)', borderColor:'var(--lemon-300)'}}>
-      <div style={{display:'grid', gridTemplateColumns:'1fr auto 1fr auto 1fr', alignItems:'center', gap:8}}>
-        <div className="text-center">
-          <div className="muted tiny">קופה</div>
-          <div className="num bold" style={{fontSize:18}}>{fmtM(ca)}</div>
-        </div>
-        <I.Minus size={16} color="var(--ink-400)"/>
-        <div className="text-center">
-          <div className="muted tiny">הוצאה</div>
-          <div className="num bold" style={{fontSize:18, color: sp>0?'var(--bad)':'var(--ink-500)'}}>₪{sp.toFixed(2)}</div>
-        </div>
-        <I.Equals size={16} color="var(--ink-400)"/>
-        <div className="text-center">
-          <div className="muted tiny">יישאר</div>
-          <div className="num bold" style={{fontSize:18, color: rem<0?'var(--bad)':'var(--leaf-600)'}}>{fmtM(rem,2)}</div>
-        </div>
-      </div>
-    </div>
-    {dy===0 && <div className="card p-12 mb-12" style={{background:'linear-gradient(135deg,#FFF8DA 0%,#FFEEAA 100%)'}}>
-      <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:4}}>
-        <I.Sparkle size={14} color="var(--lemon-700)"/>
-        <span className="bold small">איך מתחילים</span>
-      </div>
-      <p className="tiny" style={{color:'var(--ink-700)', lineHeight:1.5}}>
-        אפשר לקנות מודיעין כדי לדעת מה מצפה מחר. התחזית תופיע כאן מיד, ואז קונים לימונים, סוכר וקרח למטה.
-      </p>
-    </div>}
-    {!intelDone && <div className="section">
-      <SectionHeader title="מודיעין מזג אוויר" aside={`כמה לדעת על יום ${dy+1}`}/>
-      <div className="choice-grid cols-2">
-        <Choice active={bIn===0} onClick={()=>setBIn(0)} icon={<I.Eye size={22}/>} title="ללא" sub="חינם • בלי מידע"/>
-        {INTL.map((il,i) => (
-          <Choice key={i} active={bIn===il.lv} onClick={()=>{if(rem>=il.c)setBIn(il.lv);}}
-            disabled={rem<il.c}
-            emoji={il.lv===1?'👂':il.lv===2?'📡':'🕵️'}
-            title={il.n}
-            sub={`₪${il.c} • דיוק ~${Math.round(il.ac*100)}%`}/>
-        ))}
-      </div>
-    </div>}
-    {!intelDone && hasComps && <div className="section">
-      <SectionHeader title="ניתוח מתחרים" aside={`${cm} מתחרים פעילים`} icon={<I.Users size={16} color="var(--plum-500)"/>}/>
-      <div className="choice-grid cols-2">
-        <Choice active={bCI===0} onClick={()=>setBCI(0)} emoji="🚫" title="ללא" sub="חינם • בלי מידע"/>
-        {CINTL.map(c => (
-          <Choice key={c.lv} active={bCI===c.lv} onClick={()=>setBCI(c.lv)}
-            emoji={c.lv===1?'👁️':c.lv===2?'🕵️':'🛡️'}
-            title={c.n}
-            sub={`₪${c.c} • ${c.d}`}/>
-        ))}
-      </div>
-    </div>}
-    {!intelDone && <div className="card p-12 mb-12" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:8}}>
-      <span className="small">{itc>0?<>עלות מודיעין: <b className="num">₪{itc}</b></>:'בחר מודיעין — או דלג וקנה בלי מידע'}</span>
-      <button className="btn btn-warm btn-sm" onClick={(e)=>{flyFx(e,'−₪'+itc);confIntel();}} disabled={itc===0||itc>rem}><I.Spy size={12}/> קנה{itc>0&&<span className="price">₪{itc}</span>}</button>
-    </div>}
-    {intelDone && hasIntel && <div className="card p-12 mb-12" style={{background:'var(--good-bg)', borderColor:'#BFE0BC'}}>
-      <div style={{display:'flex', alignItems:'center', gap:8}}>
-        <I.Sun size={18} color="var(--lemon-600)"/>
-        <div style={{flex:1}}>
-          <div className="bold small">תחזית (רמה {iD.lv}): {iD.w}, {iD.temp}°C</div>
-          <div className="muted tiny">
-            {iD.pT?`מחירים: לימון ${iD.pT.l} סוכר ${iD.pT.h} קרח ${iD.pT.i}`:'דיוק חלקי — ייתכנו טעויות'}
-          </div>
-        </div>
-      </div>
-      {(iD.evDetail||iD.evHint) && <div className="small" style={{marginTop:6, paddingTop:6, borderTop:'1px solid #BFE0BC', color:'var(--plum-500)'}}>{iD.evDetail||iD.evHint}</div>}
-    </div>}
-    {intelDone && cIL>0 && <div className="card p-12 mb-12 small" style={{background:'linear-gradient(135deg,#F8F0FE,#EFE4FA)', borderColor:'#DCC8F0'}}>🕵️ ניתוח מתחרים נקנה — הפרטים יוצגו בבוקר, לפני שתקבע מחיר</div>}
-    {intelDone && !hasIntel && <div className="card p-12 mb-12" style={{background:'var(--warn-bg)', borderColor:'#F0D080'}}>
-      <div className="row gap-8"><I.Eye size={16} color="var(--warn)"/><span className="small bold" style={{color:'var(--warn)'}}>אין תחזית מזג אוויר למחר</span></div>
-    </div>}
+
+    {/* 1. Forecast */}
     <div className="section">
-      <SectionHeader title="חומרי גלם" aside="▲ עלה מאתמול • ▼ ירד"/>
-      <div className="col gap-8">
+      <div className="block-h"><span className="block-num">1</span><div><div className="block-title">🔮 תחזית למחר</div><div className="block-sub">לא חובה — אבל עוזר לדעת כמה לקנות</div></div></div>
+      <div className={"forecast-panel"+(hasIntel?' has':'')}>
+        {hasIntel ? <>
+          <div className="fp-main">
+            <span className="fp-icon">{String(iD.w).split(' ')[0]}</span>
+            <div>
+              <div className="fp-title">{String(iD.w).split(' ').slice(1).join(' ')} · <span className="num">{iD.temp}°</span></div>
+              <div className="fp-sub">{iD.temp>=35?'שרב — רוב האנשים יישארו בבית':iD.temp>=30?'חם — צמאים, קרח חשוב':iD.temp>=25?'מושלם לעסקים':iD.temp>=21?'נעים — ביקוש סביר':iD.temp>=18?'קריר — ביקוש נמוך':'קר — מעט מאוד לקוחות'}</div>
+            </div>
+          </div>
+          {(iD.evDetail||iD.evHint) && <div className="fp-line">{iD.evDetail||iD.evHint}</div>}
+          <div className="fp-acc">🎯 דיוק המקור: ~{Math.round(INTL[iD.lv-1].ac*100)}% — {iD.lv===3?'כמעט תמיד צודק':iD.lv===2?'לפעמים טועה':'טועה לא מעט'}</div>
+        </> : <div className="fp-empty"><span style={{fontSize:30}}>🌫️</span><div><b>עדיין אין תחזית למחר</b><div className="muted small">קנה אחד מהמקורות למטה — התחזית תופיע כאן</div></div></div>}
+      </div>
+      <div className="offer-list">
+        {INTL.map(il => {const bought=hasIntel&&iD.lv===il.lv,other=hasIntel&&!bought;
+          return <div key={il.lv} className={"offer"+(bought?' bought':'')}>
+            <span className="offer-em">{il.lv===1?'👂':il.lv===2?'📡':'🕵️'}</span>
+            <div className="offer-txt"><div className="offer-name">{il.n} <span className="acc-chip">דיוק ~{Math.round(il.ac*100)}%</span></div><div className="offer-desc">{W_INFO[il.lv-1]}</div></div>
+            {bought ? <span className="pill leaf">✓ נקנה</span> : other ? null :
+              <button className="btn btn-warm btn-sm" disabled={rem<il.c} onClick={(e)=>{flyFx(e,'−₪'+il.c);confIntel(il.lv,0);}}>קנה <span className="price">₪{il.c}</span></button>}
+          </div>;})}
+      </div>
+      {hasIntel && <div className="muted tiny" style={{padding:'6px 4px 0'}}>אפשר לקנות תחזית אחת בערב.</div>}
+    </div>
+
+    {hasComps && <div className="section">
+      <div className="block-h"><span className="block-num">🕵️</span><div><div className="block-title">מודיעין על המתחרים</div><div className="block-sub">מה הם יעשו מחר — יוצג לך בבוקר, לפני שתקבע מחיר</div></div></div>
+      <div className="offer-list">
+        {CINTL.map(c => {const bought=cIL===c.lv,other=cIL>0&&!bought;
+          return <div key={c.lv} className={"offer"+(bought?' bought':'')}>
+            <span className="offer-em">{c.lv===1?'👁️':c.lv===2?'🕵️':'🛡️'}</span>
+            <div className="offer-txt"><div className="offer-name">{c.n}</div><div className="offer-desc">{C_INFO[c.lv-1]}</div></div>
+            {bought ? <span className="pill leaf">✓ יוצג בבוקר</span> : other ? null :
+              <button className="btn btn-warm btn-sm" disabled={rem<c.c} onClick={(e)=>{flyFx(e,'−₪'+c.c);confIntel(0,c.lv);}}>קנה <span className="price">₪{c.c}</span></button>}
+          </div>;})}
+      </div>
+    </div>}
+
+    {/* 2. Ingredients */}
+    <div className="section">
+      <div className="block-h"><span className="block-num">2</span><div><div className="block-title">🛒 חומרי גלם</div><div className="block-sub">משלמים עכשיו. החץ מראה אם המחיר עלה (▲) או ירד (▼) מאתמול</div></div></div>
+      <div className="col gap-10">
         {[
-          {e:'🍋', lb:'לימונים', p:tP.lemon, v:bL, s:setBL, mx:100, st:lm, color:'var(--lemon-500)', bg:'', note:'טרי ל-3 ימי מכירה, ואז מתקלקל', af:tmL, vals:pH.l, icon:<I.Lemon size={20} color="var(--lemon-600)"/>, fresh:true},
-          {e:'🍬', lb:'סוכר', p:tP.honey, v:bH, s:setBH, mx:100, st:hn, color:'var(--honey-500)', bg:'honey', note:'לא מתקלקל — נשמר לכל המשחק', af:tmH, vals:pH.h, icon:<I.Sugar size={20} color="var(--honey-500)"/>},
-          {e:'🧊', lb:'קרח', p:tP.ice, v:bI, s:setBI, mx:500, st:ic, color:'var(--ice-500)', bg:'ice', note:'נמס בסוף כל יום — קנה מחדש כל ערב', af:tmI, vals:pH.i, icon:<I.Ice size={20} color="var(--ice-500)"/>, warn: !up.includes("cooler")},
+          {lb:'לימונים', p:tP.lemon, v:bL, s:setBL, mx:100, st:lm, af:tmL, color:'var(--lemon-500)', bg:'', life:'⏳ מחזיק 3 ימים ואז מתקלקל', vals:pH.l, icon:<I.Lemon size={22} color="var(--lemon-700)"/>, fresh:true},
+          {lb:'סוכר', p:tP.honey, v:bH, s:setBH, mx:100, st:hn, af:tmH, color:'var(--honey-500)', bg:'honey', life:'♾️ לא מתקלקל אף פעם', vals:pH.h, icon:<I.Sugar size={22} color="#B23C0A"/>},
+          {lb:'קרח', p:tP.ice, v:bI, s:setBI, mx:500, st:ic, af:tmI, color:'var(--ice-500)', bg:'ice', life:up.includes("cooler")?'🧊 חצי ממנו שורד ללילה (יש לך מיכל קירור)':'💧 נמס בסוף כל יום — קונים כל ערב', vals:pH.i, icon:<I.Ice size={22} color="var(--ice-700)"/>},
         ].map(p => {
           const av = Math.min(p.mx, Math.floor((rem+p.v*p.p)/p.p));
           const prevP=p.vals[p.vals.length-2]??p.p,pct=prevP>0?Math.round((p.p-prevP)/prevP*100):0,dir=pct>0?'up':pct<0?'down':'flat';
-          return <div key={p.lb} className="card p-12" style={{borderColor: p.v>0?p.color+'55':'var(--ink-200)'}}>
-            <div style={{display:'grid', gridTemplateColumns:'40px minmax(0,1fr) auto', gap:10, alignItems:'center', marginBottom:10}}>
+          return <div key={p.lb} className={"ing-card"+(p.v>0?' on':'')}>
+            <div className="ing-top">
               <div className={"ing-icon "+p.bg}>{p.icon}</div>
-              <div style={{minWidth:0}}>
-                <div style={{display:'flex', alignItems:'baseline', gap:6, flexWrap:'wrap'}}>
-                  <span className="bold small">{p.lb}</span>
-                  <span className="muted tiny num">₪{p.p.toFixed(2)}/יח'</span>
-                  <span className={"trend-delta "+dir} style={{fontSize:11}}>{dir==='up'?'▲':dir==='down'?'▼':'•'} {pct>0?'+':''}{pct}%</span>
-                </div>
-                <div className="muted tiny">
-                  מלאי: <span className="bold" style={{color:'var(--ink-700)'}}>{p.st}</span>
-                  {p.warn ? <span style={{color:'var(--bad)', marginRight:6}}> • ייעלם בערב</span> : <span style={{marginRight:6}}> • {p.note}</span>}
-                  {p.v > 0 && <span style={{marginRight:6}}>→ <b>{p.af}</b></span>}
-                </div>
-                {p.vals.length>1 && <div style={{marginTop:4}}><Sparkline values={p.vals} color={p.color} height={18} width={110}/></div>}
-                {p.fresh && lemonExpiringSoon>0 && <div className="tiny" style={{color:'var(--bad)', marginTop:2}}>
-                  🕐 {lemonExpiringSoon} לימונים מהמלאי יתקלקלו אחרי היום הבא — השתמש בהם קודם
-                </div>}
+              <div className="ing-info">
+                <div className="ing-name">{p.lb} <span className="ing-price num">₪{p.p.toFixed(2)} ליחידה</span> <span className={"trend-delta "+dir}>{dir==='up'?'▲':dir==='down'?'▼':'•'} {Math.abs(pct)}%</span></div>
+                <div className="ing-life">{p.life}</div>
               </div>
-              <div className="num bold" style={{fontSize:20, color:p.color, minWidth:30, textAlign:'center'}}>{p.v}</div>
             </div>
-            <div style={{display:'flex', justifyContent:'center'}}>
+            <div className="ing-stock">
+              <span>במלאי <b className="num">{p.st}</b></span>
+              <span className="ing-arrow">←</span>
+              <span>אחרי הקנייה <b className="num" style={{color:p.v>0?'var(--leaf-700)':undefined}}>{p.af}</b></span>
+            </div>
+            {p.fresh && lemonExpiringSoon>0 && <div className="ing-warn">🕐 {lemonExpiringSoon} מהלימונים שבמלאי יתקלקלו בסוף מחר</div>}
+            <div className="ing-buy">
               <Stepper value={p.v} onChange={(n)=>p.s(Math.min(av, Math.max(0, n)))} min={0} max={av} fast/>
+              <span className="ing-cost num">{p.v>0?'₪'+(p.v*p.p).toFixed(2):''}</span>
             </div>
-            {p.v > 0 && <div style={{marginTop:8, paddingTop:8, borderTop:'1px solid var(--ink-100)', display:'flex', justifyContent:'space-between'}}>
-              <span className="muted tiny">עלות פריט</span>
-              <span className="num bold tiny" style={{color: p.color}}>₪{(p.v*p.p).toFixed(2)}</span>
-            </div>}
           </div>;
         })}
       </div>
+      <div className="result-card">
+        <span style={{fontSize:28}}>🥤</span>
+        <div>
+          <div>עם המלאי הזה תוכל להכין מחר <b className="num">עד {cupsTmr}</b> כוסות</div>
+          <div className="muted small">לפי המתכון שלך: {pref.l}🍋 + {pref.h}🍬 + {pref.i}🧊 (משנים מתכון בבוקר)</div>
+          {myCap<CAP_TEAM && cupsTmr>myCap && <div className="small" style={{color:'var(--warn)', marginTop:2}}>שים לב: הדוכן מגיש עד {myCap} כוסות ביום — בבוקר אפשר לשכור עוזר</div>}
+        </div>
+      </div>
     </div>
+
+    {/* 3. Loan */}
     <div className="section">
-      <SectionHeader title="כוסות מחר (לפי מלאי אחרי רכישה)" icon={<I.Cup size={16} color="var(--leaf-600)"/>}/>
+      <div className="block-h"><span className="block-num">3</span><div><div className="block-title">🏦 הלוואה</div><div className="block-sub">רק אם חסר כסף. 8% ריבית על כל יום שהיא פתוחה</div></div></div>
       <div className="card p-12">
-        {myCap<CAP_TEAM && <div className="muted tiny mb-8">מגבלת הגשה: <b>{myCap}</b> כוסות {myCap===CAP_BASE?`(עוזר: ${myCap+HELPER_B}, עמדה: ${CAP_STATION}, צוות: ללא הגבלה)`:myCap===CAP_STATION?`(עוזר: ${myCap+HELPER_B}, צוות: ללא הגבלה)`:''}</div>}
-        {myCap>=CAP_TEAM && <div className="small mb-8" style={{color:'var(--good)', fontWeight:700}}>👥 צוות מלא — ללא הגבלת כוסות!</div>}
-        <div className="choice-grid cols-3">
-          {[
-            {n:'מינימום', e:'🥤', sub:'1🍋+5💧', v:cupsBare},
-            {n:'מאוזן', e:'⚖️', sub:'3🍋+1🍬+1🧊', v:cupsB},
-            {n:'פרמיום', e:'⭐', sub:'4🍋+1🍬+1🧊', v:cupsP},
-          ].map((x,i) => {
-            const capped = Math.min(x.v, myCap);
-            return <div key={i} className="card-flat p-12 text-center">
-              <div style={{fontSize:20}}>{x.e}</div>
-              <div className="bold small">{x.n}</div>
-              <div className="muted tiny">{x.sub}</div>
-              <div className="num x-bold" style={{fontSize:24, color:'var(--lemon-700)', marginTop:4}}>{capped}</div>
-              {x.v > myCap && <div className="tiny" style={{color:'var(--bad)'}}>(מלאי: {x.v})</div>}
-            </div>;
-          })}
-        </div>
-      </div>
-    </div>
-    <div className="section">
-      <SectionHeader title="שדרוגים קבועים" aside="פעם אחת — לכל המשחק" icon={<I.Sparkle size={16} color="var(--plum-500)"/>}/>
-      <div className="shop-grid">
-        {UPG.map(u => {
-          const owned=up.includes(u.id),locked=!owned&&u.ad>dy+1,[em,...nm]=u.n.split(' ');
-          return <div key={u.id} className={"shop-tile"+(owned?' owned':locked?' locked':'')}>
-            <span className="st-emoji">{em}</span>
-            <span className="st-name">{nm.join(' ')}</span>
-            <span className="st-desc">{u.d}</span>
-            {owned ? <span className="pill leaf">פעיל עד סוף המשחק</span> :
-             locked ? <span className="pill">🔒 נפתח ביום {u.ad}</span> :
-             <button className="btn btn-warm btn-sm" disabled={rem<u.c} onClick={(e)=>{if(rem>=u.c){setUp(p=>[...p,u.id]);setCa(p=>p-u.c);setSpent(s=>({...s,upgrades:s.upgrades+u.c}));flyFx(e,'−₪'+u.c);}}}>
-               {rem<u.c?<>חסר ₪{Math.ceil(u.c-rem)}</>:<>קנה <span className="price">₪{u.c}</span></>}</button>}
-          </div>;
-        })}
-      </div>
-    </div>
-    <div className="section">
-      <div className="card p-12" style={{background: ln>0?'var(--bad-bg)':'var(--paper-2)'}}>
         <div className="row-between">
-          <div className="row gap-8">
-            <I.Bank size={18} color={ln>0?'var(--bad)':'var(--ink-500)'}/>
-            <div>
-              <div className="bold small">הלוואה (8% ריבית/יום)</div>
-              <div className="muted tiny">עד ₪{LOAN_MAX} • למצבי חירום</div>
-            </div>
-          </div>
-          <span className="num bold" style={{color: ln>0?'var(--bad)':'var(--ink-500)'}}>₪{ln.toFixed(0)}</span>
+          <span className="small">{ln>0?<>חוב פתוח: <b className="num" style={{color:'var(--bad)'}}>₪{ln.toFixed(0)}</b></>:'אין לך הלוואה'}</span>
+          {ln===0 ? <div className="row gap-6">
+            {[10,20,40].map(a => <button key={a} className="btn btn-ghost btn-xs" onClick={(e)=>{setLn(a);setCa(p=>p+a);setLoanEverTaken(true);flyFx(e,'+₪'+a,'var(--good)');}}>קח ₪{a}</button>)}
+          </div> : <button className="btn btn-primary btn-sm" onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} disabled={ca<ln}>החזר <span className="price">₪{ln.toFixed(0)}</span></button>}
         </div>
-        {ln===0 ? <div style={{display:'flex', gap:6, marginTop:8}}>
-          {[10,20,30,40].map(a => <button key={a} className="btn btn-ghost btn-xs" onClick={()=>{setLn(a);setCa(p=>p+a);setLoanEverTaken(true);}} style={{flex:1}}>+₪{a}</button>)}
-        </div> : <div style={{display:'flex', justifyContent:'flex-end', marginTop:8}}>
-          <button className="btn btn-primary btn-sm" onClick={()=>{if(ca>=ln){setCa(p=>p-ln);setLn(0);}}} disabled={ca<ln}>החזר ₪{ln.toFixed(0)}</button>
-        </div>}
       </div>
     </div>
-    {!remOk && sp>0 && <div className="card p-12 mb-12" style={{background:'var(--bad-bg)', borderColor:'#F2C7B5'}}>
-      <span className="small bold" style={{color:'var(--bad)'}}><I.Info size={12}/> אין מספיק כסף — הורד פריטים או קח הלוואה</span>
-    </div>}
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={0}
-      cta={dy===0?'ליום 1':`ליום ${dy+1}`}
+      info={<><span>🛒 קניות הערב <b className="num">₪{sp.toFixed(2)}</b></span><span>💰 יישאר <b className="num" style={{color:remOk?'var(--leaf-700)':'var(--bad)'}}>{fmtM(rem,2)}</b></span></>}
+      cta={!remOk?'אין מספיק כסף — הורד כמות':`לבוקר של יום ${dy+1}`}
       ctaVariant="primary"
       onCta={confEve}
       ctaDisabled={!canGo}/>
