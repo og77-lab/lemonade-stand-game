@@ -634,6 +634,109 @@
     .choice-grid.compact .ch-emoji { font-size: 22px; }
     .choice-grid.compact .ch-title { font-size: 12.5px; }
     .choice-grid.compact .ch-sub { font-size: 10.5px; }
+    /* ── Street scene (simulation) ── */
+    .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
+      background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
+      box-shadow: 0 18px 40px -16px rgba(30,27,58,0.45), inset 0 0 0 3px rgba(255,255,255,0.55); }
+    .st-w-nice { background: linear-gradient(180deg, #6DD0FA 0%, #B9E7FB 55%, #EEF9FE 100%); }
+    .st-w-hot { background: linear-gradient(180deg, #FFA94D 0%, #FFD08A 55%, #FFF0D2 100%); }
+    .st-w-heat { background: linear-gradient(180deg, #FF7A52 0%, #FFB36B 55%, #FFE2B8 100%); }
+    .st-w-cloudy { background: linear-gradient(180deg, #8EA2B5 0%, #C3CFDB 60%, #E2E8EF 100%); }
+    .st-w-lRain { background: linear-gradient(180deg, #6F8296 0%, #A6B4C3 60%, #CDD6DF 100%); }
+    .st-w-hRain { background: linear-gradient(180deg, #4D5D72 0%, #8392A5 60%, #B5C0CC 100%); }
+    .st-w-cold { background: linear-gradient(180deg, #8FA7C2 0%, #C5D3E3 60%, #E8EEF5 100%); }
+    .st-sun { position: absolute; top: 14px; left: 16px; width: 70px; height: 70px; z-index: 0; }
+    .st-rays { position: absolute; inset: -18px; border-radius: 50%; background: repeating-conic-gradient(rgba(255,236,140,0.55) 0deg 9deg, transparent 9deg 22deg); -webkit-mask: radial-gradient(circle, #000 35%, transparent 70%); mask: radial-gradient(circle, #000 35%, transparent 70%); animation: stSpin 30s linear infinite; }
+    .st-sun-core { position: absolute; inset: 12px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #FFFBD0 0%, #FFE14D 45%, #FFB800 100%); box-shadow: 0 0 36px 10px rgba(255,210,60,0.55); }
+    .st-sun-dim { opacity: 0.35; filter: blur(1px); }
+    .st-w-hot .st-sun-core, .st-w-heat .st-sun-core { background: radial-gradient(circle at 40% 38%, #FFF6C0 0%, #FFC233 45%, #FF8A00 100%); box-shadow: 0 0 50px 18px rgba(255,150,40,0.6); }
+    .st-cloud { position: absolute; left: -25%; z-index: 1; animation: stDrift linear infinite; filter: drop-shadow(0 4px 6px rgba(30,27,58,0.12)); }
+    .st-w-lRain .st-cloud svg path, .st-w-hRain .st-cloud svg path { fill: #E3E8EE; }
+    .st-skyline { position: absolute; left: -3%; width: 106%; bottom: 112px; height: 110px; z-index: 1; animation: stPar 16s ease-in-out infinite alternate; }
+    .st-trees { position: absolute; left: -3%; width: 106%; bottom: 110px; height: 80px; z-index: 2; animation: stPar 11s ease-in-out infinite alternate-reverse; }
+    .st-w-hRain .st-skyline, .st-w-lRain .st-skyline, .st-w-cold .st-skyline { filter: saturate(0.5) brightness(0.92); }
+    .st-sidewalk { position: absolute; left: 0; right: 0; bottom: 46px; height: 68px; z-index: 3;
+      background: linear-gradient(180deg, #9ED36A 0, #86C455 7px, #EADFC8 7px, #E2D4B8 100%);
+      box-shadow: inset 0 -5px 0 #B9A88A; }
+    .st-sidewalk::after { content: ''; position: absolute; inset: 7px 0 5px; background: repeating-linear-gradient(90deg, transparent 0 46px, rgba(150,130,100,0.25) 46px 48px); }
+    .st-road { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; z-index: 3; background: linear-gradient(180deg, #5F6577, #4D5263); }
+    .st-lane { position: absolute; left: 0; right: 0; top: 21px; height: 3px; background: repeating-linear-gradient(90deg, #F5F5F5 0 22px, transparent 22px 44px); opacity: 0.85; }
+    .st-car { position: absolute; bottom: 6px; left: -80px; animation: stCar 13s linear infinite; animation-delay: 2s; }
+    .st-car svg { animation: stCarBob 0.3s ease-in-out infinite alternate; }
+    .st-rain { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
+    .st-rain span { position: absolute; top: -30px; width: 2px; height: 24px; border-radius: 2px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(235,245,255,0.95)); animation: stRain linear infinite; }
+    .st-w-lRain .st-trees, .st-w-hRain .st-trees { filter: saturate(0.6) brightness(0.85); }
+    .st-w-lRain .st-sun, .st-w-hRain .st-sun { display: none; }
+    .st-comp-wrap { position: absolute; bottom: 110px; z-index: 2; transform: scale(0.7); transform-origin: bottom center; }
+    .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .st-comp-price { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #fff; color: #5B21B6; font-weight: 900; font-size: 13px; padding: 1px 8px; border-radius: 8px; box-shadow: 0 2px 0 #C4B5FD; white-space: nowrap; }
+    .st-board { position: absolute; bottom: 56px; z-index: 6; animation: stSway 4s ease-in-out infinite; transform-origin: bottom center; }
+    .st-stand { position: absolute; bottom: 56px; width: 140px; height: 150px; z-index: 5; }
+    .st-stand-back, .st-stand-front { position: absolute; top: 0; left: 0; }
+    .st-stand-front { z-index: 2; filter: drop-shadow(0 6px 4px rgba(30,27,58,0.18)); }
+    .st-seller-wrap { position: absolute; left: 45px; top: 52px; z-index: 1; }
+    .st-seller { display: block; animation: stBreathe 2.4s ease-in-out infinite; transform-origin: bottom center; }
+    .st-seller-arm { transform-box: fill-box; transform-origin: 50% 8%; }
+    .st-seller-cup { opacity: 0; }
+    .st-serve .st-seller-arm { animation: stServe 0.75s var(--ease-out, ease-out); }
+    .st-serve .st-seller-cup { animation: stCupShow 0.75s ease; }
+    .st-bye .st-seller-arm { animation: stWave 0.6s ease-in-out infinite alternate; }
+    .st-juice { transition: y 0.6s ease, height 0.6s ease; }
+    .st-closed { transform-box: fill-box; transform-origin: 50% 0; animation: stSwing 1.6s var(--spring, ease) both; }
+    .st-coins { position: absolute; right: 2px; bottom: 74px; z-index: 3; pointer-events: none; }
+    .st-coin { position: absolute; right: 0; bottom: 0; white-space: nowrap; font-size: 12px; font-weight: 900; color: #8A5A00; background: #FFF6C2; border-radius: 10px; padding: 1px 6px; box-shadow: 0 2px 0 #E0B000; animation: stCoin 1.1s var(--ease-out, ease-out) forwards; }
+    /* customers */
+    .st-actor { position: absolute; left: 0; bottom: 56px; width: 40px; height: 102px; transition-property: transform; transition-timing-function: linear; will-change: transform; }
+    .st-flip { transition: transform 0.2s ease; transform-origin: center; }
+    .st-flipped { transform: scaleX(-1); }
+    .st-body { position: relative; transform-origin: bottom center; transform: scale(1.12); }
+    .st-body.st-kid { transform: scale(0.9); }
+    .st-person { display: block; overflow: visible; }
+    .st-leg, .st-arm { transform-box: fill-box; transform-origin: 50% 6%; }
+    .st-walking .st-leg-a { animation: stSwingA 0.42s ease-in-out infinite; }
+    .st-walking .st-leg-b { animation: stSwingB 0.42s ease-in-out infinite; }
+    .st-walking .st-arm-a { animation: stSwingB 0.42s ease-in-out infinite; }
+    .st-walking .st-arm-b { animation: stSwingA 0.42s ease-in-out infinite; }
+    .st-walking .st-person { animation: stBob 0.21s ease-in-out infinite alternate; }
+    .st-head { transform-box: fill-box; transform-origin: 50% 90%; }
+    .st-shake .st-head { animation: stShake 0.32s ease-in-out 2; }
+    .st-umbrella { transform-box: fill-box; transform-origin: 70% 100%; }
+    .st-walking .st-umbrella { animation: stSway 0.84s ease-in-out infinite; }
+    .st-vip { filter: drop-shadow(0 0 6px rgba(255,200,0,0.9)); }
+    .st-vip::before { content: '✨'; position: absolute; top: -4px; right: -6px; font-size: 14px; animation: stTwinkle 1s ease-in-out infinite alternate; }
+    .st-bubble { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; white-space: nowrap; background: #fff; border-radius: 14px; padding: 4px 9px 4px 7px; box-shadow: 0 6px 14px -4px rgba(30,27,58,0.4); border: 2px solid #E6E4F3; animation: stPop 0.35s var(--spring, ease) both; z-index: 50; }
+    .st-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: #fff; border-bottom: none; }
+    .st-b-happy { border-color: #86E0A8; } .st-b-sad { border-color: #FBB6C4; } .st-b-vip { border-color: #FFC800; background: #FFFBE6; }
+    .st-b-em { font-size: 17px; line-height: 1; }
+    .st-b-tx { font-size: 11.5px; font-weight: 800; color: #1E1B3A; }
+    .st-dusk { position: absolute; inset: 0; z-index: 45; pointer-events: none; background: linear-gradient(180deg, rgba(120,70,200,0.35), rgba(255,140,80,0.18) 60%, transparent); animation: stFade 1.2s ease both; }
+    @keyframes stSpin { to { transform: rotate(360deg); } }
+    @keyframes stDrift { from { left: -25%; } to { left: 110%; } }
+    @keyframes stPar { from { transform: translateX(-7px); } to { transform: translateX(7px); } }
+    @keyframes stCar { 0% { left: -80px; } 40% { left: 105%; } 100% { left: 105%; } }
+    @keyframes stCarBob { from { transform: translateY(0); } to { transform: translateY(-1px); } }
+    @keyframes stRain { from { transform: translateY(0) translateX(0); } to { transform: translateY(360px) translateX(-26px); } }
+    @keyframes stSway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+    @keyframes stBreathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+    @keyframes stServe { 0% { transform: rotate(0); } 35% { transform: rotate(-95deg); } 65% { transform: rotate(-80deg); } 100% { transform: rotate(0); } }
+    @keyframes stCupShow { 0%, 15% { opacity: 0; } 25%, 70% { opacity: 1; } 85%, 100% { opacity: 0; } }
+    @keyframes stWave { from { transform: rotate(-150deg); } to { transform: rotate(-110deg); } }
+    @keyframes stSwing { 0% { transform: rotate(-30deg) translateY(-30px); opacity: 0; } 40% { transform: rotate(14deg); opacity: 1; } 70% { transform: rotate(-7deg); } 100% { transform: rotate(0); opacity: 1; } }
+    @keyframes stCoin { 0% { opacity: 0; transform: translateY(6px) scale(0.6); } 20% { opacity: 1; transform: translateY(-6px) scale(1.1); } 100% { opacity: 0; transform: translateY(-44px) scale(1); } }
+    @keyframes stSwingA { 0%, 100% { transform: rotate(22deg); } 50% { transform: rotate(-22deg); } }
+    @keyframes stSwingB { 0%, 100% { transform: rotate(-22deg); } 50% { transform: rotate(22deg); } }
+    @keyframes stBob { from { transform: translateY(0); } to { transform: translateY(-2.5px); } }
+    @keyframes stShake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+    @keyframes stTwinkle { from { opacity: 0.4; transform: scale(0.8) rotate(0); } to { opacity: 1; transform: scale(1.2) rotate(20deg); } }
+    @keyframes stPop { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.4); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+    @keyframes stFade { from { opacity: 0; } to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .st-rays, .st-cloud, .st-skyline, .st-trees, .st-car, .st-board, .st-seller, .st-rain span { animation: none !important; }
+    }
+
+    .sim-progress { height: 6px; background: rgba(255,255,255,0.55); border-radius: 3px; overflow: hidden; margin: 8px 4px 10px; }
+    .sim-progress > div { height: 100%; background: linear-gradient(90deg, #FFE14D, #FFB800); transition: width 0.3s; }
+    .screen.fit .sim-stats { margin-bottom: 8px; } .screen.fit .quote-card { min-height: 0; padding: 10px 12px; }
     @media (min-width: 600px) { h1 { font-size: 38px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
   </style>
@@ -1565,6 +1668,219 @@ const pickRandomTrack = (excludeIndex) => {
   let idx;
   do { idx = Math.floor(Math.random() * MUSIC_TRACKS.length); } while (idx === excludeIndex);
   return idx;
+};
+
+// ── Street scene: an illustrated lemonade stand with walking, queuing, reacting customers ──
+const ST_EM={'🚶':'🤷','💨':'😠'};
+const ST_TXT={'😊':'טעים!','🙂':'נחמד!','😐':'בסדר...','😕':'חלש...','🚶':'לא בשבילי','💨':'אזל?!','🌟':'מושלם!','😤':'ציפיתי ליותר'};
+const ST_SKIN=['#F9D3B4','#EDBB94','#C98B5E','#8D5A3B','#F4C9A5','#B7794E'];
+const ST_SHIRT=['#FF6B6B','#4D96FF','#6BCB77','#FFB84C','#A66CFF','#FF8FB1','#2EC4B6','#F77F00'];
+const ST_PANTS=['#3B4A6B','#2F3A56','#5B4636','#4A5568','#264653'];
+const ST_HAIR=['#3B2A1E','#6B4226','#1E1B3A','#C68B59','#E0B04A','#8B3A1E'];
+const stPick=(arr,n,salt=0)=>arr[Math.abs((n*2654435761+salt*40503)>>>0)%arr.length];
+const stMood=rx=>['😊','🙂','🌟'].includes(rx)?'happy':['😕','😤','💨','🚶'].includes(rx)?'sad':'flat';
+
+// One customer, drawn facing left (toward the stand). viewBox leaves room above for hats/umbrellas.
+const StPerson=({ev,mood,hasCup,rainy})=>{
+  const n=ev.id,type=ev.isVip?'vip':ev.type;
+  const skin=stPick(ST_SKIN,n,1),hair=stPick(ST_HAIR,n,2);
+  const shirt=type==='foodie'?'#FFFFFF':type==='vip'?'#3B2A5C':type==='athlete'?stPick(['#FF3B6B','#00B4D8','#FFB703','#43AA8B'],n,3):stPick(ST_SHIRT,n,3);
+  const pants=type==='athlete'?'#1E1B3A':type==='vip'?'#2A1F44':stPick(ST_PANTS,n,4);
+  const shorts=type==='athlete'||type==='child';
+  const legLen=shorts?16:22;
+  const mouth=mood==='happy'?'M15 29 Q18 32.5 21 29':mood==='sad'?'M15 31 Q18 28 21 31':'M15.5 30 L20.5 30';
+  return <svg className="st-person" viewBox="0 -18 40 102" width="40" height="102" aria-hidden="true">
+    <ellipse cx="20" cy="82" rx="11" ry="2.6" fill="rgba(0,0,0,0.18)"/>
+    {/* legs */}
+    <g className="st-leg st-leg-b"><rect x="20.5" y="58" width="6" height={legLen+2} rx="3" fill={shorts?skin:pants}/>{shorts&&<rect x="20" y="57" width="7" height="8" rx="2" fill={pants}/>}<rect x="19.5" y={78} width="9" height="4" rx="2" fill={type==='athlete'?'#FF3B6B':'#2A2238'}/></g>
+    <g className="st-leg st-leg-a"><rect x="13.5" y="58" width="6" height={legLen+2} rx="3" fill={shorts?skin:pants}/>{shorts&&<rect x="13" y="57" width="7" height="8" rx="2" fill={pants}/>}<rect x="11.5" y={78} width="9" height="4" rx="2" fill={type==='athlete'?'#FF3B6B':'#2A2238'}/></g>
+    {/* back arm */}
+    <g className="st-arm st-arm-b"><rect x="23" y="37" width="5" height="19" rx="2.5" fill={shirt} stroke="rgba(0,0,0,0.12)" strokeWidth="0.6"/><circle cx="25.5" cy="56" r="2.6" fill={skin}/></g>
+    {/* torso */}
+    <rect x="11" y="34" width="18" height="27" rx="7" fill={shirt} stroke="rgba(0,0,0,0.12)" strokeWidth="0.8"/>
+    {type==='foodie' && <><circle cx="20" cy="42" r="1.1" fill="#9AA5B1"/><circle cx="20" cy="48" r="1.1" fill="#9AA5B1"/><circle cx="20" cy="54" r="1.1" fill="#9AA5B1"/></>}
+    {type==='vip' && <><path d="M17 35 L20 44 L23 35" fill="#fff"/><path d="M19 37 L20 42 L21 37 Z" fill="#E63946"/></>}
+    {type==='athlete' && <text x="20" y="52" textAnchor="middle" fontSize="8" fontWeight="900" fill="#fff" fontFamily="Rubik,sans-serif">{(n%9)+1}</text>}
+    {/* front arm — raised when holding a cup */}
+    <g className={"st-arm st-arm-a"+(hasCup?' st-hold':'')}>
+      <rect x="12" y="37" width="5" height="19" rx="2.5" fill={shirt} stroke="rgba(0,0,0,0.12)" strokeWidth="0.6"/>
+      <circle cx="14.5" cy="56" r="2.6" fill={skin}/>
+      {hasCup && <g transform="translate(9.5 49)"><path d="M0 0 L9 0 L7.6 11 L1.4 11 Z" fill="#FFF" stroke="#C9C6E0" strokeWidth="0.6"/><rect x="0.8" y="3" width="7.4" height="6" fill="#FFE14D"/><line x1="6" y1="-4" x2="5" y2="3" stroke="#FF5C7A" strokeWidth="1.2" strokeLinecap="round"/></g>}
+    </g>
+    {/* head */}
+    <g className="st-head">
+      <rect x="17" y="30" width="6" height="5" fill={skin}/>
+      <circle cx="20" cy="22" r="10" fill={skin}/>
+      {type!=='foodie'&&type!=='vip'&&<path d="M10 21 Q11 10 20 10 Q29 10 30 21 Q27 15 20 15 Q13 15 10 21 Z" fill={hair}/>}
+      {type==='adult'&&n%2===0&&<path d="M27 14 Q33 22 29 31 L27 24 Z" fill={hair}/>}
+      <circle cx="15.5" cy="22" r="1.4" fill="#1E1B3A"/><circle cx="21.5" cy="22" r="1.4" fill="#1E1B3A"/>
+      <circle cx="13" cy="26" r="1.8" fill="#FF8FA3" opacity="0.45"/>
+      <path d={mouth} stroke="#1E1B3A" strokeWidth="1.3" fill="none" strokeLinecap="round"/>
+      {type==='child'&&<><path d="M10 17 Q11 9 20 9 Q29 9 30 17 Z" fill={stPick(['#FF5C7A','#4D96FF','#FFB703','#6BCB77'],n,5)}/><rect x="3" y="15.5" width="11" height="3" rx="1.5" fill={stPick(['#E63946','#1D4ED8','#E09A00','#2D9A4E'],n,5)}/></>}
+      {type==='athlete'&&<rect x="9.5" y="14" width="21" height="3.4" rx="1.6" fill="#FF3B6B"/>}
+      {type==='foodie'&&<><rect x="11" y="10" width="18" height="5" rx="1" fill="#fff" stroke="#E6E4F3" strokeWidth="0.8"/><circle cx="14" cy="5" r="5.5" fill="#fff" stroke="#E6E4F3" strokeWidth="0.8"/><circle cx="20" cy="2.5" r="6" fill="#fff" stroke="#E6E4F3" strokeWidth="0.8"/><circle cx="26" cy="5" r="5.5" fill="#fff" stroke="#E6E4F3" strokeWidth="0.8"/></>}
+      {type==='vip'&&<><rect x="8" y="12" width="24" height="3" rx="1.5" fill="#15121F"/><rect x="12" y="-2" width="16" height="15" rx="1.5" fill="#15121F"/><rect x="12" y="8" width="16" height="2.6" fill="#FFC800"/><circle cx="15.5" cy="22" r="3" fill="none" stroke="#FFC800" strokeWidth="0.9"/></>}
+    </g>
+    {rainy&&type!=='vip'&&<g className="st-umbrella"><line x1="27" y1="-2" x2="27" y2="40" stroke="#4A4560" strokeWidth="1.3"/><path d="M8 0 Q27 -24 46 0 Q41.5 -4 37 0 Q32 -4 27 0 Q22 -4 17 0 Q12.5 -4 8 0 Z" fill={stPick(['#FF5C7A','#4D96FF','#FFB703','#8B5CF6'],n,6)}/></g>}
+  </svg>;
+};
+
+// The seller kid behind the counter; remounted per sale (key) so the serve animation replays
+const StSeller=({serving,closed})=>(
+  <svg className={"st-seller"+(serving?' st-serve':'')+(closed?' st-bye':'')} viewBox="0 0 50 46" width="50" height="46" aria-hidden="true">
+    <rect x="13" y="30" width="24" height="18" rx="8" fill="#FFB703"/>
+    <rect x="18" y="32" width="14" height="16" rx="3" fill="#fff" opacity="0.9"/>
+    <g className="st-seller-arm"><rect x="31" y="31" width="5" height="15" rx="2.5" fill="#FFB703"/><circle cx="33.5" cy="46" r="2.6" fill="#F4C9A5"/>
+      <g className="st-seller-cup" transform="translate(29 38)"><path d="M0 0 L8 0 L6.8 9 L1.2 9 Z" fill="#fff" stroke="#C9C6E0" strokeWidth="0.6"/><rect x="0.8" y="2.6" width="6.4" height="5" fill="#FFE14D"/></g></g>
+    <circle cx="25" cy="19" r="10" fill="#F4C9A5"/>
+    <path d="M14 17 Q15 6 25 6 Q35 6 36 17 Z" fill="#FFC800"/><path d="M33 15 L44 16 Q44 18.5 33 18 Z" fill="#E09A00"/>
+    <circle cx="21" cy="19.5" r="1.4" fill="#1E1B3A"/><circle cx="29" cy="19.5" r="1.4" fill="#1E1B3A"/>
+    <circle cx="18" cy="23" r="1.8" fill="#FF8FA3" opacity="0.5"/><circle cx="32" cy="23" r="1.8" fill="#FF8FA3" opacity="0.5"/>
+    <path d="M21.5 24.5 Q25 28 28.5 24.5" stroke="#1E1B3A" strokeWidth="1.3" fill="none" strokeLinecap="round"/>
+  </svg>
+);
+
+const StCloud=({w=70,o=1})=>(<svg viewBox="0 0 70 34" width={w} height={w*34/70} style={{opacity:o}} aria-hidden="true">
+  <path d="M14 30 Q2 30 4 21 Q6 13 15 15 Q17 4 30 5 Q41 3 45 13 Q55 9 60 17 Q69 19 66 27 Q64 31 56 30 Z" fill="#fff"/></svg>);
+
+const StComp=({c})=>(<div className="st-comp">
+  <svg viewBox="0 0 64 60" width="64" height="60" aria-hidden="true">
+    <rect x="5" y="18" width="4" height="24" fill="#8C6A4F"/><rect x="55" y="18" width="4" height="24" fill="#8C6A4F"/>
+    {[0,1,2,3,4,5,6,7].map(i=><rect key={i} x={i*8} y="8" width="8" height="10" fill={i%2?'#fff':'#A78BFA'}/>)}
+    {[0,1,2,3,4,5,6,7].map(i=><circle key={i} cx={i*8+4} cy="18" r="4" fill={i%2?'#fff':'#A78BFA'}/>)}
+    <rect x="2" y="40" width="60" height="20" rx="3" fill="#C9A27A"/><rect x="0" y="38" width="64" height="4" rx="2" fill="#9C7A58"/>
+  </svg>
+  <span className="st-comp-price">₪{c.pr}</span>
+</div>);
+
+const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false})=>{
+  const wrapRef=useRef(null);const [W,setW]=useState(343);
+  const actorsRef=useRef(new Map()),queueRef=useRef([]),seenRef=useRef(null),timersRef=useRef([]);
+  const [,setTick]=useState(0);const bump=()=>setTick(t=>t+1);
+  const [serveKey,setServeKey]=useState(0),[coins,setCoins]=useState([]);
+  const spdRef=useRef(spd),WRef=useRef(W),priceRef=useRef(price),doneRef=useRef(done);
+  spdRef.current=spd;WRef.current=W;priceRef.current=price;doneRef.current=done;
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;const upd=()=>setW(el.clientWidth||343);upd();
+    let ro=null;if(window.ResizeObserver){ro=new ResizeObserver(upd);ro.observe(el);}else window.addEventListener('resize',upd);
+    return()=>{if(ro)ro.disconnect();else window.removeEventListener('resize',upd);};},[]);
+  useEffect(()=>()=>{timersRef.current.forEach(clearTimeout);timersRef.current=[];},[]);
+  const later=(fn,ms)=>{const t=setTimeout(fn,ms);timersRef.current.push(t);if(timersRef.current.length>200)timersRef.current=timersRef.current.slice(-120);};
+  // Geometry (px, ltr): stand centred at 40% of the width; the queue forms to its right
+  const geo=()=>{const w=WRef.current,sx=w*0.4;return{serve:sx+74,gap:38,inX:w+20,outL:-50,outR:w+50};};
+  const speed=()=>150/Math.max(260,spdRef.current*0.85); // px per ms — faster days walk faster
+  const moveTo=(a,x)=>{const d=Math.abs(x-a.x);a.dur=Math.max(160,d/speed());a.x=x;a.moving=true;const tok=(a.mt=(a.mt||0)+1);
+    later(()=>{if(a.mt!==tok)return;a.moving=false;bump();step();},a.dur);};
+  const step=()=>{const g=geo(),q=queueRef.current;
+    q.forEach((id,k)=>{const a=actorsRef.current.get(id);if(!a||a.phase!=='queue')return;const tx=g.serve+k*g.gap;if(Math.abs(a.x-tx)>1)moveTo(a,tx);});
+    const f=actorsRef.current.get(q[0]);
+    if(f&&f.phase==='queue'&&!f.moving&&Math.abs(f.x-g.serve)<=1)serve(f);
+    bump();};
+  const serve=a=>{a.phase='serve';a.bubble=true;const st=doneRef.current?320:Math.max(280,Math.min(850,spdRef.current*0.62));
+    if(a.ev.buys&&!a.ev.isVip){setServeKey(k=>k+1);
+      later(()=>{a.hasCup=true;a.mood=stMood(a.ev.rx);const cid=a.id+'-'+Date.now();setCoins(c=>[...c.slice(-3),{id:cid,p:priceRef.current}]);later(()=>setCoins(c=>c.filter(x=>x.id!==cid)),1100);bump();},st*0.5);}
+    else{a.mood=stMood(a.ev.rx);a.shake=!a.ev.buys||a.ev.rx==='😤';if(a.ev.isVip&&a.ev.rx==='🌟'){a.mood='happy';a.hasCup=true;}}
+    later(()=>leave(a),st);bump();};
+  const leave=a=>{a.phase='leave';a.shake=false;queueRef.current=queueRef.current.filter(i=>i!==a.id);const g=geo();
+    const happy=a.hasCup;a.flip=!happy;if(!a.mood)a.mood=stMood(a.ev.rx);
+    moveTo(a,happy?g.outL:g.outR);
+    later(()=>{a.bubble=false;bump();},Math.min(650,a.dur*0.45));
+    later(()=>{actorsRef.current.delete(a.id);bump();},a.dur+60);step();};
+  // New customers: track by id; during "skip to end" bursts only the newest couple are animated
+  useEffect(()=>{if(seenRef.current===null){seenRef.current=new Set(events.map(e=>e.id));return;}
+    const fresh=events.filter(e=>!seenRef.current.has(e.id));fresh.forEach(e=>seenRef.current.add(e.id));
+    if(!fresh.length)return;
+    const take=fresh.length>3?fresh.slice(-2):fresh;const g=geo();
+    take.forEach((ev,i)=>{if(queueRef.current.length>=5)return;
+      actorsRef.current.set(ev.id,{id:ev.id,ev,x:g.inX+i*36,phase:'queue',flip:false,dur:0,moving:false});queueRef.current.push(ev.id);});
+    bump();later(step,40); // after the first paint at the entry point, so the walk-in transition runs
+  },[events]);
+
+  const wid=weather?.id||'sunny',rainy=wid==='lRain'||wid==='hRain',sunny=['sunny','nice','hot','heat'].includes(wid);
+  const cloudy=wid==='cloudy'||rainy||wid==='cold';
+  const level=cupsTotal>0?Math.max(0,Math.min(1,cupsLeft/cupsTotal)):0;
+  const drops=useMemo(()=>Array.from({length:wid==="hRain"?46:30}).map((_,i)=>({l:(i*37)%100+((i*13)%7),d:((i*17)%10)/10,t:0.5+((i*7)%5)/10})),[wid]);
+  const actors=[...actorsRef.current.values()];
+  const g=geo();
+  return <div ref={wrapRef} className={"st-scene st-w-"+wid+(done?' st-done':'')} dir="ltr">
+    {/* sky */}
+    {sunny&&<div className="st-sun"><div className="st-rays"/><div className="st-sun-core"/></div>}
+    {!sunny&&<div className="st-sun st-sun-dim"><div className="st-sun-core"/></div>}
+    <div className="st-cloud" style={{top:18,animationDuration:'48s',animationDelay:'-12s'}}><StCloud w={64} o={0.95}/></div>
+    <div className="st-cloud" style={{top:44,animationDuration:'70s',animationDelay:'-40s'}}><StCloud w={46} o={0.8}/></div>
+    {cloudy&&<><div className="st-cloud" style={{top:8,animationDuration:'38s',animationDelay:'-25s'}}><StCloud w={90} o={0.95}/></div>
+      <div className="st-cloud" style={{top:30,animationDuration:'56s',animationDelay:'-5s'}}><StCloud w={78} o={0.9}/></div></>}
+    {/* far skyline */}
+    <svg className="st-skyline" viewBox="0 0 400 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <g opacity="0.55">
+        <rect x="0" y="40" width="46" height="70" fill="#C7B6F2"/><rect x="50" y="22" width="38" height="88" fill="#B3C6F5"/><rect x="92" y="52" width="52" height="58" fill="#F5C2D6"/>
+        <rect x="150" y="30" width="34" height="80" fill="#BFD8F2"/><rect x="250" y="36" width="44" height="74" fill="#F2D2B6"/><rect x="300" y="18" width="36" height="92" fill="#C7B6F2"/><rect x="342" y="48" width="58" height="62" fill="#B3E0D2"/>
+        {[0,1,2,3,4,5,6,7,8,9,10,11].map(i=><rect key={i} x={[8,24,58,72,102,120,158,170,260,276,308,350][i]} y={[52,70,34,56,64,82,44,66,50,72,32,62][i]} width="7" height="9" rx="1" fill="#fff" opacity="0.8"/>)}
+      </g>
+    </svg>
+    <svg className="st-trees" viewBox="0 0 400 80" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      {[[18,46],[70,40],[190,44],[232,50],[318,42],[376,48]].map(([x,r],i)=><g key={i}><rect x={x-3} y="52" width="6" height="28" fill="#8C6A4F"/><circle cx={x} cy={80-r} r={r*0.42} fill={i%2?'#6BCB77':'#4FB06A'}/><circle cx={x-8} cy={86-r} r={r*0.3} fill={i%2?'#5DBE6B':'#45A35F'}/></g>)}
+    </svg>
+    {/* competitors, back layer */}
+    {comps.slice(0,3).map((c,i)=><div key={i} className="st-comp-wrap" style={i===0?{left:'1%'}:i===1?{right:'1%'}:{left:'64%'}}><StComp c={c}/></div>)}
+    {/* ground */}
+    <div className="st-sidewalk"/>
+    <div className="st-road"><div className="st-lane"/><div className="st-car"><svg viewBox="0 0 60 26" width="60" height="26" aria-hidden="true"><rect x="2" y="10" width="56" height="11" rx="5" fill="#FF5C7A"/><path d="M14 10 Q18 2 28 2 L38 2 Q45 2 48 10 Z" fill="#FF5C7A"/><path d="M18 9.5 Q21 4 28 4 L30 4 L30 9.5 Z M32 4 L37 4 Q42 4 45 9.5 L32 9.5 Z" fill="#CDEBFF"/><circle cx="15" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="45" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="15" cy="21" r="1.8" fill="#C9C6E0"/><circle cx="45" cy="21" r="1.8" fill="#C9C6E0"/><rect x="54" y="12" width="4" height="3" rx="1" fill="#FFE14D"/></svg></div></div>
+    {rainy&&<div className="st-rain">{drops.map((d,i)=><span key={i} style={{left:d.l+'%',animationDelay:d.d+'s',animationDuration:d.t+'s'}}/>)}</div>}
+    {/* price board */}
+    <div className="st-board" style={{left:g.serve-74-70-46}}>
+      <svg viewBox="0 0 40 50" width="40" height="50" aria-hidden="true"><path d="M6 50 L12 6 M34 50 L28 6" stroke="#8C6A4F" strokeWidth="3"/><rect x="3" y="4" width="34" height="30" rx="3" fill="#2F3B35" stroke="#8C6A4F" strokeWidth="2.5"/>
+        <text x="20" y="22" textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff" fontFamily="Rubik,sans-serif">₪{price}</text><text x="20" y="30.5" textAnchor="middle" fontSize="6" fill="#FFE14D" fontFamily="Rubik,sans-serif">לכוס</text></svg>
+    </div>
+    {/* the stand */}
+    <div className="st-stand" style={{left:g.serve-74-70}}>
+      <svg className="st-stand-back" viewBox="0 0 140 150" width="140" height="150" aria-hidden="true">
+        <rect x="14" y="42" width="112" height="56" fill="#FFF3D6"/>
+        <rect x="8" y="34" width="7" height="72" fill="#B07A44"/><rect x="125" y="34" width="7" height="72" fill="#B07A44"/>
+        <path d="M2 18 L138 18 L132 26 L8 26 Z" fill="#E0A400"/>
+        {Array.from({length:10}).map((_,i)=><rect key={i} x={i*14} y="25" width="14" height="13" fill={i%2?'#fff':'#FFC800'}/>)}
+        {Array.from({length:10}).map((_,i)=><circle key={i} cx={i*14+7} cy="38" r="7" fill={i%2?'#fff':'#FFC800'}/>)}
+        <rect x="26" y="0" width="88" height="19" rx="6" fill="#FFF8DC" stroke="#B07A44" strokeWidth="2"/>
+        <text x="70" y="14" textAnchor="middle" fontSize="11.5" fontWeight="900" fill="#8A5A00" fontFamily="Rubik,sans-serif">🍋 לימונדה</text>
+      </svg>
+      <div className="st-seller-wrap"><StSeller key={serveKey} serving={serveKey>0&&!done} closed={done}/></div>
+      <svg className="st-stand-front" viewBox="0 0 140 150" width="140" height="150" aria-hidden="true">
+        {/* pitcher: lemonade level drops as cups are sold */}
+        <g transform="translate(14 58)">
+          <path d="M2 4 L26 4 L24 34 L4 34 Z" fill="rgba(255,255,255,0.55)" stroke="#9FB7C9" strokeWidth="1.5"/>
+          <clipPath id="stPitch"><path d="M2 4 L26 4 L24 34 L4 34 Z"/></clipPath>
+          <rect className="st-juice" x="0" y={34-29*level} width="28" height={29*level+1} fill="#FFDD3C" clipPath="url(#stPitch)"/>
+          <circle cx="10" cy={Math.max(10,30-29*level+5)} r="3.5" fill="#FFF3A0" stroke="#E0A400" strokeWidth="0.8" clipPath="url(#stPitch)"/>
+          <path d="M26 9 Q33 10 32 18 Q31 24 25 25" fill="none" stroke="#9FB7C9" strokeWidth="2.5"/>
+          <rect x="1" y="2" width="26" height="3" rx="1.5" fill="#9FB7C9"/>
+        </g>
+        {/* cup stack */}
+        <g transform="translate(92 70)">{[0,1,2].map(i=><path key={i} d={`M0 ${i*-5+18} L12 ${i*-5+18} L11 ${i*-5+22} L1 ${i*-5+22} Z`} fill="#fff" stroke="#C9C6E0" strokeWidth="0.7"/>)}<path d="M0 6 L12 6 L10.6 22 L1.4 22 Z" fill="#fff" stroke="#C9C6E0" strokeWidth="0.7" opacity="0"/></g>
+        {/* tip jar */}
+        <g transform="translate(112 72)"><rect x="0" y="0" width="16" height="20" rx="4" fill="rgba(255,255,255,0.6)" stroke="#9FB7C9" strokeWidth="1.3"/><circle cx="6" cy="15" r="3" fill="#FFC800" stroke="#D18D00" strokeWidth="0.7"/><circle cx="10.5" cy="12" r="3" fill="#FFC800" stroke="#D18D00" strokeWidth="0.7"/><rect x="2" y="-2" width="12" height="3" rx="1" fill="#9FB7C9"/></g>
+        {/* counter */}
+        <rect x="0" y="92" width="140" height="8" rx="2" fill="#8C5A2B"/>
+        <rect x="5" y="99" width="130" height="51" fill="#C68A4E"/>
+        {[22,40,58,76,94,112].map(x=><line key={x} x1={x} y1="100" x2={x} y2="150" stroke="#A86F38" strokeWidth="1.6"/>)}
+        <circle cx="70" cy="117" r="11" fill="#FFE14D" stroke="#fff" strokeWidth="2.5"/><path d="M63 117 L77 117 M70 110 L70 124 M65 112 L75 122 M75 112 L65 122" stroke="#F2A900" strokeWidth="1.2"/>
+        <rect x="38" y="133" width="64" height="12" rx="6" fill="rgba(0,0,0,0.25)"/>
+        <text x="70" y="142" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#fff" fontFamily="Rubik,sans-serif">{cupsLeft>0?`נשארו ${cupsLeft} כוסות`:'נגמרו הכוסות'}</text>
+        {done&&<g className="st-closed"><line x1="52" y1="38" x2="58" y2="56" stroke="#5B4636" strokeWidth="1.5"/><line x1="88" y1="38" x2="82" y2="56" stroke="#5B4636" strokeWidth="1.5"/><rect x="44" y="54" width="52" height="22" rx="4" fill="#E63946" stroke="#fff" strokeWidth="2"/><text x="70" y="70" textAnchor="middle" fontSize="12" fontWeight="900" fill="#fff" fontFamily="Rubik,sans-serif">סגור</text></g>}
+      </svg>
+      <div className="st-coins">{coins.map(c=><span key={c.id} className="st-coin">🪙 +₪{c.p}</span>)}</div>
+    </div>
+    {/* customers */}
+    {actors.map(a=>{const kid=a.ev.type==='child'&&!a.ev.isVip;const z=a.phase==='leave'&&a.hasCup?30:20-Math.round(a.x/40);
+      const txt=a.ev.rx==='💨'?ST_TXT['💨']:(a.ev.sp&&a.ev.sp.length<=13?a.ev.sp:ST_TXT[a.ev.rx]||'');
+      return <div key={a.id} data-id={a.id} className={"st-actor"+(a.moving?' st-walking':'')} style={{transform:`translateX(${a.x}px)`,transitionDuration:a.dur+'ms',zIndex:z}}>
+        {a.bubble&&<div className={"st-bubble st-b-"+stMood(a.ev.rx)+(a.ev.isVip?' st-b-vip':'')} style={{bottom:kid?86:104}} dir="rtl"><span className="st-b-em">{ST_EM[a.ev.rx]||a.ev.rx}</span><span className="st-b-tx">{txt}</span></div>}
+        <div className={"st-flip"+(a.flip?' st-flipped':'')}>
+          <div className={"st-body"+(kid?' st-kid':'')+(a.shake?' st-shake':'')+(a.ev.isVip?' st-vip':'')}>
+            <StPerson ev={a.ev} mood={a.mood||'flat'} hasCup={!!a.hasCup} rainy={rainy}/>
+          </div>
+        </div>
+      </div>;})}
+    {done&&<div className="st-dusk"/>}
+  </div>;
 };
 
 function LemonadeGame(){
@@ -2528,34 +2844,16 @@ function LemonadeGame(){
    {ph==="sim"&&(()=>{const cur=sC[sC.length-1];const left=Math.max(0,cu-sS);
     const wid=dW?.w.id||'sunny',rainy=wid.includes('Rain'),cloudy=wid==='cloudy'||rainy;
     const curCls=cur?(cur.isVip?'vip':cur.buys?'buy':cur.rx==='💨'?'miss':'no'):'';
-    return <div key="sim" className="screen phase-enter">
+    return <div key="sim" className="screen fit phase-enter">
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
-    <div className="page-head row-between" style={{alignItems:'flex-end'}}>
-      <div>
-        <div className="eyebrow">🎬 יום {dy} · {dW?.w.n.split(' ')[0]} {dW?.temp}°</div>
-        <h1>{sDn?'היום נגמר!':'הדוכן פתוח'}</h1>
-      </div>
+    <div className="stage">
+    <div className="row-between" style={{padding:'0 4px 8px'}}>
+      <h2>{sDn?'🌇 היום נגמר!':'🍋 הדוכן פתוח'}</h2>
       {!sDn && <button className="btn btn-ghost btn-sm" onClick={()=>{simFastRef.current=true;}}>⏩ דלג לסוף</button>}
     </div>
-    {/* Street scene: each customer walks up to the stand and reacts */}
-    <div className={"sim-scene w-"+wid}>
-      <div className="ss-sun"/>
-      {cloudy && <><span className="ss-cloud" style={{top:24, right:'18%'}}>☁️</span><span className="ss-cloud slow" style={{top:46, left:'14%'}}>☁️</span></>}
-      {rainy && Array.from({length:12}).map((_,i)=><span key={i} className="ss-rain" style={{left:(4+i*8)+'%', animationDelay:(i*0.13)+'s'}}/>)}
-      {compD.length<3&&<span className="ss-tree" style={{right:'1%'}}>🌳</span>}{compD.length===0&&<span className="ss-tree" style={{left:'6%'}}>🌴</span>}
-      {compD.slice(0,3).map((c,i)=><div key={i} className="ss-comp" style={i===0?{left:'3%'}:i===1?{left:'19%'}:{right:'2%'}}>
-        <div className="ss-comp-roof"/><div className="ss-comp-body num">₪{c.pr}</div></div>)}
-      <div className="ss-stand">
-        <div className="ss-roof">🍋 LEMONADE</div>
-        <div className="ss-body"><span className="num">₪{pr}</span><span className="ss-cups">🥤×{left}</span></div>
-      </div>
-      {cur && <div key={cur.id} className={"ss-walker "+curCls} style={{animationDuration:simSpd+'ms'}}>
-        <span className="ss-bubble" style={{animationDelay:Math.round(simSpd*0.5)+'ms'}}>{cur.rx}</span>
-        <span className="ss-person">{cur.em}</span>
-      </div>}
-      <div className="ss-ground"/>
-      <div className="ss-progress"><div style={{width:sP+'%'}}/></div>
-    </div>
+    {/* Illustrated street: customers queue at the stand, react, and leave */}
+    <StreetScene events={sC} spd={simSpd} price={pr} cupsLeft={left} cupsTotal={cu} weather={{id:dW?.w.id||'sunny', temp:dW?.temp||25}} comps={compD.map(c=>({n:c.n, pr:c.pr}))} done={sDn}/>
+    <div className="sim-progress"><div style={{width:(sDn?100:sP)+'%'}}/></div>
     {/* Live counters */}
     <div className="sim-stats">
       <div className="sim-stat good"><span className="ss-k">🥤 נמכרו</span><span className="ss-v num"><CountUp value={sS} duration={300}/><small>/{cu}</small></span></div>
@@ -2573,10 +2871,7 @@ function LemonadeGame(){
         <span className="qc-rx">{cur.rx}</span>
       </> : <div className="muted small" style={{padding:'6px 0'}}>ממתינים ללקוח הראשון…</div>}
     </div>
-    {sC.length>1 && <div className="rx-strip" title="התגובות האחרונות">{sC.slice(-12).map(c=><span key={c.id} className={c.buys?'buy':c.rx==='💨'?'miss':'no'}>{c.rx}</span>)}</div>}
-    {hasComps && compD.length>0 && <div className="comp-strip">
-      {compD.map((c,i)=><span key={i} className="pill">{c.n} · ₪{c.pr}{cIL>=3?` · ${Math.round(((c.sold||0)*sP)/100)} נמכרו`:''}</span>)}
-    </div>}
+    </div>
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={2}
       cta={sDn?'לדוח היום':'הלקוחות מגיעים…'}
