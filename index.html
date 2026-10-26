@@ -1710,6 +1710,7 @@ function LemonadeGame(){
  const [dayLog,setDayLog]=useState([]);
  const [npcActions,setNpcActions]=useState([]);
  const [compSnap,setCompSnap]=useState([]);
+ const [sumTab,setSumTab]=useState('money');
  // Step within the evening (0 forecast, 1 shopping) and sub-tabs inside steps
  const [eveStep,setEveStep]=useState(0),[eveIntelTab,setEveIntelTab]=useState(0),[mktTab,setMktTab]=useState(1),[showLoan,setShowLoan]=useState(false);
  const [intelDone,setIntelDone]=useState(false); // tonight's intel already bought (shown in place of the choices)
@@ -2012,7 +2013,7 @@ function LemonadeGame(){
   if(!bestCup||cupScore>bestCup.score)setBestCup({day:dy,recipe:{l:rL,h:rH,i:rI},score:cupScore});
   if(goalMsg)rEx.push(goalMsg);
   if(rentC>0)rEx.push("🏠 שכירות מיקום: -₪"+rentC);
-  setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak,priceInfo,price:pr,closed});
+  setSumTab('money');setSmD({dy,sold,prep:cu,rev,exp:dExp,profit,rB:rp,rA:nr,ex,rR:rR.slice(0,6),rEx,expBreak,priceInfo,price:pr,closed});
   setPh("summary");};
  const goEve=()=>{if(dy>=DAYS){const fp=res.reduce((s,r)=>s+r.profit,0);const tS=res.reduce((s,r)=>s+r.sold,0);saveHi(fp,tS,rp);deleteSavedGame();setPh("gameover");return;}
   setTP2(gd[dy+1].p);setBL(0);setBH(0);setBI(0);setBIn(0);setBCI(0);setID(null);setCIL(0);setIntelDone(false);setEveStep(0);setEveIntelTab(0);setPh("evening");
@@ -2625,17 +2626,21 @@ function LemonadeGame(){
     ].sort((a,b) => b.profit - a.profit);
     const myRank = ranked.findIndex(r=>r.you)+1;
     const maxProfit = Math.max(...ranked.map(r=>Math.abs(r.profit)),1);
-    return <div key="summary" className="screen phase-enter" style={{paddingBottom:120}}>
+    const SUM_TABS=[{k:'money',em:'💰',lb:'כסף'},{k:'tips',em:'💡',lb:'תובנות'},{k:'rep',em:'⭐',lb:'מוניטין'},...(hasComps&&compD.length>0?[{k:'comp',em:'🏆',lb:'תחרות'}]:[])];
+    const st=SUM_TABS.some(t=>t.k===sumTab)?sumTab:'money';
+    return <div key="summary" className="screen fit phase-enter">
     <SBar cash={ca} lemons={lm} honey={hn} ice={ic} rep={rp} day={dy} loan={ln} onDash={()=>setShowDash(true)} onSave={authUser&&ph!=="sim"&&ph!=="summary"?saveGame:null} saveMsg={gameSaveMsg} userName={authName||null} onLogout={handleLogout} phase={ph} musicOn={musicOn} onToggleMusic={()=>setMusicOn(p=>!p)}/>
-    <div className="row-between mb-12">
+    <div className="stage">
+    <StepNav cur={st} onGo={setSumTab} steps={SUM_TABS}/>
+    <div className="row-between mb-8" style={{padding:'0 4px'}}>
       <div>
-        <div className="eyebrow">סיכום יום</div>
-        <h1 style={{fontSize:26}}>יום {smD.dy} • דוח</h1>
+        <h2>📊 דוח יום {smD.dy}</h2>
       </div>
       {ranked.length>1 && <span className="pill" style={{background: myRank===1?'var(--lemon-100)':'var(--ink-100)', color: myRank===1?'var(--lemon-700)':'var(--ink-700)', fontWeight:800}}>
         <I.Trophy size={12}/> מקום {myRank}/{ranked.length}
       </span>}
     </div>
+    {st==='money' && <div key="s-money" className="step-pane">
     {/* HERO P&L */}
     <div className="card mb-12 p-16" style={{
       background: smD.profit>=0?'linear-gradient(135deg,#F5FBF5 0%,#E5F3E8 100%)':'linear-gradient(135deg,#FDF6F4 0%,#FBE2D8 100%)',
@@ -2696,8 +2701,13 @@ function LemonadeGame(){
       {smD.expBreak.goal>0 && <div className="row-between" style={{padding:'2px 0', color:'var(--good)'}}><span>🎯 בונוס מטרה (הכנסה)</span><span className="num bold">+₪{smD.expBreak.goal}</span></div>}
       <div className="muted tiny" style={{marginTop:6}}>הרווח = כמה הקופה שלך גדלה היום (בלי להחשיב הלוואות שלקחת או החזרת)</div>
     </div>}
+    <div className="card p-12 text-center">
+      <span className="muted small">סה״כ רווח במשחק עד עכשיו: </span>
+      <span className="num bold" style={{fontSize:18, color: totP>=0?'var(--good)':'var(--bad)'}}>{fmtM(totP)}</span>
+    </div>
+    </div>}
     {/* Insights */}
-    <div className="section">
+    {st==='tips' && <div key="s-tips" className="section step-pane">
       <div className="section-h"><span className="section-title">תובנות היום</span></div>
       <div className="col gap-6 stagger">
         {insights.map((ins,i) => (
@@ -2707,9 +2717,9 @@ function LemonadeGame(){
           </div>
         ))}
       </div>
-    </div>
+    </div>}
     {/* Reputation */}
-    <div className="section">
+    {st==='rep' && <div key="s-rep" className="section step-pane">
       <div className="section-h">
         <span className="section-title">מוניטין</span>
         <span className="section-aside num bold" style={{color: repDelta>=0?'var(--good)':'var(--bad)'}}>
@@ -2735,9 +2745,9 @@ function LemonadeGame(){
           </div>
         </details>}
       </div>
-    </div>
+    </div>}
     {/* Leaderboard */}
-    {hasComps && compD.length > 0 && <div className="section">
+    {st==='comp' && hasComps && compD.length > 0 && <div key="s-comp" className="section step-pane">
       <div className="section-h">
         <span className="section-title">לוח התחרות</span>
         <span className="section-aside">דירוג לפי רווח</span>
@@ -2758,10 +2768,6 @@ function LemonadeGame(){
       </div>
       {cIL===0 && <div className="muted tiny mt-8 text-center">💡 קנה ניתוח מתחרים בשלב המודיעין כדי לראות פרטים נוספים</div>}
     </div>}
-    {/* Total profit so far */}
-    <div className="card p-12 mb-12 text-center">
-      <span className="muted small">סה״כ במשחק: </span>
-      <span className="num bold" style={{fontSize:18, color: totP>=0?'var(--good)':'var(--bad)'}}>₪{totP.toFixed(0)}</span>
     </div>
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={3}
