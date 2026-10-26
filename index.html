@@ -581,10 +581,12 @@
     .screen.fit .fp-icon { font-size: 38px; } .screen.fit .fp-title { font-size: 19px; }
     .screen.fit .offer { padding: 8px 10px; }
     /* Compact shopping rows */
-    .quick-fill { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .quick-fill { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; margin-bottom: 8px; }
+    .quick-fill .btn-xs { padding: 6px 7px; font-size: 11px; }
     .qf-lbl { font-size: 12px; font-weight: 800; color: var(--ink-700); }
     .ing-list { display: flex; flex-direction: column; gap: 8px; }
-    .ing-row { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; gap: 8px; align-items: center; background: #fff; border-radius: 16px; padding: 9px 10px; box-shadow: 0 3px 0 var(--ink-200); }
+    .ing-row > .stepper { grid-column: 1 / -1; justify-self: center; }
+    .ing-row { display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 4px 8px; align-items: center; background: #fff; border-radius: 16px; padding: 7px 10px; box-shadow: 0 3px 0 var(--ink-200); }
     .ing-row.on { box-shadow: 0 3px 0 #A7EBC0; background: linear-gradient(90deg, #F0FDF5, #fff); }
     .ing-icon.sm { width: 38px; height: 38px; border-radius: 12px; font-size: 20px; box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
     .ir-name { font-weight: 900; font-size: 14px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
@@ -2832,11 +2834,11 @@ function LemonadeGame(){
     <BottomBar
       steps={['ערב','בוקר','סימולציה','דוח']} activeStep={1}
       info={<><span>👥 ~<b className="num">{fc.myD}</b> מבקרים</span><span>🛒 ~<b className="num">{expBuy}</b> קונים</span><span>💰 ~<b className="num">₪{Math.round(expSold*pr)}</b></span>{expBuy>ready&&ready>0&&<span style={{color:'var(--warn)'}}>⚠️ {ready===1?'מוכן לכוס אחת':`מוכן ל-${ready} כוסות`}</span>}{dayCosts>0&&<span className="muted">הוצאות ₪{dayCosts}</span>}</>}
-      secondary={next&&!inspPending?`הבא: ${next.lb} ›`:null} onSecondary={()=>next&&go(next.k)}
-      cta={inspPending?'קודם: פיקוח (שלב "היום")':ready>0?`פתח דוכן · ${ready} כוסות`:'סגור את הדוכן היום'}
-      ctaVariant={ready>0?"primary":"ghost"}
-      ctaDisabled={inspPending}
-      onCta={()=>{const c=ready;
+      secondary={!next?'‹ חזרה':null} onSecondary={()=>go(STEPS[si-1].k)}
+      cta={next?`הבא: ${next.lb}`:inspPending?'קודם: פיקוח (שלב "היום")':ready>0?`🍋 פתח את הדוכן · ${ready} כוסות`:'סגור את הדוכן היום'}
+      ctaVariant={next||ready>0?"primary":"ghost"}
+      ctaDisabled={!next&&inspPending}
+      onCta={()=>{if(next){go(next.k);return;}const c=ready;
         if(c===0&&!window.confirm("אין כוסות מוכנות. לסגור את הדוכן היום בלי מכירות?"))return;
         setCu(c);runSim(c);}}/>
    </div>;})()}
@@ -3128,11 +3130,11 @@ function LemonadeGame(){
       </div>}
     </div>}
     {step===1 && <div key="e1" className="step-pane">
-      <div className="pane-head"><h2>🛒 קניות ליום {dy+1}</h2><p>הכסף יורד מהקופה מיד — ראה למעלה איך הקופה והמלאי ישתנו.</p></div>
+      <div className="pane-head"><h2>🛒 קניות ליום {dy+1}</h2><p>למעלה רואים איך הקופה והמלאי ישתנו.</p></div>
       <div className="quick-fill">
-        <span className="qf-lbl">מילוי מהיר ל־</span>
+        <span className="qf-lbl">⚡ מילוי מהיר:</span>
         {[10,20,30].map(n=>{const f=fillFor(n),ok=f.cost<=ca;
-          return <button key={n} className="btn btn-soft btn-xs" disabled={!ok} onClick={()=>{setBL(f.l);setBH(f.h);setBI(f.i);}}>{n} כוסות · ₪{Math.ceil(f.cost)}</button>;})}
+          return <button key={n} className="btn btn-soft btn-xs" disabled={!ok} onClick={()=>{setBL(f.l);setBH(f.h);setBI(f.i);}}>{n} כוסות ₪{Math.ceil(f.cost)}</button>;})}
       </div>
       <div className="ing-list">
         {[
@@ -3148,7 +3150,7 @@ function LemonadeGame(){
               <div className="ir-name">{p.lb} <span className="ir-price num">₪{p.p.toFixed(2)}</span> <span className={"trend-delta "+dir}>{dir==='up'?'▲':dir==='down'?'▼':'•'}{Math.abs(pct)}%</span></div>
               <div className="ir-sub">{p.life}{p.fresh&&lemonExpiringSoon>0?` · ${lemonExpiringSoon} יתקלקלו מחר`:''}</div>
             </div>
-            <Stepper value={p.v} onChange={(n)=>p.s(Math.min(av, Math.max(0, n)))} min={0} max={av} step={p.lb==='קרח'?5:1} compact/>
+            <Stepper value={p.v} onChange={(n)=>p.s(Math.min(av, Math.max(0, n)))} min={0} max={av} fast/>
           </div>;
         })}
       </div>
