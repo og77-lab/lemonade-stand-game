@@ -360,6 +360,64 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .chip.back{background:rgba(28,31,56,.92)}
 .dlg p{white-space:pre-line}
 
+/* ── Place banners: each section has its own atmosphere ── */
+.banner{position:relative;overflow:hidden;border-radius:16px;padding:14px 14px;min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.12)}
+.bn-deco{position:absolute;inset:0;pointer-events:none}
+.bn-tx{position:relative;display:flex;align-items:center;gap:10px}
+.bn-ic{font-size:32px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.bn-tx b{display:block;font-family:var(--f-display);font-size:20px;font-weight:600}
+.bn-tx span{font-size:12px;opacity:.85}
+.bn-back{position:relative;background:rgba(0,0,0,.35);border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.bn-market{background:linear-gradient(180deg,#3B1C4A,#5A2440)}
+.bn-market .bn-deco{background:radial-gradient(circle,#FFD86B 0 3px,transparent 4px) 0 6px/30px 14px repeat-x,linear-gradient(170deg,transparent 40%,rgba(255,170,60,.18))}
+.bn-market .bn-deco::after{content:"";position:absolute;inset:0 0 auto;height:14px;background:radial-gradient(circle,rgba(255,216,107,.55) 0 6px,transparent 9px) 0 6px/30px 14px repeat-x;animation:bulbs 1.6s ease-in-out infinite alternate}
+@keyframes bulbs{from{opacity:.3}to{opacity:1}}
+.bn-store{background:repeating-linear-gradient(0deg,#5A3A22 0 18px,#4A2F1B 18px 20px)}
+.bn-kitchen{background:linear-gradient(135deg,#1F5F5B,#2A7A6F)}
+.bn-kitchen .bn-deco{background:repeating-conic-gradient(rgba(255,255,255,.07) 0 25%,transparent 0 50%) 0 0/22px 22px}
+.bn-ads{background:linear-gradient(135deg,#B8326B,#F07A2A)}
+.bn-ads .bn-deco{background:repeating-linear-gradient(-45deg,rgba(255,255,255,.08) 0 10px,transparent 10px 20px)}
+.bn-spy{background:#0E2A1F}
+.bn-spy .bn-deco{background:radial-gradient(circle at 80% 30%,rgba(190,255,200,.25),transparent 45%)}
+.bn-biz{background:linear-gradient(180deg,#8A5A1E,#5C3A12)}
+.bn-biz .bn-deco{background:repeating-linear-gradient(90deg,#FFD23F 0 22px,#FFF6D6 22px 44px) 0 0/100% 10px no-repeat;opacity:.9}
+
+/* ── Night market stalls ── */
+.stalls{display:flex;flex-direction:column;gap:10px}
+.stall{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#6B4426,#4E3019);box-shadow:0 6px 18px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08)}
+.stall.on{box-shadow:0 0 0 2px var(--good),0 6px 18px rgba(0,0,0,.35)}
+.awning{height:16px;background:repeating-linear-gradient(90deg,var(--aw1) 0 22px,var(--aw2) 22px 44px);-webkit-mask:radial-gradient(circle at 11px 100%,transparent 6px,#000 7px) 0 0/22px 100%;mask:radial-gradient(circle at 11px 100%,transparent 6px,#000 7px) 0 0/22px 100%}
+.st-lemon{--aw1:#FFD23F;--aw2:#FFF6D6}.st-sugar{--aw1:#FF8FB1;--aw2:#FFE4EE}.st-ice{--aw1:#5CC8F0;--aw2:#E3F7FF}
+.stall-body{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px 4px}
+.crate{font-size:18px;letter-spacing:-6px;background:#3A2312;border-radius:8px;padding:6px 10px 6px 14px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.3)}
+.stall-info b{display:block;font-size:15px}.stall-info span{font-size:12px;color:#E8D6C3}
+.tag-price{background:#20261F;border:2px solid #C9B48A;color:#F3F1E8;border-radius:8px;padding:4px 8px;font-size:16px;font-weight:600;text-align:center;transform:rotate(-3deg);display:flex;flex-direction:column;line-height:1.1}
+.tag-price small{font-size:10.5px;font-weight:500}.tag-price small.up{color:var(--bad)}.tag-price small.dn{color:var(--good)}
+.stall-buy{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px 10px}
+.stall-sum{font-size:14px;color:var(--lemon)}
+
+/* ── Inventory ── */
+.inv-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.inv-c{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel-2);border-radius:12px;padding:8px 4px;text-align:center}
+.inv-c span{font-size:22px}.inv-c b{font-size:22px}.inv-c small{font-size:11.5px;color:var(--dim)}
+.inv-c em{font-style:normal;font-size:10.5px;color:var(--warn);margin-top:2px}
+.rtable{display:flex;flex-direction:column;gap:5px}
+.rt-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;text-align:right;background:var(--panel-2);border-radius:11px;padding:8px 10px;border:1px solid transparent}
+.rt-row.mine{border-color:var(--lemon);background:#2E2A12}
+.rt-row .rt-n{display:flex;flex-direction:column;min-width:0}.rt-row .rt-n b{font-size:13.5px}.rt-row .rt-n small{font-size:11.5px;color:var(--dim)}
+.rt-cups{font-size:12px;color:var(--dim);white-space:nowrap}.rt-cups b{font-size:18px;color:var(--ink)}
+.rt-lim{font-size:11px;color:var(--dim);white-space:nowrap}
+
+/* ── Recipe presets ── */
+.presets{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none}
+.presets::-webkit-scrollbar{display:none}
+.preset{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:6px 10px;text-align:right}
+.preset b{font-size:12.5px}.preset small{font-size:10.5px;color:var(--dim)}
+.preset.on{border-color:var(--lemon);background:#2E2A12}
+/* Sugar crystals sparkle in the drink */
+.glass-spark{animation:spark 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spark{0%,100%{opacity:.25}50%{opacity:1}}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -719,8 +777,17 @@ const UPG_OPS=[{id:"juicer",em:"🔧",n:"מסחטה",c:25,d:"חוסכת לימו
 const MKTG=[{id:"flyer",em:"📄",n:"פליירים",c:5,dm:1.10,d:"+10% מבקרים היום"},{id:"banner",em:"🎈",n:"בלונים ושלטים",c:10,dm:1.18,d:"+18% מבקרים היום"},
  {id:"social",em:"📱",n:"פוסט ברשתות",c:7,dm:1.08,d:"+8% מבקרים, סיכוי ל-+2 מוניטין"},{id:"taste",em:"🎁",n:"טעימות חינם",c:3,dm:1,d:"+3 מוניטין אם הטעם טוב"}];
 const BLACK=[{id:"ads",em:"📢",n:"קמפיין נגד המתחרה",c:8,d:"גונב 18% מהלקוחות שלו",risk:0},{id:"rumor",em:"🗣️",n:"הפצת שמועות",c:4,d:"−5 מוניטין למתחרה",risk:30},{id:"signs",em:"🚫",n:"הסרת השלטים שלו",c:6,d:"פחות חשיפה למתחרה",risk:40}];
-const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.7,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.85,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
+const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.5,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.75,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
 const RESEARCH_C=4,SPY_C=3;
+const PRESETS=[{id:'classic',n:'קלאסי',r:{l:3,h:1,i:1},fit:'כולם'},{id:'kids',n:'מתוק לילדים',r:{l:2,h:2,i:1},fit:'👦 ילדים'},{id:'sport',n:'רענן לספורטאים',r:{l:3,h:0,i:3},fit:'🏃 ספורטאים'},
+ {id:'chef',n:'עשיר לשפים',r:{l:4,h:1,i:1},fit:'🧑‍🍳 שפים'},{id:'hot',n:'קפוא ליום חם',r:{l:3,h:1,i:2},fit:'☀️ ימים חמים'}];
+const sameR=(a,b)=>a.l===b.l&&a.h===b.h&&a.i===b.i;
+// Atmosphere banner at the top of each place
+const Banner=({kind,ic,title,sub,onBack})=><div className={"banner bn-"+kind}>
+ <div className="bn-deco" aria-hidden="true"/>
+ <div className="bn-tx"><span className="bn-ic">{ic}</span><div><b>{title}</b><span>{sub}</span></div></div>
+ {onBack&&<button className="bn-back" onClick={onBack}>‹ מרכז</button>}
+</div>;
 const EVENTS=[{n:"🎪 פסטיבל ברחוב",dm:1.8},{n:"🏃 מרתון בשכונה",dm:1.6},{n:"🚧 עבודות בכביש",dm:0.5},{n:"🎵 הופעה בפארק",dm:1.7},{n:"🌧️ הפסקת חשמל",dm:0.5}];
 const COMP={n:"דוד יוסי",em:"🧓"};
 
@@ -729,9 +796,9 @@ const ICE_POS=[[56,48,-12],[84,46,14],[70,62,4],[94,64,-20],[46,66,22]];
 const PULP=[[48,96],[86,112],[62,130],[78,82],[56,150],[92,140],[70,104],[50,122],[84,158],[66,72],[60,90],[88,96],[74,136],[54,108],[80,124],[64,160],[46,140],[90,76],[72,150],[58,140]];
 const GlassSvg=({l,h,i,temp=25})=>{
  const w=Math.max(0,6-l-h-i);
- // Colour: lemons make it deep yellow, water washes it out, sugar warms it slightly
+ // Colour: lemons make it deep yellow, water washes it out (sugar has its own look: crystals and a sugared rim)
  const strength=l/(l+w+0.0001);
- const hue=50-h*2.5, sat=Math.round(55+strength*40), lig=Math.round(78-strength*22+(w>=3?6:0));
+ const hue=50, sat=Math.round(55+strength*40), lig=Math.round(78-strength*22+(w>=3?6:0));
  const c1=`hsl(${hue} ${sat}% ${lig}%)`, c2=`hsl(${hue-4} ${Math.min(100,sat+5)}% ${lig-14}%)`, c3=`hsl(${hue+2} ${sat}% ${Math.min(92,lig+12)}%)`;
  const cold=i>0&&temp>=24;
  const yTop=50, rxAt=y=>46-12*(y-30)/140;
@@ -758,7 +825,8 @@ const GlassSvg=({l,h,i,temp=25})=>{
    <rect x="20" y="40" width="100" height="140" fill="url(#gl-liq)" className="glass-liq"/>
    <rect x="20" y="40" width="100" height="140" fill="url(#gl-depth)"/>
    {PULP.slice(0,l*4).map(([x,y],k)=><ellipse key={k} cx={x} cy={y} rx="2.4" ry="1.4" fill="#FFF3B0" opacity=".8" transform={`rotate(${k*37} ${x} ${y})`}/>)}
-   {h>=3&&Array.from({length:(h-2)*10}).map((_,k)=><circle key={'s'+k} cx={42+(k*13)%56} cy={162+(k*7)%8} r="1.3" fill="#fff" opacity=".85"/>)}
+   {Array.from({length:h*7}).map((_,k)=><rect key={'c'+k} className="glass-spark" x={44+(k*17)%52} y={70+(k*29)%92} width="3" height="3" fill="#fff" transform={`rotate(45 ${45+(k*17)%52} ${71+(k*29)%92})`} style={{animationDelay:(k%7)*0.35+'s'}}/>)}
+   {h>=3&&<ellipse cx="70" cy="167" rx={10+h*4} ry={3+h} fill="#fff" opacity=".9"/>}
    {[0,1,2,3,4].map(k=><circle key={'b'+k} className="glass-bub" cx={50+k*10} cy="168" r={1.5+(k%2)} fill="#fff" opacity=".6" style={{animationDelay:k*0.7+'s',animationDuration:(2.6+k*0.4)+'s'}}/>)}
   </g>
   {/* surface of the drink */}
@@ -773,6 +841,8 @@ const GlassSvg=({l,h,i,temp=25})=>{
   <path d="M40 48 L46 120" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".35"/>
   <path d="M106 50 L100 150" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" opacity=".18"/>
   <ellipse cx="70" cy="30" rx="46" ry="9" fill="none" stroke="#fff" strokeOpacity=".75" strokeWidth="2"/>
+  {/* sugared rim: more sugar, thicker frosting */}
+  {h>0&&Array.from({length:10+h*12}).map((_,k,arr)=>{const t=k/arr.length*Math.PI*2;return <circle key={'r'+k} cx={70+46*Math.cos(t)} cy={30+9*Math.sin(t)+(k%3)} r={1.1+h*0.35} fill="#fff" opacity={Math.sin(t)>0?0.95:0.5}/>;})}
   <ellipse cx="70" cy="170" rx="34" ry="7" fill="none" stroke="#fff" strokeOpacity=".3"/>
   {/* lemon slice on the rim */}
   <g transform="translate(30 30) rotate(-18)">
@@ -854,11 +924,19 @@ function Game(){
  const [sim,setSim]=useState(null);
  const simFast=useRef(false);
 
- const W=world[day],tP=world[day-1].p; // evening market uses yesterday's (tonight's) prices
+ const W=world[day],tP=world[day-1].p;
+ const DOW=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'],dowOf=d=>DOW[(d-1)%7];
+ const mixOf=(d,l)=>{const w=world[d],m={child:.25,adult:.4,athlete:.2,foodie:.15},why=[];
+  if((d-1)%7>=5){m.child*=2.2;why.push(`${dowOf(d)} — הרבה ילדים בחוץ`);}
+  if(l===2){m.foodie*=2;m.adult*=1.2;why.push('מרכז הרחוב — יותר שפים');}else if(l===0){m.child*=1.5;m.foodie*=0.5;why.push('פינת רחוב — יותר ילדים, פחות שפים');}
+  if(w.ev){if(w.ev.n.includes('מרתון')){m.athlete*=3.5;why.push('מרתון — המון ספורטאים');}if(w.ev.n.includes('פסטיבל')){m.child*=2.2;why.push('פסטיבל — המון משפחות');}if(w.ev.n.includes('הופעה')){m.adult*=1.7;why.push('הופעה — הרבה מבוגרים');}}
+  if(w.t>=30){m.athlete*=1.4;why.push('חם — יותר ספורטאים צמאים');}
+  const s=TYPES.reduce((x,k)=>x+m[k],0);TYPES.forEach(k=>m[k]=m[k]/s);return{m,why};};
+ const mixToday=mixOf(day,loc),MIX=mixToday.m; // evening market uses yesterday's (tonight's) prices
  const lm=lemons.reduce((s,b)=>s+b.q,0);
  const cap=(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
  const actCost=acts.reduce((s,id)=>s+([...MKTG,...BLACK].find(a=>a.id===id)?.c||0),0);
- const committed=phase==='morning'?actCost+(helper?HELPER_C:0)+LOC[loc].rent:0;
+ const committed=(phase==='morning'?actCost+LOC[loc].rent:0)+(helper?HELPER_C:0);
  const shopCost=phase==='evening'?buy.l*tP.l+buy.h*tP.h+buy.i*tP.i:0;
  const free=cash-committed-shopCost;
  const temp=W.t,wInfo=WE[W.w];
@@ -878,13 +956,13 @@ function Game(){
   const cpT=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0)*0.95);
   const my=standAttr(r,pr,rep,T),them=standAttr({l:3,h:1,i:1},cpT,55,T)*(acts.includes('signs')?0.8:1);
   const share=1/(1+0.65*them/my);return Math.max(3,Math.round(dm*share+(acts.includes('ads')?dm*(1-share)*0.18:0)));};
- const perType=(r,pr,T=temp,fm,evm)=>{const v=visitorsFor(r,pr,T,fm,evm);return TYPES.map(k=>{const c=CT[k],s=cSc(r.l,r.h,r.i,T,c),p=buyProb(s.sc,pr,rep,c,T),vis=Math.round(v*c.pct);return{k,c,p,vis,buy:Math.round(vis*p),why:whyOf(c,r,pr,T)};});};
+ const perType=(r,pr,T=temp,fm,evm)=>{const v=visitorsFor(r,pr,T,fm,evm);return TYPES.map(k=>{const c=CT[k],s=cSc(r.l,r.h,r.i,T,c),p=buyProb(s.sc,pr,rep,c,T),vis=Math.round(v*MIX[k]);return{k,c,p,vis,buy:Math.round(vis*p),why:whyOf(c,r,pr,T)};});};
  const whyOf=(c,r,pr,T=temp)=>{const w=CUP-r.l-r.h-r.i,sw=SW[r.h],sour=Math.max(0,SR[r.l]-0.5*sw),ratio=pr/pMt(c,T),fr=fSc(r.i,r.h,T);
   if(ratio>1.2)return['יקר להם','bad'];if(w>=3)return['מימי מדי','bad'];if(sour>c.sTh)return['חמוץ להם','bad'];if(sw>c.swI[1])return['מתוק מדי','warn'];
   if(sw<c.swI[0])return['רוצים מתוק יותר','warn'];if(T>=28&&fr<20)return['רוצים יותר קרח','warn'];if(ratio>1)return['קצת יקר','warn'];if(r.l<=2)return['טעם חלש','warn'];return['אוהבים ✓','good'];};
  const buyersFor=(r,pr,T,fm,evm)=>perType(r,pr,T,fm,evm).reduce((s,x)=>s+x.buy,0);
  const aud=perType(recipe,price),buyers=aud.reduce((s,x)=>s+x.buy,0),visitors=visitorsFor(recipe,price);
- const quality=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*cSc(recipe.l,recipe.h,recipe.i,temp,CT[k]).sc,0));
+ const quality=Math.round(TYPES.reduce((s,k)=>s+MIX[k]*cSc(recipe.l,recipe.h,recipe.i,temp,CT[k]).sc,0));
  const costCup=recipe.l*world[day-1].p.l+recipe.h*world[day-1].p.h+recipe.i*world[day-1].p.i;
 
  // Plain-language effects of the recipe
@@ -915,11 +993,11 @@ function Game(){
   if(spy)inbox.push({id:'sp'+day,ic:'🕵️',t:`${COMP.em} ${COMP.n} מוכר היום ב-₪${compPrice}`,s:'מתכון: 3🍋 1🍬 1🧊',go:null});
  }
  // The assistant manager: concrete, number-based advice
- if(phase==='evening'){const T=fcast?fcast.t:25,N=buyersFor(recipe,price,T,fcast?WE[fcast.w].fm:1,1),rec=Math.min(cap,Math.round(N*1.1));
+ if(phase==='evening'&&helper){const T=fcast?fcast.t:25,N=buyersFor(recipe,price,T,fcast?WE[fcast.w].fm:1,1),rec=Math.min(cap,Math.round(N*1.1));
   const need={l:Math.max(0,rec*recipe.l-lm),h:Math.max(0,rec*recipe.h-sugar),i:Math.max(0,rec*recipe.i-ice)},cost=need.l*tP.l+need.h*tP.h+need.i*tP.i;
   inbox.unshift({id:'as'+day+'-'+rec,ic:'🧑‍💼',t:`העוזר: כדאי להכין מחר כ-${rec} כוסות`,s:`לפי ${fcast?`התחזית (${T}°)`:'יום ממוצע (25°), כי אין תחזית'} צפויים ~${N} קונים במתכון ובמחיר הנוכחיים. ${need.l+need.h+need.i>0?`חסר: ${need.l?need.l+'🍋 ':''}${need.h?need.h+'🍬 ':''}${need.i?need.i+'🧊':''} (${fmt(cost)})`:'יש לך מספיק מלאי'}`,
    act:need.l+need.h+need.i>0&&cost<=cash?{label:'קנה לי',fn:()=>{setBuy(need);setTab('stock');}}:null});}
- if(phase==='morning'&&research){let best=price,bestRev=-1;for(let p=2;p<=15;p++){const rv=Math.min(buyersFor(recipe,p),cups)*p-(p<price?0:0);if(rv>bestRev){bestRev=rv;best=p;}}
+ if(phase==='morning'&&research&&helper){let best=price,bestRev=-1;for(let p=2;p<=15;p++){const rv=Math.min(buyersFor(recipe,p),cups)*p-(p<price?0:0);if(rv>bestRev){bestRev=rv;best=p;}}
   if(best!==price)inbox.unshift({id:'ap'+day+'-'+best+'-'+cups,ic:'🧑‍💼',t:`העוזר: במחיר ₪${best} תכניס יותר`,s:`~${fmt(bestRev)} הכנסות במקום ~${fmt(Math.min(buyers,cups)*price)} (עם ${cups} כוסות)`,act:{label:`קבע ₪${best}`,fn:()=>setPrice(best)}});
   else inbox.unshift({id:'ap'+day,ic:'🧑‍💼',t:'העוזר: המחיר שלך מצוין להיום',s:'אם תכין יותר כוסות, אולי אפשר להרוויח עוד'});}
  if(phase==='morning'){
@@ -938,7 +1016,7 @@ function Game(){
   const byType=Object.fromEntries(TYPES.map(k=>[k,{vis:0,buy:0,miss:0}])),whys=Object.fromEntries(aud.map(x=>[x.k,x.why]));
   const ro=rng(seed+day*55),rumor=acts.includes('rumor')?(ro()<0.3?'caught':'ok'):null,signs=acts.includes('signs')?(ro()<0.4?'caught':'ok'):null;
   const v=closed?0:Math.round(visitorsFor(recipe,price)*(rumor==='ok'?1.06:1)),c0=closed?0:cups;
-  for(let i=0;i<v;i++){let roll=r(),k='adult',cum=0;for(const t of TYPES){cum+=CT[t].pct;if(roll<cum){k=t;break;}}
+  for(let i=0;i<v;i++){let roll=r(),k='adult',cum=0;for(const t of TYPES){cum+=MIX[t];if(roll<cum){k=t;break;}}
    const c=CT[k],s=cSc(recipe.l,recipe.h,recipe.i,temp,c),wants=r()<buyProb(s.sc,price,rep,c,temp),buys=wants&&sold<c0;byType[k].vis++;
    let rx='🚶';if(buys){sold++;rev+=price;byType[k].buy++;rx=s.ts>35?'😊':s.ts>20?'🙂':s.ts>10?'😐':'😕';repD+=s.ts>35?c.rI[0]:s.ts>20?1:s.ts>10?0:-1;}else if(wants){rx='💨';miss++;byType[k].miss++;}else walk++;
    list.push({id:i,type:k,em:c.em,buys,rx,isVip:false,sp:''});}
@@ -958,7 +1036,7 @@ function Game(){
   let rem=Math.min(R.usedL,lm);const nl=[];for(const b of lemons){if(rem<=0){nl.push(b);continue;}if(b.q<=rem)rem-=b.q;else{nl.push({...b,q:b.q-rem});rem=0;}}
   const kept=nl.filter(b=>day+1-b.d<3),spoiled=nl.reduce((s,b)=>s+b.q,0)-kept.reduce((s,b)=>s+b.q,0);
   setLemons(kept);setSugar(s=>Math.max(0,s-R.cups*recipe.h));setIce(i=>ups.includes('cooler')?Math.floor(Math.max(0,i-R.cups*recipe.i)/2):0);
-  const dayCash=(R.closed?0:actCost+(helper?HELPER_C:0)+LOC[loc].rent)+R.fine,interest=loan*LOAN_INT;
+  const dayCash=(R.closed?0:actCost+LOC[loc].rent)+(helper?HELPER_C:0)+R.fine,interest=loan*LOAN_INT;
   setCash(c=>c+R.rev-dayCash-interest);if(loan)setLoan(l=>l*(1+LOAN_INT));
   const profit=R.rev-spentToday-dayCash-interest;
   const newRep=Math.max(0,Math.min(100,rep+R.repD+Math.round((50-rep-R.repD)*0.06)));
@@ -977,7 +1055,7 @@ function Game(){
   const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comp:Math.round(R.visitors*0.5*0.6)*compPrice-30};
   setRep(newRep);setReport(rpt);setHistory(h=>[...h,rpt]);setSpentToday(0);setPhase('report');};
  const nextEvening=()=>{if(day>=DAYS){setPhase('over');return;}
-  setDay(d=>d+1);setActs([]);setHelper(false);setFcast(null);setSpy(false);setResearch(false);setInspPaid(false);setPhase('evening');setTab('news');setSim(null);simFast.current=false;
+  setDay(d=>d+1);setActs([]);setFcast(null);setSpy(false);setResearch(false);setInspPaid(false);setPhase('evening');setTab('news');setSim(null);simFast.current=false;
   setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${day+1}`});};
  const onContinue=(force)=>{
   if(!force&&(phase==='evening'||phase==='morning')&&attention.length&&!(phase==='morning'&&W.insp&&!inspPaid)){
@@ -992,16 +1070,18 @@ function Game(){
 
  // Assistant numbers shared by the control center and the inbox
  const advT=fcast?fcast.t:25,advN=phase==='evening'?buyersFor(recipe,price,advT,fcast?WE[fcast.w].fm:1,1):0,advRec=Math.min(cap,Math.round(advN*1.1));
- let bestPrice=price;if(phase==='morning'&&research){let bv=-1;for(let p=2;p<=15;p++){const rv=Math.min(buyersFor(recipe,p),cups)*p;if(rv>bv){bv=rv;bestPrice=p;}}}
+ let bestPrice=price;if(phase==='morning'&&research&&helper){let bv=-1;for(let p=2;p<=15;p++){const rv=Math.min(buyersFor(recipe,p),cups)*p;if(rv>bv){bv=rv;bestPrice=p;}}}
  const afterCups=Math.min(Math.floor((lm+buy.l)/Math.max(1,recipe.l)),recipe.h?Math.floor((sugar+buy.h)/recipe.h):999,recipe.i?Math.floor((ice+buy.i)/recipe.i):999);
  const badFx=effects.filter(e=>e.v[1]!=='good');
  const mktNames=acts.filter(id=>MKTG.some(m=>m.id===id)).map(id=>MKTG.find(m=>m.id===id).n);
  const tasks=phase==='evening'?[
-  {k:'stock',ic:'📦',t:'מלאי למחר',v:`מספיק ל-${afterCups} כוסות · העוזר ממליץ ~${advRec}`,st:afterCups===0?'bad':afterCups<advRec*0.8?'warn':'ok',note:afterCups===0?'אין מלאי — הדוכן לא ייפתח':afterCups<advRec*0.8?'כנראה לא יספיק לכל הקונים':null},
+  {k:'stock',ic:'📦',t:'מלאי למחר',v:`מספיק ל-${afterCups} כוסות${helper?` · העוזר ממליץ ~${advRec}`:''}`,st:afterCups===0?'bad':helper&&afterCups<advRec*0.8?'warn':'ok',note:afterCups===0?'אין מלאי — הדוכן לא ייפתח':helper&&afterCups<advRec*0.8?'כנראה לא יספיק לכל הקונים':null},
+  {k:'biz',ic:'🧑‍💼',t:'עוזר',v:helper?'מועסק — ממליץ כמה לקנות ואיזה מחיר לקבוע':`אין · ₪${HELPER_C} ליום: מגיש יותר כוסות ונותן המלצות`,st:helper?'ok':'opt'},
   {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה — קונים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
   {k:'intel',ic:'🕵️',t:`ריגול אחרי ${COMP.n}`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'},
  ]:[
   ...(W.insp&&!inspPaid?[{k:'news',ic:'🏛️',t:'פיקוח עירוני',v:'צריך לשלם ₪8 כדי לפתוח היום',st:'bad',act:{label:'שלם ₪8',fn:()=>{if(cash>=8){pay(8);setInspPaid(true);}}}}]:[]),
+  {k:'product',ic:'👥',t:'מי מגיע היום',v:TYPES.map(k=>`${CT[k].em} ${Math.round(MIX[k]*100)}%`).join(' · '),st:'ok',note:mixToday.why.length?mixToday.why.join(' · '):'יום רגיל'},
   {k:'intel',ic:'📋',t:'סקר שוק',v:research?`~${buyers} יקנו מתוך ~${visitors} מבקרים`:`לא נקנה · ₪${RESEARCH_C} כדי לדעת מי יקנה ולמה`,st:research?'ok':'opt'},
   {k:'product',ic:'🥤',t:'מתכון',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · איכות ${quality}`,st:badFx.some(e=>e.v[1]==='bad')?'warn':'ok',note:badFx.length?badFx.map(e=>e.v[0]).join(' · '):null},
   ...(W.vip?[{k:'product',ic:'🎩',t:'מבקר אוכל היום',v:`רוצה איכות 65+ · שלך: ${quality}`,st:quality>=65?'ok':'warn',note:quality<65?'שפר את המתכון כדי שיתלהב':null}]:[]),
@@ -1012,8 +1092,9 @@ function Game(){
  ];
  const attention=tasks.filter(t=>t.st==='warn'||t.st==='bad');
  const forecastBuy=(e,f)=>{if(fcast||free<f.c)return;pay(f.c);flyCoin(e,'−₪'+f.c);const nx=world[day+1]?world[day]:world[day];
-  const r=rng(seed+day*31+f.lv);const ok=r()<f.ac;const tt=ok?world[day].t:world[day].t+(r()<0.5?-1:1)*(2+Math.floor(r()*5));
-  setFcast({lv:f.lv,ac:f.ac,t:tt,w:ok?world[day].w:(tt>=30?'hot':tt>=25?'sunny':tt>=21?'nice':tt>=18?'cloudy':'lRain'),ev:f.lv>=2?(world[day].ev?(f.lv===3?world[day].ev.n:'צפוי אירוע מיוחד'):'לא צפוי אירוע'):null});};
+  const r=rng(seed+day*31+f.lv);const ok=r()<f.ac;const mag=f.lv===1?4+Math.floor(r()*7):f.lv===2?2+Math.floor(r()*4):1+Math.floor(r()*2);
+  const tt=ok?world[day].t:Math.max(10,Math.min(40,world[day].t+(r()<0.5?-1:1)*mag)),keys=Object.keys(WE);
+  setFcast({lv:f.lv,ac:f.ac,t:tt,w:ok?world[day].w:f.lv===1?keys[Math.floor(r()*keys.length)]:(tt>=30?'hot':tt>=25?'sunny':tt>=21?'nice':tt>=18?'cloudy':'lRain'),ev:f.lv>=2?(world[day].ev?(f.lv===3?world[day].ev.n:'צפוי אירוע מיוחד'):'לא צפוי אירוע'):null});};
 
  /* ── Screens ── */
  const titleFor={news:'חדשות',product:'המוצר',stock:'מחסן',mkt:'שיווק ותחרות',intel:'מודיעין',biz:'העסק'};
@@ -1039,10 +1120,11 @@ function Game(){
  const Product=()=>{const R=recipe;const imp=(k,dv)=>{const r2={...R,[k]:R[k]+dv};if(r2[k]<(k==='l'?1:0)||r2.l+r2.h+r2.i>CUP)return null;return buyersFor(r2,price)-buyers;};
   const setR=(k,v)=>{const r2={...R,[k]:v};if(v<(k==='l'?1:0)||r2.l+r2.h+r2.i>CUP)return;setRecipe(r2);};
   return <div className="pane">
-  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
+  <Banner kind="kitchen" ic="🍳" title="המטבח" sub="כאן ממציאים את הכוס: מתכון, מחיר וכמות" onBack={()=>setTab('news')}/>
   {isEve&&<div className="note">🌙 זה המתכון שתתכנן למחר. מזג האוויר עוד לא ידוע{fcast?` (לפי התחזית: ${fcast.t}°)`:''}.</div>}
   <section className="blk">
    <div className="blk-h"><h3>🥤 המתכון</h3><span className="tag">{quality}/100 איכות</span></div>
+   <div className="presets">{PRESETS.map(p=><button key={p.id} className={"preset"+(sameR(p.r,R)?' on':'')} onClick={()=>setRecipe(p.r)}><b>{p.n}</b><small>{p.r.l}🍋{p.r.h}🍬{p.r.i}🧊 · {p.fit}</small></button>)}</div>
    <div className="recipe">
     <div className="glass-wrap"><GlassSvg l={R.l} h={R.h} i={R.i} temp={isEve?(fcast?fcast.t:24):temp}/></div>
     <div className="ings">{[['l','🍋','לימון','טעם. הרבה = חמוץ',1,5],['h','🍬','סוכר','מרכך חמיצות',0,5],['i','🧊','קרח','רעננות, חשוב בחום',0,5]].map(([k,em,n,d,mn,mx])=>{const up=imp(k,1),dn=imp(k,-1);
@@ -1069,27 +1151,42 @@ function Game(){
   </section>
  </div>;};
 
- const Stock=()=>{const rows=[['l','🍋','לימונים',lm,tP.l,'מחזיק 3 ימים'],['h','🍬','סוכר',sugar,tP.h,'לא מתקלקל'],['i','🧊','קרח',ice,tP.i,ups.includes('cooler')?'חצי שורד ללילה':'נמס בסוף היום']];
-  const fill=n=>{const need={l:Math.max(0,n*recipe.l-lm),h:Math.max(0,n*recipe.h-sugar),i:Math.max(0,n*recipe.i-ice)};return{...need,cost:need.l*tP.l+need.h*tP.h+need.i*tP.i};};
-  const after={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i};const cupsAfter=Math.min(Math.floor(after.l/recipe.l),recipe.h?Math.floor(after.h/recipe.h):999,recipe.i?Math.floor(after.i/recipe.i):999);
+ const Stock=()=>{const rows=[['l','🍋','לימונים',lm,tP.l,'מחזיק 3 ימים','lemon'],['h','🍬','סוכר',sugar,tP.h,'לא מתקלקל','sugar'],['i','🧊','קרח',ice,tP.i,ups.includes('cooler')?'חצי שורד ללילה':'נמס בסוף היום','ice']];
+  const after={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i};
+  const cupsFor=(r,s)=>Math.min(Math.floor(s.l/Math.max(1,r.l)),r.h?Math.floor(s.h/r.h):999,r.i?Math.floor(s.i/r.i):999);
+  const st=isEve?after:{l:lm,h:sugar,i:ice};
+  const exp1=lemons.filter(b=>day-b.d>=2).reduce((s,b)=>s+b.q,0);
+  const recipesTbl=[{id:'mine',n:'המתכון שלך',r:recipe,fit:''},...PRESETS.filter(p=>!sameR(p.r,recipe))];
   return <div className="pane">
-  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
-  {!isEve&&<div className="note">🔒 השוק סגור עד הערב. כאן רואים מה יש במלאי.</div>}
-  <section className="blk">
-   <div className="blk-h"><h3>📦 {isEve?'קניות למחר':'המלאי שלך'}</h3>{isEve&&<span className="tag">משלמים עכשיו</span>}</div>
-   {isEve&&<div className="qf"><span>⚡ מילוי לפי המתכון ({recipe.l}🍋{recipe.h}🍬{recipe.i}🧊):</span>{[10,20,30].map(n=>{const f=fill(n);return <button key={n} className="chip" disabled={f.cost>cash} onClick={()=>setBuy({l:f.l,h:f.h,i:f.i})}>{n} כוסות · {fmt(f.cost)}</button>;})}</div>}
-   <div className="stock">{rows.map(([k,em,n,have,p,life])=><div key={k} className={"st-r"+(buy[k]?' on':'')}>
-    <span className="st-ic">{em}</span>
-    <div className="st-i"><b>{n}</b><span>{life}{isEve?` · ${fmt2(p)} ליחידה`:''}</span></div>
-    <div className="st-q num"><span>{have}</span>{isEve&&buy[k]>0&&<><i>←</i><b>{have+buy[k]}</b></>}</div>
-    {isEve&&<div className="st-s"><Stepper v={buy[k]} set={v=>{const cost=(v-buy[k])*p;if(v<0||cost>free+0.001)return;setBuy(b=>({...b,[k]:v}));}} min={0} max={500} big5/></div>}
-   </div>)}</div>
-   <div className="note good">🥤 {isEve?'אחרי הקנייה':'עכשיו'}: מספיק ל-<b>{isEve?cupsAfter:stockMax}</b> כוסות לפי המתכון שלך</div>
+  {isEve?<Banner kind="market" ic="🏮" title="שוק הלילה" sub="דוכנים פתוחים עד שמתחיל הלילה · משלמים במקום" onBack={()=>setTab('news')}/>
+   :<Banner kind="store" ic="🏚️" title="המחסן" sub="השוק סגור עד הערב · זה מה שיש לך" onBack={()=>setTab('news')}/>}
+  {isEve&&<div className="stalls">{rows.map(([k,em,n,have,p,life,cls])=>{const prev=world[Math.max(0,day-2)].p[k],pct=prev?Math.round((p-prev)/prev*100):0;
+   return <div key={k} className={"stall st-"+cls+(buy[k]?' on':'')}>
+    <div className="awning" aria-hidden="true"/>
+    <div className="stall-body">
+     <div className="crate" aria-hidden="true">{em}{em}{em}</div>
+     <div className="stall-info"><b>{n}</b><span>{life}</span></div>
+     <div className="tag-price num">₪{p.toFixed(2)}<small className={pct>0?'up':pct<0?'dn':''}>{pct>0?'▲':pct<0?'▼':'•'}{Math.abs(pct)}%</small></div>
+    </div>
+    <div className="stall-buy"><Stepper v={buy[k]} set={v=>{const cost=(v-buy[k])*p;if(v<0||cost>free+0.001)return;setBuy(b=>({...b,[k]:v}));}} min={0} max={500} big5/>
+     <span className="num stall-sum">{buy[k]?fmt2(buy[k]*p):''}</span></div>
+   </div>;})}</div>}
+  <section className="blk inv">
+   <div className="blk-h"><h3>📦 המלאי שלך{isEve&&(buy.l+buy.h+buy.i)>0?' אחרי הקנייה':''}</h3></div>
+   <div className="inv-row">{rows.map(([k,em,n,have])=><div key={k} className="inv-c"><span>{em}</span><b className="num">{st[k]}</b><small>{n}</small>
+    {k==='l'&&exp1>0&&<em>{exp1} מתקלקלים {isEve?'אחרי מחר':'בסוף היום'}</em>}{k==='i'&&!ups.includes('cooler')&&<em>נמס בלילה</em>}</div>)}</div>
+   <div className="cl-h" style={{marginTop:10}}>לכמה כוסות זה מספיק?</div>
+   <div className="rtable">{recipesTbl.map(p=>{const n=cupsFor(p.r,st),lim=n===Math.floor(st.l/Math.max(1,p.r.l))?'🍋':p.r.h&&n===Math.floor(st.h/p.r.h)?'🍬':'🧊';
+    return <button key={p.id} className={"rt-row"+(p.id==='mine'?' mine':'')} onClick={()=>{if(p.id!=='mine')setRecipe(p.r);}}>
+     <span className="rt-n"><b>{p.n}</b><small>{p.r.l}🍋{p.r.h}🍬{p.r.i}🧊{p.fit?' · '+p.fit:''}</small></span>
+     <span className="rt-cups num"><b>{n}</b> כוסות</span><span className="rt-lim">חסר ראשון: {lim}</span>
+    </button>;})}</div>
+   {isEve&&<div className="hint">לחיצה על מתכון קובעת אותו כמתכון שלך</div>}
   </section>
  </div>;};
 
  const Mkt=()=> <div className="pane">
-  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
+  <Banner kind="ads" ic="📣" title="משרד הפרסום" sub="כל מה שמביא לקוחות — ומה שמרחיק אותם מהמתחרה" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי להוצאות: <b className="num">{fmt(free)}</b>{committed>0&&<span> · כבר התחייבת ל-{fmt(committed)} שיורדים בסוף היום</span>}</div>
   <section className="blk"><div className="blk-h"><h3>⭐ קבוע</h3><span className="tag">משלמים עכשיו · עובד עד סוף המשחק</span></div>
    <div className="shop">{UPG_MKT.map(u=>{const own=ups.includes(u.id);return <div key={u.id} className={"item"+(own?' own':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
@@ -1103,7 +1200,7 @@ function Game(){
  </div>;
 
  const Intel=()=> <div className="pane">
-  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
+  <Banner kind="spy" ic="🕵️" title="חדר המודיעין" sub="מידע עולה כסף — אבל חוסך טעויות" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>🔮 תחזית מזג אוויר ליום {day}</h3><span className="tag">{isEve?'נקנית בערב':'נקנתה אתמול בערב'}</span></div>
    {fcast?<div className="fc-card"><span className="fc-e">{WE[fcast.w].em}</span><div><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span>{!isEve&&<span className="fc-v">בפועל: {wInfo.n} {temp}° — {fcast.t===temp?'צדקה ✓':`טעות של ${Math.abs(fcast.t-temp)}°`}</span>}</div></div>
@@ -1122,14 +1219,14 @@ function Game(){
  </div>;
 
  const Biz=()=> <div className="pane">
-  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
+  <Banner kind="biz" ic="🏪" title="הדוכן" sub="מיקום, צוות, ציוד וכסף" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>📍 מיקום הדוכן היום</h3><span className="tag">שכירות בסוף היום</span></div>
    <div className="locs">{LOC.map(l=><button key={l.id} disabled={isEve} className={"loc"+(loc===l.id?' on':'')} onClick={()=>setLoc(l.id)}><span>{l.em}</span><b>{l.n}</b><small>{l.d}</small></button>)}</div>
    {isEve&&<div className="hint">בוחרים מיקום בבוקר, אחרי שרואים את מזג האוויר</div>}</section>
-  <section className="blk"><div className="blk-h"><h3>👤 עוזר להיום</h3><span className="tag">₪{HELPER_C} בסוף היום</span></div>
-   <div className="item"><span className="it-e">👤</span><div className="it-t"><b>{helper?'יש עוזר היום':'בלי עוזר'}</b><span>לבד מגישים עד {cap-(helper?HELPER_B:0)} כוסות. עם עוזר: {cap-(helper?HELPER_B:0)+HELPER_B}</span></div>
-    {isEve?<span className="badge">בבוקר</span>:<button className={"btn sm"+(helper?' g':'')} onClick={()=>setHelper(h=>!h)}>{helper?'✓ שכור · בטל':'שכור'}</button>}</div></section>
+  <section className="blk"><div className="blk-h"><h3>🧑‍💼 עוזר</h3><span className="tag">₪{HELPER_C} לכל יום שהוא מועסק</span></div>
+   <div className="item"><span className="it-e">🧑‍💼</span><div className="it-t"><b>{helper?'העוזר מועסק':'אין עוזר'}</b><span>מגיש עוד {HELPER_B} כוסות ביום, וממליץ במרכז הבקרה כמה לקנות ואיזה מחיר לקבוע</span></div>
+    <button className={"btn sm"+(helper?' g':'')} onClick={()=>setHelper(h=>!h)}>{helper?'✓ מועסק · פטר':'שכור'}</button></div></section>
   <section className="blk"><div className="blk-h"><h3>🔧 ציוד</h3><span className="tag">משלמים עכשיו · לכל המשחק</span></div>
    <div className="shop">{UPG_OPS.map(u=>{const own=ups.includes(u.id),lock=!own&&u.ad>day;return <div key={u.id} className={"item"+(own?' own':'')+(lock?' lock':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
     {own?<span className="badge g">✓ שלך</span>:lock?<span className="badge">🔒 מיום {u.ad}</span>:<button className="btn sm" disabled={free<u.c} onClick={e=>{setUps(x=>[...x,u.id]);pay(u.c);flyCoin(e,'−₪'+u.c);}}>{free<u.c?`חסר ${fmt(u.c-free)}`:<>קנה · ₪{u.c}</>}</button>}</div>;})}</div></section>
