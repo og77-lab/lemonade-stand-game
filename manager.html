@@ -289,6 +289,77 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .ch-col small{font-size:10px;color:var(--dim)}.ch-col i{font-style:normal;font-size:11px;color:var(--dim)}
 @keyframes grow{from{transform:scaleY(0)}}
 
+/* ── Living weather behind the whole screen ── */
+.app{isolation:isolate}
+.app>.top,.app>.main,.app>.cta-bar,.app>.nav{position:relative;z-index:1}
+.app>.top{background:rgba(8,10,26,.38)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom-color:rgba(255,255,255,.08)}
+.app>.cta-bar{background:rgba(10,12,28,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.app>.nav{background:rgba(6,7,18,.85)}
+.blk,.msg,.checklist,.task,.rp-tips,.rp-types,.rp-grid div,.sim-stats div,.sim-q{background-color:rgba(28,31,56,.92)}
+.wx{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.app.bg-night{background:linear-gradient(180deg,#1B1446 0%,#121426 55%,#0C0D1C 100%)}
+.app.bg-dusk{background:linear-gradient(180deg,#7A3E5E 0%,#3A2550 40%,#121426 100%)}
+.app.bg-sunny,.app.bg-nice{background:linear-gradient(180deg,#2A78C8 0%,#1C4E8A 30%,#121426 75%)}
+.app.bg-hot{background:linear-gradient(180deg,#D9622B 0%,#8E3A1E 32%,#1A1420 80%)}
+.app.bg-heat{background:linear-gradient(180deg,#F04A1A 0%,#A3301A 30%,#21121A 80%)}
+.app.bg-cloudy{background:linear-gradient(180deg,#5B6680 0%,#363E55 35%,#14172A 80%)}
+.app.bg-lRain{background:linear-gradient(180deg,#3E4A62 0%,#262E44 35%,#0F1222 80%)}
+.app.bg-hRain{background:linear-gradient(180deg,#2B3448 0%,#1A2033 35%,#0A0C18 80%)}
+.app.bg-cold{background:linear-gradient(180deg,#6F93C2 0%,#3D5A85 32%,#121A2E 80%)}
+.wx-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.2;animation:wxTw 3s ease-in-out infinite alternate}
+@keyframes wxTw{to{opacity:.9}}
+.wx-moon{position:absolute;top:28px;left:28px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFFBE6,#E8E1C0);box-shadow:0 0 40px 10px rgba(255,250,220,.25),inset -10px -6px 0 rgba(0,0,0,.08)}
+.wx-sun{position:absolute;top:-40px;left:-40px;width:200px;height:200px}
+.wx-sun::before{content:"";position:absolute;inset:60px;border-radius:50%;background:radial-gradient(circle,#FFF6C2,#FFC93C);box-shadow:0 0 70px 30px rgba(255,201,60,.45)}
+.wx-rays{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(255,230,140,.22) 0 8deg,transparent 8deg 22deg);animation:wxSpin 40s linear infinite;-webkit-mask:radial-gradient(circle,#000 35%,transparent 70%);mask:radial-gradient(circle,#000 35%,transparent 70%)}
+@keyframes wxSpin{to{transform:rotate(360deg)}}
+.wx-heat .wx-sun::before{background:radial-gradient(circle,#FFF2B0,#FF7A2A);box-shadow:0 0 90px 45px rgba(255,110,40,.55)}
+.wx-haze{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,170,90,.06) 0 6px,transparent 6px 14px);animation:wxHaze 2.4s ease-in-out infinite alternate;filter:blur(2px)}
+@keyframes wxHaze{from{transform:translateY(0) skewX(0)}to{transform:translateY(-6px) skewX(1.5deg)}}
+.wx-cloud{position:absolute;right:-200px;width:180px;height:56px;border-radius:40px;background:rgba(220,228,245,.18);filter:blur(1px);animation:wxDrift linear infinite}
+.wx-cloud::before,.wx-cloud::after{content:"";position:absolute;border-radius:50%;background:inherit}
+.wx-cloud::before{width:80px;height:80px;top:-36px;right:30px}.wx-cloud::after{width:60px;height:60px;top:-24px;right:92px}
+.wx-lRain .wx-cloud,.wx-hRain .wx-cloud{background:rgba(120,132,160,.35)}
+@keyframes wxDrift{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 420px))}}
+.wx-rain{position:absolute;inset:-20% 0 0;background-image:repeating-linear-gradient(105deg,transparent 0 9px,rgba(190,215,255,.32) 9px 10px,transparent 10px 22px);background-size:120px 120px;animation:wxRain .45s linear infinite}
+.wx-rain.far{opacity:.45;background-size:70px 70px;animation-duration:.7s}
+.wx-rain.heavy{background-image:repeating-linear-gradient(105deg,transparent 0 5px,rgba(200,220,255,.45) 5px 6px,transparent 6px 13px)}
+@keyframes wxRain{to{background-position:-30px 120px}}
+.wx-flash{position:absolute;inset:0;background:#fff;opacity:0;animation:wxFlash 7s infinite}
+@keyframes wxFlash{0%,92%,100%{opacity:0}93%{opacity:.35}94%{opacity:0}95.5%{opacity:.25}96.5%{opacity:0}}
+.wx-snow{position:absolute;top:-10px;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.85);animation:wxSnow linear infinite}
+@keyframes wxSnow{to{transform:translate(30px,105vh)}}
+/* Dawn transition matches the day's weather */
+.sky .wx{z-index:0}.sky .sky-text{z-index:2}
+.sky-dawn.sky-w-lRain,.sky-dawn.sky-w-hRain{background:linear-gradient(180deg,#4A566E,#7D8AA3 60%,#A9B3C4)}
+.sky-dawn.sky-w-cloudy{background:linear-gradient(180deg,#7C8BA6,#B3BFD3 60%,#E2E6EE)}
+.sky-dawn.sky-w-cold{background:linear-gradient(180deg,#8FB4E0,#C9DDF5 60%,#F0F6FF)}
+.sky-dawn.sky-w-hot,.sky-dawn.sky-w-heat{background:linear-gradient(180deg,#FF8A3D,#FFB15A 50%,#FFE0A0)}
+.sky-dawn.sky-w-lRain .sky-orb,.sky-dawn.sky-w-hRain .sky-orb,.sky-dawn.sky-w-cloudy .sky-orb{opacity:.35}
+.sky-dawn.sky-w-lRain .sky-text,.sky-dawn.sky-w-hRain .sky-text{color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.4)}
+
+/* ── Control center ── */
+.hub-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hub-head p{margin:4px 0 0;color:var(--dim);font-size:13px;line-height:1.45}
+.hub-ring{flex-shrink:0;width:78px;height:78px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#1D3326 60%,transparent 61%),conic-gradient(var(--good) 0 100%);box-shadow:0 0 0 3px rgba(74,222,128,.25)}
+.hub-ring.warn{background:radial-gradient(circle,#2E2516 60%,transparent 61%),conic-gradient(var(--warn) 0 100%);box-shadow:0 0 0 3px rgba(251,191,36,.25)}
+.hub-ring b{font-size:20px}.hub-ring small{font-size:10px;color:var(--dim)}
+.tasks{display:flex;flex-direction:column;gap:6px}
+.task{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:right;border-radius:14px;padding:10px 12px;border:1px solid var(--line);border-inline-start:4px solid var(--line)}
+.task.ok{border-inline-start-color:var(--good)}.task.opt{border-inline-start-color:var(--line)}
+.task.warn{border-inline-start-color:var(--warn);background:linear-gradient(90deg,rgba(58,48,18,.95),rgba(28,31,56,.92))}
+.task.bad{border-inline-start-color:var(--bad);background:linear-gradient(90deg,rgba(61,30,40,.95),rgba(28,31,56,.92))}
+.tk-ic{font-size:24px;text-align:center}
+.tk-tx{display:flex;flex-direction:column;min-width:0}
+.tk-tx b{font-size:14.5px}.tk-tx span{font-size:12.5px;color:var(--dim);margin-top:1px}
+.tk-tx em{font-style:normal;font-size:12px;font-weight:600;margin-top:3px;color:var(--warn)}
+.task.bad .tk-tx em{color:var(--bad)}
+.tk-st{font-size:13px;font-weight:700;white-space:nowrap}
+.task.ok .tk-st{color:var(--good)}.task.opt .tk-st{color:var(--dim);font-size:11.5px}.task.warn .tk-st{color:var(--warn)}.task.bad .tk-st{color:var(--bad)}
+.feed .cl-h{padding:6px 2px}
+.chip.back{background:rgba(28,31,56,.92)}
+.dlg p{white-space:pre-line}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -734,9 +805,22 @@ const Delta=({d})=>d===0?<span className="dl">±0</span>:<span className={"dl "+
 const flyCoin=(e,text,good)=>{try{const el=document.createElement('div');el.className='fly'+(good?' good':'');el.textContent=text;
  el.style.left=(e?.clientX||innerWidth/2)+'px';el.style.top=(e?.clientY||innerHeight/2)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}catch(_){}};
 
+// Living weather behind the whole screen
+const WxLayer=({kind})=>{const sunny=['sunny','nice','hot','heat'].includes(kind),rain=kind==='lRain'||kind==='hRain';
+ return <div className={"wx wx-"+kind} aria-hidden="true">
+  {kind==='night'&&<><div className="wx-moon"/>{Array.from({length:36}).map((_,i)=><i key={i} className="wx-star" style={{left:(i*29%100)+'%',top:(i*47%60)+'%',animationDelay:(i%7)*0.4+'s'}}/>)}</>}
+  {sunny&&<div className="wx-sun"><div className="wx-rays"/></div>}
+  {(kind==='hot'||kind==='heat')&&<div className="wx-haze"/>}
+  {(['cloudy','lRain','hRain','cold','nice'].includes(kind))&&[0,1,2,3].slice(0,kind==='nice'?2:4).map(i=><div key={i} className="wx-cloud" style={{top:(8+i*13)+'%',animationDuration:(38+i*14)+'s',animationDelay:(-i*11)+'s',transform:'scale('+(1-i*0.12)+')'}}/>)}
+  {rain&&<><div className={"wx-rain"+(kind==='hRain'?' heavy':'')}/><div className={"wx-rain far"+(kind==='hRain'?' heavy':'')}/></>}
+  {kind==='hRain'&&<div className="wx-flash"/>}
+  {kind==='cold'&&Array.from({length:26}).map((_,i)=><i key={i} className="wx-snow" style={{left:(i*37%100)+'%',animationDuration:(6+i%5)+'s',animationDelay:(-i*0.7)+'s'}}/>)}
+ </div>;};
+
 // Sky transition between parts of the day
-const SkyShow=({kind,line1,line2,onDone})=>{useEffect(()=>{const t=setTimeout(onDone,2300);return()=>clearTimeout(t);},[]);
- return <div className={"sky sky-"+kind} onClick={onDone}>
+const SkyShow=({kind,wx,line1,line2,onDone})=>{useEffect(()=>{const t=setTimeout(onDone,2300);return()=>clearTimeout(t);},[]);
+ return <div className={"sky sky-"+kind+(wx?" sky-w-"+wx:"")} onClick={onDone}>
+  {wx&&<WxLayer kind={wx}/>}
   <div className="sky-stars">{Array.from({length:40}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',top:(i*53%70)+'%',animationDelay:(i%9)*0.12+'s'}}/>)}</div>
   <div className="sky-orb"/>
   <div className="sky-hills"/>
@@ -849,7 +933,7 @@ function Game(){
  const pay=(amt)=>{setCash(c=>c-amt);setSpentToday(s=>s+amt);};
  const confirmEvening=()=>{const cost=buy.l*tP.l+buy.h*tP.h+buy.i*tP.i;if(cost>0){pay(cost);}
   if(buy.l)setLemons(ls=>[...ls,{q:buy.l,d:day}]);setSugar(s=>s+buy.h);setIce(i=>i+buy.i);setBuy({l:0,h:0,i:0});
-  setPhase('morning');setTab('news');setShow({kind:'dawn',l1:`יום ${day}`,l2:`${WE[world[day].w].em} ${WE[world[day].w].n} ${world[day].t}°`});};
+  setPhase('morning');setTab('news');setShow({kind:'dawn',wx:world[day].w,l1:`יום ${day}`,l2:`${WE[world[day].w].em} ${WE[world[day].w].n} ${world[day].t}°`});};
  const openStand=(closed)=>{const r=rng(seed+day*977);const list=[];let sold=0,rev=0,repD=0,walk=0,miss=0;
   const byType=Object.fromEntries(TYPES.map(k=>[k,{vis:0,buy:0,miss:0}])),whys=Object.fromEntries(aud.map(x=>[x.k,x.why]));
   const ro=rng(seed+day*55),rumor=acts.includes('rumor')?(ro()<0.3?'caught':'ok'):null,signs=acts.includes('signs')?(ro()<0.4?'caught':'ok'):null;
@@ -895,7 +979,9 @@ function Game(){
  const nextEvening=()=>{if(day>=DAYS){setPhase('over');return;}
   setDay(d=>d+1);setActs([]);setHelper(false);setFcast(null);setSpy(false);setResearch(false);setInspPaid(false);setPhase('evening');setTab('news');setSim(null);simFast.current=false;
   setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${day+1}`});};
- const onContinue=()=>{
+ const onContinue=(force)=>{
+  if(!force&&(phase==='evening'||phase==='morning')&&attention.length&&!(phase==='morning'&&W.insp&&!inspPaid)){
+   setConfirm({t:'רגע לפני שממשיכים',s:attention.map(t=>`${t.ic} ${t.t}: ${t.note||t.v}`).join('\n'),yes:'להמשיך בכל זאת',no:'לטפל',onYes:()=>onContinue(true),onNo:()=>setTab(attention[0].k)});return;}
   if(phase==='evening'){if(shopCost>cash){return;}const after={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i};
    if(Math.min(Math.floor(after.l/Math.max(1,recipe.l)),recipe.h?Math.floor(after.h/recipe.h):99,recipe.i?Math.floor(after.i/recipe.i):99)===0){
     setConfirm({t:'אין לך מלאי אפילו לכוס אחת',s:'בלי לימונים, סוכר וקרח הדוכן לא ייפתח מחר.',yes:'להמשיך בכל זאת',no:'חזרה לקניות',onYes:confirmEvening,onNo:()=>setTab('stock')});return;}
@@ -904,6 +990,27 @@ function Game(){
    if(cups===0){setConfirm({t:'אין כוסות מוכנות',s:'הדוכן יישאר סגור היום ולא תהיה הכנסה.',yes:'לסגור היום',no:'חזרה',onYes:()=>{openStand(true);},onNo:()=>setTab('product')});return;}openStand();return;}
   if(phase==='report'){nextEvening();}};
 
+ // Assistant numbers shared by the control center and the inbox
+ const advT=fcast?fcast.t:25,advN=phase==='evening'?buyersFor(recipe,price,advT,fcast?WE[fcast.w].fm:1,1):0,advRec=Math.min(cap,Math.round(advN*1.1));
+ let bestPrice=price;if(phase==='morning'&&research){let bv=-1;for(let p=2;p<=15;p++){const rv=Math.min(buyersFor(recipe,p),cups)*p;if(rv>bv){bv=rv;bestPrice=p;}}}
+ const afterCups=Math.min(Math.floor((lm+buy.l)/Math.max(1,recipe.l)),recipe.h?Math.floor((sugar+buy.h)/recipe.h):999,recipe.i?Math.floor((ice+buy.i)/recipe.i):999);
+ const badFx=effects.filter(e=>e.v[1]!=='good');
+ const mktNames=acts.filter(id=>MKTG.some(m=>m.id===id)).map(id=>MKTG.find(m=>m.id===id).n);
+ const tasks=phase==='evening'?[
+  {k:'stock',ic:'📦',t:'מלאי למחר',v:`מספיק ל-${afterCups} כוסות · העוזר ממליץ ~${advRec}`,st:afterCups===0?'bad':afterCups<advRec*0.8?'warn':'ok',note:afterCups===0?'אין מלאי — הדוכן לא ייפתח':afterCups<advRec*0.8?'כנראה לא יספיק לכל הקונים':null},
+  {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה — קונים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
+  {k:'intel',ic:'🕵️',t:`ריגול אחרי ${COMP.n}`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'},
+ ]:[
+  ...(W.insp&&!inspPaid?[{k:'news',ic:'🏛️',t:'פיקוח עירוני',v:'צריך לשלם ₪8 כדי לפתוח היום',st:'bad',act:{label:'שלם ₪8',fn:()=>{if(cash>=8){pay(8);setInspPaid(true);}}}}]:[]),
+  {k:'intel',ic:'📋',t:'סקר שוק',v:research?`~${buyers} יקנו מתוך ~${visitors} מבקרים`:`לא נקנה · ₪${RESEARCH_C} כדי לדעת מי יקנה ולמה`,st:research?'ok':'opt'},
+  {k:'product',ic:'🥤',t:'מתכון',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · איכות ${quality}`,st:badFx.some(e=>e.v[1]==='bad')?'warn':'ok',note:badFx.length?badFx.map(e=>e.v[0]).join(' · '):null},
+  ...(W.vip?[{k:'product',ic:'🎩',t:'מבקר אוכל היום',v:`רוצה איכות 65+ · שלך: ${quality}`,st:quality>=65?'ok':'warn',note:quality<65?'שפר את המתכון כדי שיתלהב':null}]:[]),
+  {k:'product',ic:'💰',t:'מחיר',v:`₪${price} לכוס · עלות ${fmt2(costCup)}`,st:research&&bestPrice!==price?'warn':'ok',note:research&&bestPrice!==price?`העוזר: במחיר ₪${bestPrice} תכניס יותר`:null,act:research&&bestPrice!==price?{label:`קבע ₪${bestPrice}`,fn:()=>setPrice(bestPrice)}:null},
+  {k:'product',ic:'🔢',t:'כמה להכין',v:`${cups} כוסות (אפשר עד ${maxCups})`,st:cups===0?'bad':cupsWanted>maxCups||(research&&buyers>cups*1.15)?'warn':'ok',note:cups===0?'אין כוסות — הדוכן ייסגר':cupsWanted>maxCups?`מגבלה: ${limiter?.n}`:research&&buyers>cups*1.15?`צפויים ~${buyers} קונים — הכן יותר`:null},
+  {k:'mkt',ic:'📣',t:'שיווק להיום',v:mktNames.length?mktNames.join(', '):'לא נבחר',st:mktNames.length?'ok':'opt'},
+  {k:'biz',ic:'📍',t:'מיקום ועוזר',v:`${LOC[loc].n} · ${helper?'עם עוזר':'בלי עוזר'}`,st:'ok'},
+ ];
+ const attention=tasks.filter(t=>t.st==='warn'||t.st==='bad');
  const forecastBuy=(e,f)=>{if(fcast||free<f.c)return;pay(f.c);flyCoin(e,'−₪'+f.c);const nx=world[day+1]?world[day]:world[day];
   const r=rng(seed+day*31+f.lv);const ok=r()<f.ac;const tt=ok?world[day].t:world[day].t+(r()<0.5?-1:1)*(2+Math.floor(r()*5));
   setFcast({lv:f.lv,ac:f.ac,t:tt,w:ok?world[day].w:(tt>=30?'hot':tt>=25?'sunny':tt>=21?'nice':tt>=18?'cloudy':'lRain'),ev:f.lv>=2?(world[day].ev?(f.lv===3?world[day].ev.n:'צפוי אירוע מיוחד'):'לא צפוי אירוע'):null});};
@@ -913,21 +1020,26 @@ function Game(){
  const isEve=phase==='evening';
  const Locked=({children})=><div className="locked">{children}</div>;
 
- const News=()=> <div className="pane">
-  <div className="pane-h"><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הערב קונים: חומרי גלם בשוק, ותחזית למחר אם רוצים. כשמוכנים — "המשך".':'הבוקר מחליטים: מתכון, מחיר, כמה להכין, שיווק ומיקום. כשמוכנים — "פתח את הדוכן".'}</p></div>
-  <div className="inbox">{inbox.map(m=><button key={m.id} className={"msg"+(read[m.id]?'':' new')+(m.warn?' warn':'')} onClick={()=>{setRead(r=>({...r,[m.id]:1}));m.go&&m.go();}}>
-   <span className="msg-ic">{m.ic}</span><span className="msg-tx"><b>{m.t}</b><span>{m.s}</span>{m.act&&<span className="msg-act" role="button" onClick={e=>{e.stopPropagation();setRead(r=>({...r,[m.id]:1}));m.act.fn();flyCoin(e,'✓',true);}}>{m.act.label}</span>}</span>{m.cta&&<span className="msg-cta">{m.cta} ›</span>}</button>)}</div>
-  <div className="checklist">
-   <div className="cl-h">{isEve?'מה עושים הערב':'מה עושים הבוקר'}</div>
-   {(isEve?[['stock','📦','קונים חומרי גלם',(buy.l+buy.h+buy.i)>0],['intel','🔮','תחזית למחר (לא חובה)',!!fcast]]
-     :[['intel','📋','סקר שוק (לא חובה)',research],['product','🥤','מתכון, מחיר וכמות',true],['mkt','📣','שיווק (לא חובה)',acts.some(a=>MKTG.some(m=>m.id===a))],['biz','🏪','מיקום ועוזר',true]])
-     .map(([t,ic,l,done])=><button key={t} className={"cl-row"+(done?' done':'')} onClick={()=>setTab(t)}><span>{ic}</span><span>{l}</span><span className="cl-st">{done?'✓':'›'}</span></button>)}
+ const News=()=>{const ok=tasks.filter(t=>t.st==='ok'||t.st==='opt').length;return <div className="pane">
+  <div className="hub-head">
+   <div><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הכנות למחר. עבור על הרשימה, ואז "המשך ללילה".':'הכנות להיום. עבור על הרשימה, ואז "פתח את הדוכן".'}</p></div>
+   <div className={"hub-ring"+(attention.length?' warn':'')}><b className="num">{ok}/{tasks.length}</b><small>{attention.length?`${attention.length} לטיפול`:'הכל מוכן'}</small></div>
   </div>
- </div>;
+  <div className="tasks">{tasks.map((t,i)=><button key={i} className={"task "+t.st} onClick={()=>setTab(t.k)}>
+   <span className="tk-ic">{t.ic}</span>
+   <span className="tk-tx"><b>{t.t}</b><span>{t.v}</span>{t.note&&<em>{t.note}</em>}
+    {t.act&&<span className="msg-act" role="button" onClick={e=>{e.stopPropagation();t.act.fn();flyCoin(e,'✓',true);}}>{t.act.label}</span>}</span>
+   <span className="tk-st">{t.st==='ok'?'✓':t.st==='opt'?'רשות':'⚠'}</span>
+  </button>)}</div>
+  {inbox.length>0&&<div className="feed"><div className="cl-h">עדכונים</div>
+   <div className="inbox">{inbox.map(m=><button key={m.id} className={"msg"+(read[m.id]?'':' new')+(m.warn?' warn':'')} onClick={()=>{setRead(r=>({...r,[m.id]:1}));m.go&&m.go();}}>
+    <span className="msg-ic">{m.ic}</span><span className="msg-tx"><b>{m.t}</b><span>{m.s}</span>{m.act&&<span className="msg-act" role="button" onClick={e=>{e.stopPropagation();setRead(r=>({...r,[m.id]:1}));m.act.fn();flyCoin(e,'✓',true);}}>{m.act.label}</span>}</span>{m.cta&&<span className="msg-cta">{m.cta} ›</span>}</button>)}</div></div>}
+ </div>;};
 
  const Product=()=>{const R=recipe;const imp=(k,dv)=>{const r2={...R,[k]:R[k]+dv};if(r2[k]<(k==='l'?1:0)||r2.l+r2.h+r2.i>CUP)return null;return buyersFor(r2,price)-buyers;};
   const setR=(k,v)=>{const r2={...R,[k]:v};if(v<(k==='l'?1:0)||r2.l+r2.h+r2.i>CUP)return;setRecipe(r2);};
   return <div className="pane">
+  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
   {isEve&&<div className="note">🌙 זה המתכון שתתכנן למחר. מזג האוויר עוד לא ידוע{fcast?` (לפי התחזית: ${fcast.t}°)`:''}.</div>}
   <section className="blk">
    <div className="blk-h"><h3>🥤 המתכון</h3><span className="tag">{quality}/100 איכות</span></div>
@@ -961,6 +1073,7 @@ function Game(){
   const fill=n=>{const need={l:Math.max(0,n*recipe.l-lm),h:Math.max(0,n*recipe.h-sugar),i:Math.max(0,n*recipe.i-ice)};return{...need,cost:need.l*tP.l+need.h*tP.h+need.i*tP.i};};
   const after={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i};const cupsAfter=Math.min(Math.floor(after.l/recipe.l),recipe.h?Math.floor(after.h/recipe.h):999,recipe.i?Math.floor(after.i/recipe.i):999);
   return <div className="pane">
+  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
   {!isEve&&<div className="note">🔒 השוק סגור עד הערב. כאן רואים מה יש במלאי.</div>}
   <section className="blk">
    <div className="blk-h"><h3>📦 {isEve?'קניות למחר':'המלאי שלך'}</h3>{isEve&&<span className="tag">משלמים עכשיו</span>}</div>
@@ -976,6 +1089,7 @@ function Game(){
  </div>;};
 
  const Mkt=()=> <div className="pane">
+  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
   <div className="budget">💰 פנוי להוצאות: <b className="num">{fmt(free)}</b>{committed>0&&<span> · כבר התחייבת ל-{fmt(committed)} שיורדים בסוף היום</span>}</div>
   <section className="blk"><div className="blk-h"><h3>⭐ קבוע</h3><span className="tag">משלמים עכשיו · עובד עד סוף המשחק</span></div>
    <div className="shop">{UPG_MKT.map(u=>{const own=ups.includes(u.id);return <div key={u.id} className={"item"+(own?' own':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
@@ -989,6 +1103,7 @@ function Game(){
  </div>;
 
  const Intel=()=> <div className="pane">
+  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>🔮 תחזית מזג אוויר ליום {day}</h3><span className="tag">{isEve?'נקנית בערב':'נקנתה אתמול בערב'}</span></div>
    {fcast?<div className="fc-card"><span className="fc-e">{WE[fcast.w].em}</span><div><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span>{!isEve&&<span className="fc-v">בפועל: {wInfo.n} {temp}° — {fcast.t===temp?'צדקה ✓':`טעות של ${Math.abs(fcast.t-temp)}°`}</span>}</div></div>
@@ -1007,6 +1122,7 @@ function Game(){
  </div>;
 
  const Biz=()=> <div className="pane">
+  <button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>📍 מיקום הדוכן היום</h3><span className="tag">שכירות בסוף היום</span></div>
    <div className="locs">{LOC.map(l=><button key={l.id} disabled={isEve} className={"loc"+(loc===l.id?' on':'')} onClick={()=>setLoc(l.id)}><span>{l.em}</span><b>{l.n}</b><small>{l.d}</small></button>)}</div>
@@ -1056,11 +1172,13 @@ function Game(){
   <button className="cta" onClick={()=>location.reload()}>עונה חדשה</button></div>;};
 
  /* ── Layout ── */
- const NAV=[['news','📥','חדשות'],['product','🥤','מוצר'],['stock','📦','מחסן'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
+ const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','📦','מחסן'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
  const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום העונה ›':`לערב · לפני יום ${day+1} ›`):'';
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
- return <div className={"app sky-"+skyKind}>
+ const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
+ return <div className={"app sky-"+skyKind+" bg-"+wxKind}>
+  <WxLayer kind={wxKind}/>
   <header className="top">
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{DAYS}</i></b></div>
@@ -1076,7 +1194,7 @@ function Game(){
   </header>
   <main className="main" key={phase+tab}>
    {phase==='sim'?Sim():phase==='report'?Report():phase==='over'?Over():
-    tab==='lastrep'&&report?<div className="pane"><button className="chip back" onClick={()=>setTab('news')}>‹ חזרה לחדשות</button>{Report()}</div>:
+    tab==='lastrep'&&report?<div className="pane"><button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>{Report()}</div>:
     tab==='news'?News():tab==='product'?Product():tab==='stock'?Stock():tab==='mkt'?Mkt():tab==='intel'?Intel():Biz()}
   </main>
   {phase!=='over'&&<div className="cta-bar">
@@ -1086,7 +1204,7 @@ function Game(){
   </div>}
   {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
   {confirm&&<div className="dlg-bg"><div className="dlg"><b>{confirm.t}</b><p>{confirm.s}</p><div className="dlg-b"><button className="btn ghost" onClick={()=>{const f=confirm.onNo;setConfirm(null);f&&f();}}>{confirm.no}</button><button className="btn" onClick={()=>{const f=confirm.onYes;setConfirm(null);f();}}>{confirm.yes}</button></div></div></div>}
-  {show&&<SkyShow kind={show.kind} line1={show.l1} line2={show.l2} onDone={()=>setShow(null)}/>}
+  {show&&<SkyShow kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} onDone={()=>setShow(null)}/>}
  </div>;
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<Game/>);
