@@ -777,7 +777,7 @@ const UPG_OPS=[{id:"juicer",em:"🔧",n:"מסחטה",c:25,d:"חוסכת לימו
 const MKTG=[{id:"flyer",em:"📄",n:"פליירים",c:5,dm:1.10,d:"+10% מבקרים היום"},{id:"banner",em:"🎈",n:"בלונים ושלטים",c:10,dm:1.18,d:"+18% מבקרים היום"},
  {id:"social",em:"📱",n:"פוסט ברשתות",c:7,dm:1.08,d:"+8% מבקרים, סיכוי ל-+2 מוניטין"},{id:"taste",em:"🎁",n:"טעימות חינם",c:3,dm:1,d:"+3 מוניטין אם הטעם טוב"}];
 const BLACK=[{id:"ads",em:"📢",n:"קמפיין נגד המתחרה",c:8,d:"גונב 18% מהלקוחות שלו",risk:0},{id:"rumor",em:"🗣️",n:"הפצת שמועות",c:4,d:"−5 מוניטין למתחרה",risk:30},{id:"signs",em:"🚫",n:"הסרת השלטים שלו",c:6,d:"פחות חשיפה למתחרה",risk:40}];
-const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.5,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.75,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
+const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.65,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.8,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
 const RESEARCH_C=4,SPY_C=3;
 const PRESETS=[{id:'classic',n:'קלאסי',r:{l:3,h:1,i:1},fit:'כולם'},{id:'kids',n:'מתוק לילדים',r:{l:2,h:2,i:1},fit:'👦 ילדים'},{id:'sport',n:'רענן לספורטאים',r:{l:3,h:0,i:3},fit:'🏃 ספורטאים'},
  {id:'chef',n:'עשיר לשפים',r:{l:4,h:1,i:1},fit:'🧑‍🍳 שפים'},{id:'hot',n:'קפוא ליום חם',r:{l:3,h:1,i:2},fit:'☀️ ימים חמים'}];
@@ -977,7 +977,7 @@ function Game(){
  const inbox=[];
  if(phase==='evening'){
   if(report)inbox.push({id:'rep'+day,ic:'📊',t:`דוח יום ${day-1}: ${fmt(report.profit)}`,s:`${report.sold} כוסות נמכרו · מוניטין ${report.repD>=0?'+':''}${report.repD}`,go:()=>setTab('lastrep'),cta:'לדוח'});
-  inbox.push({id:'mkt'+day,ic:'🛒',t:'השוק פתוח הלילה',s:`לימון ${fmt2(tP.l)} · סוכר ${fmt2(tP.h)} · קרח ${fmt2(tP.i)}`,go:()=>setTab('stock'),cta:'למחסן'});
+  inbox.push({id:'mkt'+day,ic:'🛒',t:'השוק פתוח הלילה',s:`לימון ${fmt2(tP.l)} · סוכר ${fmt2(tP.h)} · קרח ${fmt2(tP.i)}`,go:()=>setTab('stock'),cta:'לשוק'});
   if(!fcast)inbox.push({id:'fc'+day,ic:'🔮',t:`אין לך תחזית ליום ${day}`,s:'בלי תחזית קונים בעיוורון. תחזית מתחילה ב-₪2',go:()=>setTab('intel'),cta:'למודיעין'});
   else inbox.push({id:'fc'+day,ic:WE[fcast.w].em,t:`התחזית למחר: ${WE[fcast.w].n} ${fcast.t}°`,s:`דיוק ~${Math.round(fcast.ac*100)}%${fcast.ev?` · ${fcast.ev}`:''}`,go:()=>setTab('intel')});
   const exp=lemons.filter(b=>day-b.d>=2).reduce((s,b)=>s+b.q,0);
@@ -1269,7 +1269,7 @@ function Game(){
   <button className="cta" onClick={()=>location.reload()}>עונה חדשה</button></div>;};
 
  /* ── Layout ── */
- const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','📦','מחסן'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
+ const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','🛒','שוק'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
  const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום העונה ›':`לערב · לפני יום ${day+1} ›`):'';
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
