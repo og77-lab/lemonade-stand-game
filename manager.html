@@ -418,6 +418,21 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .glass-spark{animation:spark 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes spark{0%,100%{opacity:.25}50%{opacity:1}}
 
+/* Six places in the cup */
+.slots-wrap{background:var(--panel-2);border-radius:12px;padding:8px;margin-bottom:10px}
+.slots{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:10px;padding:6px 0 4px;border:2px solid transparent;transition:background .25s,border-color .25s;animation:slotIn .3s var(--spring)}
+@keyframes slotIn{from{transform:scale(.8)}}
+.slot b{font-size:20px;line-height:1}.slot small{font-size:10px;font-weight:600}
+.s-l{background:#4A3D0E;border-color:#FFD23F;color:#FFE58A}
+.s-h{background:#4A2234;border-color:#FF8FB1;color:#FFC2D6}
+.s-i{background:#163A4E;border-color:#5CC8F0;color:#BDEBFF}
+.s-w{background:transparent;border:2px dashed #4A507E;color:var(--dim)}
+.s-w b{opacity:.5}
+.slots-cap{font-size:12px;color:var(--dim);margin-top:7px;text-align:center;line-height:1.4}
+.slots-cap b{color:var(--ink);font-size:14px}
+.slots-cap.full{color:var(--warn)}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -838,6 +853,7 @@ const GlassSvg=({l,h,i,temp=25})=>{
   {/* glass front: reflections and rim */}
   <path d="M24 30 L36 170 A34 7 0 0 0 104 170 L116 30" fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="2"/>
   <path d="M33 44 L42 160" stroke="#fff" strokeWidth="6" strokeLinecap="round" opacity=".28"/>
+  {[1,2,3,4,5,6].map(k=>{const y=170-k*20,x=70+rxAt(y);return <g key={'t'+k}><line x1={x-9} y1={y} x2={x-1} y2={y} stroke="#fff" strokeWidth="1.6" opacity=".75"/><text x={x+3} y={y+3} fontSize="8" fill="#fff" opacity=".7" fontFamily="Rubik,sans-serif">{k}</text></g>;})}
   <path d="M40 48 L46 120" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".35"/>
   <path d="M106 50 L100 150" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" opacity=".18"/>
   <ellipse cx="70" cy="30" rx="46" ry="9" fill="none" stroke="#fff" strokeOpacity=".75" strokeWidth="2"/>
@@ -1124,11 +1140,13 @@ function Game(){
   {isEve&&<div className="note">🌙 זה המתכון שתתכנן למחר. מזג האוויר עוד לא ידוע{fcast?` (לפי התחזית: ${fcast.t}°)`:''}.</div>}
   <section className="blk">
    <div className="blk-h"><h3>🥤 המתכון</h3><span className="tag">{quality}/100 איכות</span></div>
+   <div className="slots-wrap"><div className="slots" aria-label="6 מקומות בכוס">{Array.from({length:CUP}).map((_,i)=>{const kind=i<R.l?'l':i<R.l+R.h?'h':i<R.l+R.h+R.i?'i':'w';return <span key={i} className={"slot s-"+kind}><b>{kind==='l'?'🍋':kind==='h'?'🍬':kind==='i'?'🧊':'💧'}</b><small>{kind==='l'?'לימון':kind==='h'?'סוכר':kind==='i'?'קרח':'מים'}</small></span>;})}</div>
+    <div className={"slots-cap"+(water===0?' full':'')}><b>{CUP-water}/{CUP}</b> מקומות תפוסים · {water>0?`${water} נשארים למים, ומים מדללים את הטעם`:'הכוס מלאה — כדי להוסיף משהו צריך להוריד משהו אחר'}</div></div>
    <div className="presets">{PRESETS.map(p=><button key={p.id} className={"preset"+(sameR(p.r,R)?' on':'')} onClick={()=>setRecipe(p.r)}><b>{p.n}</b><small>{p.r.l}🍋{p.r.h}🍬{p.r.i}🧊 · {p.fit}</small></button>)}</div>
    <div className="recipe">
     <div className="glass-wrap"><GlassSvg l={R.l} h={R.h} i={R.i} temp={isEve?(fcast?fcast.t:24):temp}/></div>
     <div className="ings">{[['l','🍋','לימון','טעם. הרבה = חמוץ',1,5],['h','🍬','סוכר','מרכך חמיצות',0,5],['i','🧊','קרח','רעננות, חשוב בחום',0,5]].map(([k,em,n,d,mn,mx])=>{const up=imp(k,1),dn=imp(k,-1);
-     return <div key={k} className="ing"><div className="ing-t"><b>{em} {n}</b><Stepper v={R[k]} set={v=>setR(k,v)} min={mn} max={mx}/></div>
+     return <div key={k} className="ing"><div className="ing-t"><b>{em} {n}</b><Stepper v={R[k]} set={v=>setR(k,v)} min={mn} max={Math.min(mx,R[k]+water)}/></div>
       <div className="ing-d">{d}{research&&<>{dn!==null&&<span>−1 <Delta d={dn}/></span>}{up!==null&&<span>+1 <Delta d={up}/></span>}</>}</div></div>;})}
      <div className="water">💧 מים: {water} {water>=2?'— מדללים את הטעם':''}</div>
     </div>
