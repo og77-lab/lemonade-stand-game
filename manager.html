@@ -540,6 +540,91 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .lnk{color:var(--lemon);text-decoration:underline;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.fresh,.sa-sign,.sa-spark{animation:none!important}}
 
+/* ── Motion round 2: events ── */
+.sky-ev{flex-direction:column;justify-content:flex-start;padding-top:16vh}
+.sky-vip,.sky-insp,.sky-paper{animation-duration:2.9s}.sky-helper{animation-duration:2.6s}
+.sky-vip{background:linear-gradient(180deg,#2B2F6B,#5B4A9E 55%,#D9A441)}
+.sky-insp{background:linear-gradient(180deg,#24364A,#3E5A72 60%,#6E8AA0)}
+.sky-paper{background:radial-gradient(circle at 50% 40%,#FFF6D6,#F2D38A 60%,#C99A3E)}
+.sky-helper{background:linear-gradient(180deg,#1F5F5B,#3FA08F 60%,#9FE0C8)}
+.sky-ev .sky-text{margin-top:18px}
+.sky-paper .sky-text{color:#3A2100;text-shadow:0 2px 12px rgba(255,255,255,.5)}
+.ev-stage{position:relative;width:300px;height:200px}
+.ev-road{position:absolute;left:-40px;right:-40px;bottom:18px;height:10px;border-radius:5px;background:rgba(0,0,0,.25)}
+.ev-taxi{position:absolute;bottom:20px;left:50%;font-size:96px;line-height:1;margin-left:-48px;animation:taxiIn 1s cubic-bezier(.2,.8,.3,1.15) both}
+@keyframes taxiIn{from{transform:translateX(110vw)}70%{transform:translateX(-12px)}to{transform:none}}
+.ev-who{position:absolute;bottom:40px;left:18%;font-size:56px;animation:popUp .5s var(--spring) .95s both}
+.ev-hat{position:absolute;top:-30px;left:6px;font-style:normal;font-size:38px;animation:tip .6s ease-in-out 1.6s 2}
+@keyframes tip{50%{transform:translateY(-8px) rotate(-14deg)}}
+.ev-note{position:absolute;bottom:56px;left:2%;font-size:30px;animation:popUp .4s var(--spring) 1.2s both}
+.ev-star{position:absolute;top:6px;font-size:26px;animation:popUp .4s var(--spring) both}
+@keyframes popUp{from{transform:translateY(30px) scale(.3);opacity:0}to{transform:none;opacity:1}}
+.ev-walker{position:absolute;bottom:20px;left:8%;font-size:76px;animation:walkIn 1s ease-out both,bob .25s ease-in-out 4 alternate}
+@keyframes walkIn{from{transform:translateX(-80vw)}to{transform:none}}
+@keyframes bob{to{translate:0 -6px}}
+.ev-pad{position:absolute;right:8%;bottom:30px;width:130px;height:150px;background:#FFFDF2;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.3);padding:12px;display:flex;flex-direction:column;gap:10px;color:#24364A;animation:popUp .4s var(--spring) .6s both}
+.ev-pad b{font-size:14px}.ev-pad i{display:block;height:4px;border-radius:2px;background:#9BB0C2;transform-origin:right;animation:line .3s ease-out both}
+.ev-pad i:nth-of-type(1){animation-delay:.9s}.ev-pad i:nth-of-type(2){animation-delay:1.05s;width:70%}.ev-pad i:nth-of-type(3){animation-delay:1.2s;width:85%}
+@keyframes line{from{transform:scaleX(0)}}
+.ev-pen{position:absolute;left:10px;top:40px;font-size:28px;animation:scrib .15s ease-in-out .9s 6 alternate}
+@keyframes scrib{to{transform:translate(10px,6px) rotate(-10deg)}}
+.ev-stamp{position:absolute;right:4%;bottom:70px;transform:rotate(-14deg);border:4px solid #D62B3A;color:#D62B3A;font-family:var(--f-display);font-weight:600;font-size:24px;padding:2px 10px;border-radius:8px;background:rgba(255,255,255,.6);animation:stampIn .35s cubic-bezier(.5,0,.75,0) 1.25s both}
+@keyframes stampIn{from{transform:scale(3) rotate(-14deg);opacity:0}to{transform:scale(1) rotate(-14deg);opacity:1}}
+.ev-news{position:absolute;left:50%;top:0;width:240px;margin-left:-120px;background:#FBF8EE;color:#222;border-radius:4px;padding:10px 12px;box-shadow:0 14px 30px rgba(0,0,0,.35);animation:spinIn 1.1s cubic-bezier(.2,.8,.3,1) both}
+@keyframes spinIn{from{transform:scale(0) rotate(-900deg)}to{transform:scale(1) rotate(-4deg)}}
+.nw-mast{font-family:var(--f-display);font-weight:600;font-size:13px;border-bottom:2px solid #222;padding-bottom:4px;text-align:center}
+.nw-head{font-family:var(--f-display);font-weight:600;font-size:22px;line-height:1.1;margin:8px 0;text-align:center}
+.nw-body{display:flex;gap:10px;align-items:center}.nw-body span{font-size:46px;background:#FFE58A;border-radius:6px;padding:4px}
+.nw-body p{flex:1;margin:0;display:flex;flex-direction:column;gap:6px}.nw-body i{display:block;height:4px;background:#C9C3B0;border-radius:2px}
+.ev-walker.hp{left:30%}
+.ev-wave{position:absolute;bottom:90px;left:58%;font-size:40px;transform-origin:70% 90%;animation:popUp .3s var(--spring) .9s both,wave .4s ease-in-out 1.2s 4 alternate}
+@keyframes wave{from{rotate:-20deg}to{rotate:20deg}}
+.ev-bubble{position:absolute;top:10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;color:#1F5F5B;font-weight:700;border-radius:14px;padding:6px 12px;animation:popUp .4s var(--spring) 1.1s both}
+/* Intel reveals */
+.fc-card{position:relative;overflow:hidden}
+.fc-ball{display:none}
+.fc-card.reveal .fc-ball{display:grid;place-items:center;position:absolute;inset:0;font-size:64px;background:radial-gradient(circle,rgba(160,120,255,.55),rgba(42,47,99,.95) 70%);animation:ball 1.3s ease-in-out both;z-index:1}
+@keyframes ball{0%{opacity:1;transform:scale(.6) rotate(0)}60%{opacity:1;transform:scale(1.1) rotate(200deg);filter:blur(0)}100%{opacity:0;transform:scale(1.6) rotate(360deg);filter:blur(6px)}}
+.fc-card.reveal>:not(.fc-ball){animation:unblur .7s ease-out .9s both}
+@keyframes unblur{from{filter:blur(8px);opacity:0}}
+.aud-r.grow .aud-b i{transform-origin:right;animation:barGrow .8s var(--ease-out) var(--d,0s) both}
+@keyframes barGrow{from{transform:scaleX(0)}}
+.aud-r.grow .aud-x b{display:inline-block;animation:pop .4s var(--spring) calc(var(--d,0s) + .5s) both}
+.rivals{position:relative}
+.rivals.scan .rv-x{animation:popUp .4s var(--spring) var(--d,.5s) both}
+.scan-bino{position:absolute;z-index:2;right:0;top:0;font-size:30px;pointer-events:none;animation:scan 1.5s ease-in-out both}
+@keyframes scan{0%{transform:translate(0,0);opacity:0}10%{opacity:1}50%{transform:translate(-240px,40%)}90%{opacity:1}100%{transform:translate(-40px,100%);opacity:0}}
+/* ── Settings ── */
+.gear{width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,.25);font-size:18px;display:grid;place-items:center;flex-shrink:0}
+.gear:active{transform:rotate(60deg)}
+.t-side{display:flex;align-items:center;gap:8px}
+.intro-gear{position:absolute;top:max(12px,env(safe-area-inset-top,0px));left:16px;z-index:3}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px;width:100%;max-width:420px;max-height:88%;display:flex;flex-direction:column;animation:pop .3s var(--spring)}
+.sheet-h{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.sheet-h h2{flex:1;font-size:20px}
+.sheet-x{width:32px;height:32px;border-radius:9px;background:var(--panel-2);font-size:14px}
+.sheet-b{overflow-y:auto;padding:8px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.set-grp{background:var(--panel-2);border-radius:14px;overflow:hidden}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:11px 12px;text-align:right;border-bottom:1px solid var(--line)}
+.set-grp>:last-child{border-bottom:none}
+.set-t{display:flex;flex-direction:column;min-width:0}.set-t b{font-size:14.5px}.set-t small{font-size:12px;color:var(--dim)}
+.set-go{color:var(--dim);font-size:18px}
+.tgl{width:46px;height:28px;border-radius:14px;background:#454A75;position:relative;flex-shrink:0;transition:background .2s}
+.tgl i{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s var(--spring)}
+.tgl.on{background:var(--good)}.tgl.on i{transform:translateX(-18px)}
+.vol input{flex:1;max-width:170px;accent-color:var(--lemon)}
+.set-quit{margin-top:12px}
+.set-ver{text-align:center;font-size:11.5px;color:var(--dim);margin-top:8px}
+.legal p{margin:0 0 6px;font-size:14px;line-height:1.6;color:var(--ink)}
+.legal h4{margin:10px 0 2px;font-size:15px;color:var(--lemon)}
+.legal .btn{margin-top:10px}
+/* Accessibility switches */
+html.reduce *,html.reduce *::before,html.reduce *::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+html.big .app,html.big .dlg-bg{zoom:1.15}
+html.hc{--dim:#DADCF0;--line:#7C82B8;--panel:#0E1024;--panel-2:#1A1D3A}
+html.hc .blk,html.hc .task,html.hc .msg{background-color:#0E1024!important;border-color:#7C82B8}
+html.hc .tag,html.hc .why{outline:1px solid currentColor}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -945,7 +1030,7 @@ const PULP=[[48,96],[86,112],[62,130],[78,82],[56,150],[92,140],[70,104],[50,122
 const GlassSvg=({l,h,i,temp=25,bare})=>{
  const prev=useRef({l,h,i}),[fx,setFx]=useState([]);
  useEffect(()=>{const p=prev.current,n=[];['l','h','i'].forEach(k=>{const d=({l,h,i})[k]-p[k];if(d)n.push({id:Date.now()+k,k,up:d>0});});prev.current={l,h,i};
-  if(n.length){setFx(f=>[...f,...n]);const ids=n.map(x=>x.id);setTimeout(()=>setFx(f=>f.filter(x=>!ids.includes(x.id))),1100);}},[l,h,i]);
+  if(n.length){if(!bare)sfx('pop');setFx(f=>[...f,...n]);const ids=n.map(x=>x.id);setTimeout(()=>setFx(f=>f.filter(x=>!ids.includes(x.id))),1100);}},[l,h,i]);
  const w=Math.max(0,6-l-h-i);
  // Colour: lemons make it deep yellow, water washes it out (sugar has its own look: crystals and a sugared rim)
  const strength=l/(l+w+0.0001);
@@ -1047,15 +1132,32 @@ const Roll=({v,f=x=>Math.round(x)})=>{const [d,setD]=useState(v);const from=useR
   const tick=t=>{const k=Math.min(1,(t-t0)/600),e=1-Math.pow(1-k,3);setD(a0+(b-a0)*e);if(k<1)raf=requestAnimationFrame(tick);else{from.current=b;}};
   raf=requestAnimationFrame(tick);return()=>{cancelAnimationFrame(raf);from.current=b;};},[v]);
  return <span className="num roll">{f(d)}</span>;};
+// Player settings, kept only on this device
+const CFG0={music:true,vol:0.45,sfx:true,motion:'auto',big:false,hc:false};
+const loadCfg=()=>{try{return{...CFG0,...JSON.parse(localStorage.getItem('lm-cfg')||'{}')};}catch(_){return{...CFG0};}};
+const reduced=()=>document.documentElement.classList.contains('reduce');
+// Short synthesized sound effects (no files needed)
+const SFX={on:true,ac:null};
+const NOTES={coin:[[988,.05],[1319,.12,.05]],pop:[[520,.07,0,'sine',900]],sell:[[880,.09],[1175,.12,.07]],tap:[[1100,.025,0,'sine']],
+ register:[[1568,.07,0,'square'],[2093,.28,.08,'triangle']],fanfare:[[523,.12],[659,.12,.12],[784,.12,.24],[1047,.35,.36]],
+ stamp:[[110,.18,0,'square',60]],whoosh:[[420,.35,0,'sawtooth',90]],sparkle:[[1568,.06],[2093,.06,.06],[2637,.12,.12]]};
+const sfx=k=>{if(!SFX.on||!NOTES[k])return;try{const AC=window.AudioContext||window.webkitAudioContext;SFX.ac=SFX.ac||new AC();const ac=SFX.ac;if(ac.state==='suspended')ac.resume();
+ NOTES[k].forEach(([f,d,t=0,type='triangle',f2])=>{const o=ac.createOscillator(),g=ac.createGain(),t0=ac.currentTime+t;o.type=type;o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+  g.gain.setValueAtTime(k==='whoosh'?0.025:0.07,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+d);o.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+d+0.02);});}catch(_){}};
+// Background music: a random track, then another when it ends
+const MUSIC=['music/lemonade-dreams.mp3','music/general-1.mp3','music/general-2.mp3','music/lemon-squeeze.mp3','music/limon-mon-mon.mp3','music/buy-from-me.mp3'];
+// True for ~1.6s after a key is first seen: lets a reveal animate once, not on every visit
+const SEEN=new Map();const fresh=k=>{const n=Date.now(),t=SEEN.get(k);if(t===undefined){SEEN.set(k,n);return true;}return n-t<1600;};
+
 // Something flies from where you tapped to a target on screen (an emoji, a coin…)
-const flyTo=(e,content,sel,reverse)=>{try{const t=document.querySelector(sel);if(!t)return;const r=t.getBoundingClientRect();
+const flyTo=(e,content,sel,reverse)=>{if(!reverse)sfx('coin');if(reduced())return;try{const t=document.querySelector(sel);if(!t)return;const r=t.getBoundingClientRect();
  const sx=e?.clientX??innerWidth/2,sy=e?.clientY??innerHeight/2,tx=r.left+r.width/2,ty=r.top+r.height/2;
  const [x0,y0,x1,y1]=reverse?[tx,ty,sx,sy]:[sx,sy,tx,ty];
  const el=document.createElement('div');el.className='flyer';el.textContent=content;el.style.left=x0+'px';el.style.top=y0+'px';document.body.appendChild(el);
  const dx=x1-x0,dy=y1-y0;el.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:0},{transform:`translate(calc(-50% + ${dx*0.3}px),calc(-50% + ${dy*0.3-60}px)) scale(1.25)`,opacity:1,offset:.35},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.7)`,opacity:.9}],{duration:700,easing:'cubic-bezier(.3,.7,.4,1)'}).onfinish=()=>{el.remove();
   if(!reverse){t.classList.remove('hit');void t.offsetWidth;t.classList.add('hit');}};}catch(_){}};
 const Delta=({d})=>d===0?<span className="dl">±0</span>:<span className={"dl "+(d>0?'up':'dn')}>{d>0?'+':'−'}{Math.abs(d)} קונים</span>;
-const flyCoin=(e,text,good)=>{try{const el=document.createElement('div');el.className='fly'+(good?' good':'');el.textContent=text;
+const flyCoin=(e,text,good)=>{sfx(good?'sell':'coin');if(reduced())return;try{const el=document.createElement('div');el.className='fly'+(good?' good':'');el.textContent=text;
  el.style.left=(e?.clientX||innerWidth/2)+'px';el.style.top=(e?.clientY||innerHeight/2)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}catch(_){}};
 
 // Living weather behind the whole screen
@@ -1082,7 +1184,19 @@ const StandArt=({ups=[],fresh,sign=true})=>{const has=id=>ups.includes(id)||fres
  </div>;};
 
 // Sky transition between parts of the day
-const SkyShow=({kind,wx,line1,line2,onDone,ups,item})=>{useEffect(()=>{const t=setTimeout(onDone,kind==='open'?1900:2300);return()=>clearTimeout(t);},[]);
+const SHOW_MS={open:1900,install:2300,vip:2900,insp:2900,paper:2900,helper:2600};
+const SHOW_SND={open:'register',install:'sparkle',vip:'fanfare',insp:'stamp',paper:'fanfare',helper:'sparkle',dawn:'whoosh',dusk:'whoosh'};
+const SkyShow=({kind,wx,line1,line2,onDone,ups,item})=>{useEffect(()=>{const s=setTimeout(()=>sfx(SHOW_SND[kind]),kind==='insp'?1250:kind==='open'?900:300);const t=setTimeout(onDone,SHOW_MS[kind]||2300);return()=>{clearTimeout(t);clearTimeout(s);};},[]);
+ const txt=<div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>;
+ if(kind==='vip')return <div className="sky sky-ev sky-vip" onClick={onDone}>
+  <div className="ev-stage"><div className="ev-road"/><div className="ev-taxi">🚕</div><div className="ev-who">🧐<i className="ev-hat">🎩</i></div><div className="ev-note">📝</div>
+   {[0,1,2].map(k=><span key={k} className="ev-star" style={{animationDelay:1.3+k*0.15+'s',left:28+k*22+'%'}}>⭐</span>)}</div>{txt}</div>;
+ if(kind==='insp')return <div className="sky sky-ev sky-insp" onClick={onDone}>
+  <div className="ev-stage"><div className="ev-walker">🧑‍💼</div><div className="ev-pad"><b>דו״ח פיקוח</b><i/><i/><i/><span className="ev-pen">✍️</span></div><div className="ev-stamp">קנס ₪8</div></div>{txt}</div>;
+ if(kind==='paper')return <div className="sky sky-ev sky-paper" onClick={onDone}>
+  <div className="ev-stage"><div className="ev-news"><div className="nw-mast">📰 עיתון השכונה</div><div className="nw-head">הלימונדה הכי טובה בעיר!</div><div className="nw-body"><span>🍋</span><p><i/><i/><i/><i/></p></div></div></div>{txt}</div>;
+ if(kind==='helper')return <div className="sky sky-ev sky-helper" onClick={onDone}>
+  <div className="ev-stage"><div className="ev-walker hp">🧑‍💼</div><div className="ev-wave">👋</div><div className="ev-bubble">היי! אני כאן לעזור</div></div>{txt}</div>;
  if(kind==='open'||kind==='install')return <div className={"sky sky-"+kind} onClick={onDone}>
   <StandArt ups={ups} fresh={kind==='install'?item:null} sign={kind==='open'}/>
   <div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>
@@ -1218,7 +1332,9 @@ function Game(){
  const pay=(amt)=>{setCash(c=>c-amt);setSpentToday(s=>s+amt);};
  const confirmEvening=()=>{const cost=buy.l*tP.l+buy.h*tP.h+buy.i*tP.i;if(cost>0){pay(cost);}
   if(buy.l)setLemons(ls=>[...ls,{q:buy.l,d:day}]);setSugar(s=>s+buy.h);setIce(i=>i+buy.i);setBuy({l:0,h:0,i:0});
-  setPhase('morning');setTab('news');setShow({kind:'dawn',wx:world[day].w,l1:`יום ${day}`,l2:`${WE[world[day].w].em} ${WE[world[day].w].n} ${world[day].t}°`});};
+  const evs=[vipBoost&&{kind:'paper',l1:'כתבה בעיתון!',l2:'המבקר המליץ עליך · ×1.3 מבקרים היום'},world[day].vip&&{kind:'vip',l1:'מבקר האוכל בעיר!',l2:'הוא אוהב כוס איכותית (65+)'},world[day].insp&&{kind:'insp',l1:'פיקוח עירוני!',l2:'צריך לשלם ₪8 כדי לפתוח היום'}].filter(Boolean);
+  const chain=evs.reduceRight((nx,s)=>({...s,next:nx}),null);
+  setPhase('morning');setTab('news');setShow({kind:'dawn',wx:world[day].w,l1:`יום ${day}`,l2:`${WE[world[day].w].em} ${WE[world[day].w].n} ${world[day].t}°`,next:chain});};
  const openStand=(closed)=>{const r=rng(seed+day*977);const list=[];let sold=0,rev=0,repD=0,walk=0,miss=0;
   const byType=Object.fromEntries(TYPES.map(k=>[k,{vis:0,buy:0,miss:0}])),whys=Object.fromEntries(aud.map(x=>[x.k,x.why]));
   const ro=rng(seed+day*55),rumor=acts.includes('rumor')?(ro()<0.3?'caught':'ok'):null,signs=acts.includes('signs')?(ro()<0.4?'caught':'ok'):null;
@@ -1233,6 +1349,59 @@ function Game(){
   const usedL=c0*recipe.l-(ups.includes('juicer')?Math.floor(c0/10):0);
   setSim({list,shown:[],sold:0,rev:0,walk:0,done:closed,result:{sold,rev,repD,walk,miss,visitors:v,usedL,cups:c0,byType,whys,vip,rumor,signs,fine,closed:!!closed}});
   setPhase('sim');if(!closed)setShow({kind:'open',l1:'הדוכן נפתח!',l2:`${cups} כוסות × ₪${price}`});};
+ // Settings: sound, accessibility, legal pages
+ const [cfg,setCfgS]=useState(loadCfg),[setOpen,setSetOpen]=useState(false),[setPage,setSetPage]=useState('main');
+ const setCfg=p=>setCfgS(c=>{const n={...c,...p};try{localStorage.setItem('lm-cfg',JSON.stringify(n));}catch(_){}return n;});
+ useEffect(()=>{SFX.on=cfg.sfx;const h=document.documentElement,sys=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  h.classList.toggle('reduce',cfg.motion==='reduce'||(cfg.motion==='auto'&&sys));h.classList.toggle('big',cfg.big);h.classList.toggle('hc',cfg.hc);},[cfg]);
+ const music=useRef(null);
+ useEffect(()=>{let au=music.current;
+  if(!cfg.music){if(au)au.pause();return;}
+  if(!au){au=music.current=new Audio();let last=-1;const next=()=>{let k;do{k=Math.floor(Math.random()*MUSIC.length);}while(k===last&&MUSIC.length>1);last=k;au.src=MUSIC[k];au.play().catch(()=>{});};
+   au.addEventListener('ended',next);au.addEventListener('error',()=>{});next();}
+  au.volume=cfg.vol;au.play().catch(()=>{});
+  // browsers only allow sound after the first tap
+  const go=()=>{if(cfg.music)au.play().catch(()=>{});};document.addEventListener('pointerdown',go,{once:true});return()=>document.removeEventListener('pointerdown',go);},[cfg.music,cfg.vol]);
+ const lastSold=useRef(0);
+ useEffect(()=>{const s=sim?sim.sold:0;if(s>lastSold.current&&!simFast.current)sfx('sell');lastSold.current=s;},[sim&&sim.sold]);
+ useEffect(()=>{if(phase==='report')setTimeout(()=>sfx('register'),1100);},[phase]);
+ const Toggle=({on,set,label,sub})=><button className="set-row" role="switch" aria-checked={on} onClick={()=>set(!on)}><span className="set-t"><b>{label}</b>{sub&&<small>{sub}</small>}</span><span className={"tgl"+(on?' on':'')}><i/></span></button>;
+ const Settings=()=><div className="dlg-bg" onClick={()=>setSetOpen(false)}><div className="sheet" role="dialog" aria-label="הגדרות" onClick={e=>e.stopPropagation()}>
+  <div className="sheet-h">{setPage!=='main'&&<button className="chip" onClick={()=>setSetPage('main')}>‹ חזרה</button>}<h2>{setPage==='main'?'⚙️ הגדרות':setPage==='terms'?'📜 תנאי שימוש':setPage==='privacy'?'🔒 פרטיות':'♿ הצהרת נגישות'}</h2><button className="sheet-x" aria-label="סגור" onClick={()=>setSetOpen(false)}>✕</button></div>
+  {setPage==='main'?<div className="sheet-b">
+   <div className="cl-h">🔊 סאונד</div>
+   <div className="set-grp">{Toggle({on:cfg.music,set:v=>setCfg({music:v}),label:'🎵 מוזיקה',sub:'שירים ברקע'})}
+    {cfg.music&&<label className="set-row vol"><span className="set-t"><b>עוצמת מוזיקה</b></span><input type="range" min="0" max="1" step="0.05" value={cfg.vol} onChange={e=>setCfg({vol:+e.target.value})} aria-label="עוצמת מוזיקה"/></label>}
+    {Toggle({on:cfg.sfx,set:v=>{setCfg({sfx:v});SFX.on=v;if(v)sfx('coin');},label:'🔔 צלילים',sub:'מטבעות, קופה, מכירות'})}</div>
+   <div className="cl-h">♿ נגישות</div>
+   <div className="set-grp">{Toggle({on:cfg.motion==='reduce',set:v=>setCfg({motion:v?'reduce':'auto'}),label:'🐢 פחות תנועה',sub:'מבטל אנימציות וחפצים מעופפים'})}
+    {Toggle({on:cfg.big,set:v=>setCfg({big:v}),label:'🔠 טקסט גדול',sub:'מגדיל את כל המסך ב-15%'})}
+    {Toggle({on:cfg.hc,set:v=>setCfg({hc:v}),label:'🌓 ניגודיות גבוהה',sub:'טקסט בהיר יותר וגבולות ברורים'})}</div>
+   <div className="cl-h">ℹ️ מידע</div>
+   <div className="set-grp">{[['terms','📜','תנאי שימוש'],['privacy','🔒','פרטיות'],['a11y','♿','הצהרת נגישות']].map(([k,em,n])=><button key={k} className="set-row" onClick={()=>setSetPage(k)}><span className="set-t"><b>{em} {n}</b></span><span className="set-go">‹</span></button>)}</div>
+   {phase!=='title'&&phase!=='setup'&&<button className="btn ghost set-quit" onClick={()=>{setConfirm({t:'לצאת למסך הפתיחה?',s:'המשחק הנוכחי לא יישמר.',yes:'כן, לצאת',no:'להמשיך לשחק',onYes:()=>location.reload(),onNo:()=>{}});setSetOpen(false);}}>🏠 יציאה למסך הפתיחה</button>}
+   <div className="set-ver">Lemonade Manager · גרסת ניסיון</div>
+  </div>:setPage==='terms'?<div className="sheet-b legal">
+   <p>ברוכים הבאים ל"דוכן הלימונדה". השימוש במשחק מהווה הסכמה לתנאים האלה.</p>
+   <h4>מה זה המשחק</h4><p>משחק סימולציה לניהול דוכן לימונדה, לשימוש אישי ולהנאה. כל הכסף, המחירים, הלקוחות והתוצאות במשחק דמיוניים, ואינם ייעוץ עסקי, כלכלי או פיננסי.</p>
+   <h4>בלי כסף אמיתי</h4><p>אין במשחק רכישות, פרסומות או תשלומים בכסף אמיתי.</p>
+   <h4>זכויות</h4><p>המשחק, הגרפיקה, הטקסטים והמוזיקה שייכים ליוצרי המשחק. אין להעתיק, למכור או להפיץ אותם בלי רשות.</p>
+   <h4>אחריות</h4><p>המשחק ניתן "כמו שהוא" (AS IS). אנחנו משתדלים שיעבוד היטב, אבל לא מתחייבים שיהיה זמין תמיד או נקי מתקלות.</p>
+   <h4>שינויים</h4><p>המשחק והתנאים יכולים להשתנות מדי פעם. הגרסה העדכנית תמיד כאן.</p>
+  </div>:setPage==='privacy'?<div className="sheet-b legal">
+   <h4>מה אנחנו אוספים</h4><p>כלום. המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה.</p>
+   <h4>מה נשמר במכשיר</h4><p>רק ההגדרות שלך (סאונד ונגישות) נשמרות בדפדפן במכשיר שלך, כדי שלא תצטרך לבחור אותן שוב. הן לא נשלחות לשום מקום. אפשר למחוק אותן בכפתור למטה.</p>
+   <h4>התקדמות במשחק</h4><p>התקדמות המשחק לא נשמרת כרגע. רענון הדף מתחיל משחק חדש.</p>
+   <h4>שירותים חיצוניים</h4><p>כדי לטעון את המשחק הדפדפן מוריד גופנים מ-Google Fonts וקוד מ-cdnjs (Cloudflare), והאתר מאוחסן ב-Vercel. כמו בכל אתר, שירותים אלה רואים פרטים טכניים כמו כתובת IP. המשחק לא משתמש בעוגיות פרסום או במעקב.</p>
+   <button className="btn ghost" onClick={()=>{try{localStorage.removeItem('lm-cfg');}catch(_){}setCfgS({...CFG0});}}>🗑️ מחק את ההגדרות השמורות</button>
+  </div>:<div className="sheet-b legal">
+   <p>אנחנו רוצים שכל אחד יוכל ליהנות מהמשחק.</p>
+   <h4>מה יש במשחק</h4><p>• "פחות תנועה" מבטל אנימציות, ומופעל אוטומטית אם ביקשת זאת בהגדרות המכשיר.<br/>• "טקסט גדול" מגדיל את כל המסך.<br/>• "ניגודיות גבוהה" מבהיר טקסט וגבולות.<br/>• אפשר לכבות מוזיקה וצלילים בנפרד.<br/>• המשחק בעברית מימין לשמאל, והכפתורים נגישים במקלדת.</p>
+   <h4>מה עוד לא מושלם</h4><p>סצנת הרחוב היא אנימציה ויזואלית. כל מה שקורה בה מופיע גם כטקסט במספרים שמתחתיה ובדוח היום.</p>
+  </div>}
+ </div></div>;
+ const Gear=()=><button className="gear" aria-label="הגדרות" onClick={()=>{setSetPage('main');setSetOpen(true);sfx('tap');}}>⚙️</button>;
+
  // Feed customers to the street one by one
  useEffect(()=>{if(phase!=='sim'||!sim||sim.done||show)return;
   const spd=sim.list.length>40?380:sim.list.length>20?550:800;
@@ -1356,7 +1525,7 @@ function Game(){
   </section>
   <section className={"blk aud"+(research?'':' blur')}>
    <div className="blk-h"><h3>👥 מי יקנה היום</h3>{research?<span className="tag good">סקר שוק ✓</span>:<span className="tag">דורש סקר שוק</span>}</div>
-   {research&&!isEve?<>{aud.map(x=><div key={x.k} className="aud-r"><span className="aud-n">{x.c.em} {x.c.nm}</span><span className="aud-b"><i style={{width:Math.round(x.p*100)+'%'}} className={x.p>=0.6?'g':x.p>=0.35?'y':'r'}/></span><span className="num aud-x"><b>{x.buy}</b>/{x.vis}</span><span className={"why "+x.why[1]}>{x.why[0]}</span></div>)}
+   {research&&!isEve?<>{aud.map((x,ix)=><div key={x.k} className={"aud-r"+(fresh('rs'+day+x.k)?' grow':'')} style={{'--d':ix*0.09+'s'}}><span className="aud-n">{x.c.em} {x.c.nm}</span><span className="aud-b"><i style={{width:Math.round(x.p*100)+'%'}} className={x.p>=0.6?'g':x.p>=0.35?'y':'r'}/></span><span className="num aud-x"><b>{x.buy}</b>/{x.vis}</span><span className={"why "+x.why[1]}>{x.why[0]}</span></div>)}
      <div className="aud-tot">~{buyers} יקנו מתוך ~{visitors} · הכנסות ~{fmt(Math.min(buyers,cups)*price)}</div></>
    :<div className="aud-lock"><span>📋</span><div><b>{isEve?'סקר שוק נקנה בבוקר':'רוצה לדעת מי יקנה ולמה?'}</b><div>{isEve?'הוא מתבסס על מזג האוויר של היום עצמו':`סקר שוק ב-₪${RESEARCH_C} מראה לכל סוג לקוח כמה יקנו ומה מפריע להם, ומתעדכן מכל שינוי`}</div></div>{!isEve&&<button className="btn sm" onClick={()=>setTab('intel')}>למודיעין ›</button>}</div>}
   </section>
@@ -1416,21 +1585,21 @@ function Game(){
   <Banner kind="spy" ic="🕵️" title="חדר המודיעין" sub="מידע עולה כסף — אבל חוסך טעויות" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>🔮 תחזית מזג אוויר ליום {day}</h3><span className="tag">{isEve?'נקנית בערב':'נקנתה אתמול בערב'}</span></div>
-   {fcast?<div className="fc-card"><span className="fc-e">{WE[fcast.w].em}</span><div><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span>{!isEve&&<span className="fc-v">בפועל: {wInfo.n} {temp}° — {fcast.t===temp?'צדקה ✓':`טעות של ${Math.abs(fcast.t-temp)}°`}</span>}</div></div>
+   {fcast?<div className={"fc-card"+(fresh('fc'+day)?' reveal':'')}><span className="fc-ball" aria-hidden="true">🔮</span><span className="fc-e">{WE[fcast.w].em}</span><div><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span>{!isEve&&<span className="fc-v">בפועל: {wInfo.n} {temp}° — {fcast.t===temp?'צדקה ✓':`טעות של ${Math.abs(fcast.t-temp)}°`}</span>}</div></div>
     :!isEve?<div className="note">לא קנית תחזית אתמול בערב. היום: {wInfo.em} {wInfo.n} {temp}°</div>
     :<div className="shop">{FORECAST.map(f=><div key={f.lv} className="item"><span className="it-e">{f.em}</span><div className="it-t"><b>{f.n} <em className="acc">דיוק ~{Math.round(f.ac*100)}%</em></b><span>{f.d}</span></div>
       <button className="btn sm" disabled={free<f.c} onClick={e=>forecastBuy(e,f)}>{free<f.c?`חסר ${fmt(f.c-free)}`:<>קנה · ₪{f.c}</>}</button></div>)}</div>}
   </section>
   <section className="blk"><div className="blk-h"><h3>📋 סקר שוק</h3><span className="tag">{isEve?'זמין בבוקר':'להיום'}</span></div>
    {research&&!isEve?<>
-    {aud.map(x=><div key={x.k} className="aud-r"><span className="aud-n">{x.c.em} {x.c.nm}</span><span className="aud-b"><i style={{width:Math.round(x.p*100)+'%'}} className={x.p>=0.6?'g':x.p>=0.35?'y':'r'}/></span><span className="num aud-x"><b>{x.buy}</b>/{x.vis}</span><span className={"why "+x.why[1]}>{x.why[0]}</span></div>)}
+    {aud.map((x,ix)=><div key={x.k} className={"aud-r"+(fresh('rs'+day+x.k)?' grow':'')} style={{'--d':ix*0.09+'s'}}><span className="aud-n">{x.c.em} {x.c.nm}</span><span className="aud-b"><i style={{width:Math.round(x.p*100)+'%'}} className={x.p>=0.6?'g':x.p>=0.35?'y':'r'}/></span><span className="num aud-x"><b>{x.buy}</b>/{x.vis}</span><span className={"why "+x.why[1]}>{x.why[0]}</span></div>)}
     <div className="aud-tot">~{buyers} יקנו מתוך ~{visitors} במתכון ובמחיר הנוכחיים</div>
     <button className="btn sm" style={{marginTop:8}} onClick={()=>setTab('product')}>לשפר מתכון ומחיר במטבח ›</button>
    </>:<div className="item"><span className="it-e">📋</span><div className="it-t"><b>מי יקנה היום ולמה</b><span>לכל סוג לקוח: כמה יגיעו, כמה יקנו ומה מפריע להם. התוצאה תופיע כאן ובמטבח</span></div>
     {isEve?<span className="badge">בבוקר</span>:<button className="btn sm" disabled={free<RESEARCH_C} onClick={e=>{setResearch(true);pay(RESEARCH_C);flyCoin(e,'−₪'+RESEARCH_C);}}>קנה · ₪{RESEARCH_C}</button>}</div>}
   </section>
   {withComp&&<section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי המתחרים</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
-   <div className="rivals">{comps.map((c,i)=>{const t=rivalsToday[i];return <div key={c.id} className="rival"><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div>{spy&&!isEve?<span className="rv-x num">₪{t.pr} · {t.rec.l}🍋{t.rec.h}🍬{t.rec.i}🧊</span>:<span className="rv-x">?</span>}</div>;})}</div>
+   <div className={"rivals"+(spy&&!isEve&&fresh('spy'+day)?' scan':'')}>{spy&&!isEve&&<span className="scan-bino" aria-hidden="true">🔭</span>}{comps.map((c,i)=>{const t=rivalsToday[i];return <div key={c.id} className="rival" style={{'--d':0.5+i*0.3+'s'}}><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div>{spy&&!isEve?<span className="rv-x num">₪{t.pr} · {t.rec.l}🍋{t.rec.h}🍬{t.rec.i}🧊</span>:<span className="rv-x">?</span>}</div>;})}</div>
    <div className="item"><span className="it-e">🕵️</span><div className="it-t"><b>המחיר והמתכון של כולם</b><span>{spy?(isEve?'נקנה — יוצג בבוקר':'הפרטים מופיעים למעלה'):'כדי לדעת אם להוזיל או לשפר את הכוס'}</span></div>
     {spy?<span className="badge g">✓ נקנה</span>:<button className="btn sm" disabled={free<SPY_C} onClick={e=>{setSpy(true);pay(SPY_C);flyCoin(e,'−₪'+SPY_C);}}>קנה · ₪{SPY_C}</button>}</div>
   </section>}
@@ -1444,7 +1613,7 @@ function Game(){
    {isEve&&<div className="hint">בוחרים מיקום בבוקר, אחרי שרואים את מזג האוויר</div>}</section>
   <section className="blk"><div className="blk-h"><h3>🧑‍💼 עוזר</h3><span className="tag">₪{HELPER_C} לכל יום שהוא מועסק</span></div>
    <div className="item"><span className="it-e">🧑‍💼</span><div className="it-t"><b>{helper?'העוזר מועסק':'אין עוזר'}</b><span>מגיש עוד {HELPER_B} כוסות ביום, וממליץ במרכז הבקרה כמה לקנות ואיזה מחיר לקבוע</span></div>
-    <button className={"btn sm"+(helper?' g':'')} onClick={()=>setHelper(h=>!h)}>{helper?'✓ מועסק · פטר':'שכור'}</button></div></section>
+    <button className={"btn sm"+(helper?' g':'')} onClick={()=>{if(!helper)setShow({kind:'helper',l1:'העוזר הצטרף!',l2:`+${HELPER_B} כוסות ביום · המלצות במרכז הבקרה`});setHelper(h=>!h);}}>{helper?'✓ מועסק · פטר':'שכור'}</button></div></section>
   <section className="blk"><div className="blk-h"><h3>🔧 ציוד</h3><span className="tag">משלמים עכשיו · לכל המשחק</span></div>
    <div className="shop">{UPG_OPS.map(u=>{const own=ups.includes(u.id),lock=!own&&u.ad>day;return <div key={u.id} className={"item"+(own?' own':'')+(lock?' lock':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
     {own?<span className="badge g">✓ שלך</span>:lock?<span className="badge">🔒 מיום {u.ad}</span>:<button className="btn sm" disabled={free<u.c} onClick={e=>{setUps(x=>[...x,u.id]);pay(u.c);flyCoin(e,'−₪'+u.c);}}>{free<u.c?`חסר ${fmt(u.c-free)}`:<>קנה · ₪{u.c}</>}</button>}</div>;})}</div></section>
@@ -1502,6 +1671,8 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
  const start=()=>{setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});};
  if(phase==='title'||phase==='setup')return <div className="app bg-night intro">
   <WxLayer kind="night"/>
+  <div className="intro-gear">{Gear()}</div>
+  {setOpen&&Settings()}
   {phase==='title'?<div className="intro-in">
    <div className="intro-glass"><GlassSvg l={3} h={1} i={2} temp={30} bare/></div>
    <h1 className="intro-title">דוכן הלימונדה</h1>
@@ -1524,7 +1695,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   <header className="top">
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{DAYS}</i></b></div>
-    <div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div>
+    <div className="t-side">{Gear()}<div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div></div>
    </div>
    <div className="res">
     <span data-hud="l">🍋 <b className="num"><Roll v={lm}/></b>{phase==='evening'&&buy.l>0&&<i>←{lm+buy.l}</i>}</span>
@@ -1546,7 +1717,8 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   </div>}
   {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
   {confirm&&<div className="dlg-bg"><div className="dlg"><b>{confirm.t}</b><p>{confirm.s}</p><div className="dlg-b"><button className="btn ghost" onClick={()=>{const f=confirm.onNo;setConfirm(null);f&&f();}}>{confirm.no}</button><button className="btn" onClick={()=>{const f=confirm.onYes;setConfirm(null);f();}}>{confirm.yes}</button></div></div></div>}
-  {show&&<SkyShow kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} onDone={()=>setShow(null)}/>}
+  {setOpen&&Settings()}
+  {show&&<SkyShow key={show.kind+show.l1} kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} onDone={()=>setShow(s=>s&&s.next||null)}/>}
  </div>;
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<Game/>);
