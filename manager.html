@@ -521,6 +521,25 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .nav button.on span{animation:navHop .45s var(--spring)}
 @keyframes navHop{0%{transform:scale(1)}40%{transform:scale(1.35) translateY(-4px)}100%{transform:scale(1.12)}}
 
+/* Marketing extras on the stand (opening + install overlays) */
+.sky-install{background:radial-gradient(circle at 50% 40%,#D6F5FF,#7FC8F0 55%,#4B8FD1)}
+.sky-install .op-awning{animation:none}
+.sky-install .sky-text{margin-top:240px;color:#0E2A4A;text-shadow:0 2px 12px rgba(255,255,255,.5)}
+.op-stand{position:absolute}
+.sa-sign{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#FFF8DC;color:#8A5A00;border:3px solid #B07A44;border-radius:10px;padding:5px 14px;font-family:var(--f-display);font-weight:600;font-size:19px;box-shadow:0 0 0 3px #FFE14D,0 0 18px #FFE14D;animation:bulbs 1s steps(2) infinite}
+.sa-shade{position:absolute;bottom:0;right:-92px}
+.op-cups{position:relative}
+.bcup{display:inline-grid;place-items:center;width:22px;height:28px;margin:0 3px;background:linear-gradient(#FFE14D,#F2B800);clip-path:polygon(0 0,100% 0,86% 100%,14% 100%);font-size:12px;letter-spacing:0}
+.fresh{animation:saDrop .9s var(--spring) .25s both}
+.sa-sign.fresh{animation:saDropC .9s var(--spring) .25s both,bulbs 1s steps(2) 1.2s infinite}
+.sa-spark{position:absolute;top:-14px;right:-14px;font-style:normal;font-size:22px;animation:sparkle .7s ease-out 1s 3 both}
+@keyframes saDrop{from{transform:translateY(-220px) rotate(-8deg);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+@keyframes saDropC{from{transform:translate(-50%,-220px) rotate(-8deg);opacity:0}60%{opacity:1}to{transform:translateX(-50%);opacity:1}}
+@keyframes sparkle{0%{transform:scale(0) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(20deg);opacity:1}100%{transform:scale(.6) rotate(40deg);opacity:0}}
+@keyframes bulbs{0%{box-shadow:0 0 0 3px #FFE14D,0 0 18px #FFE14D}100%{box-shadow:0 0 0 3px #FF9F1C,0 0 8px #FF9F1C}}
+.lnk{color:var(--lemon);text-decoration:underline;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.fresh,.sa-sign,.sa-spark{animation:none!important}}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -621,6 +640,22 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
       .st-rays, .st-cloud, .st-skyline, .st-trees, .st-car, .st-board, .st-seller, .st-rain span { animation: none !important; }
     }
 
+    /* Marketing on the street */
+    .st-shade { position: absolute; bottom: 56px; z-index: 4; transform-origin: bottom center; animation: stSway 6s ease-in-out infinite; }
+    .st-bigsign { position: absolute; bottom: 210px; z-index: 6; width: 120px; text-align: center; background: #FFF8DC; border: 3px solid #B07A44; border-radius: 9px; padding: 3px 0; font-size: 12.5px; color: #8A5A00; box-shadow: 0 0 0 2px #FFE14D, 0 0 14px #FFE14D; animation: stBulbs 1s steps(2) infinite; }
+    .st-bigsign i { position: absolute; left: 50%; top: 100%; width: 4px; height: 6px; background: #8C6A4F; transform: translateX(-50%); }
+    .st-balloons { position: absolute; bottom: 0; z-index: 7; width: 60px; height: 0; }
+    .st-balloons span { position: absolute; width: 16px; height: 20px; border-radius: 50% 50% 45% 45%; animation: stBob 2.4s ease-in-out infinite; }
+    .st-balloons span::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 40px; background: rgba(60,50,80,.5); }
+    .st-flyers span { position: absolute; left: -10%; font-size: 16px; z-index: 8; animation: stFly 9s linear infinite; }
+    .st-hearts { position: absolute; bottom: 200px; z-index: 8; width: 50px; }
+    .st-hearts span { position: absolute; bottom: 0; font-size: 15px; opacity: 0; animation: stRise 2.7s ease-out infinite; }
+    @keyframes stBulbs { 0% { box-shadow: 0 0 0 2px #FFE14D, 0 0 14px #FFE14D; } 100% { box-shadow: 0 0 0 2px #FF9F1C, 0 0 6px #FF9F1C; } }
+    @keyframes stBob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(4deg); } }
+    @keyframes stFly { 0% { left: -10%; transform: rotate(0); } 50% { transform: translateY(20px) rotate(180deg); } 100% { left: 110%; transform: rotate(360deg); } }
+    @keyframes stRise { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-60px) scale(1.1); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .st-shade, .st-bigsign, .st-balloons span, .st-flyers span, .st-hearts span { animation: none !important; } .st-hearts span { opacity: 1; } }
+
 </style>
 </head>
 <body>
@@ -641,7 +676,7 @@ const stPick=(arr,n,salt=0)=>arr[Math.abs((n*2654435761+salt*40503)>>>0)%arr.len
 const stMood=rx=>['😊','🙂','🌟'].includes(rx)?'happy':['😕','😤','💨','🚶'].includes(rx)?'sad':'flat';
 
 // One customer, drawn facing left (toward the stand). viewBox leaves room above for hats/umbrellas.
-const StPerson=({ev,mood,hasCup,rainy})=>{
+const StPerson=({ev,mood,hasCup,rainy,branded})=>{
   const n=ev.id,type=ev.isVip?'vip':ev.type;
   const skin=stPick(ST_SKIN,n,1),hair=stPick(ST_HAIR,n,2);
   const shirt=type==='foodie'?'#FFFFFF':type==='vip'?'#3B2A5C':type==='athlete'?stPick(['#FF3B6B','#00B4D8','#FFB703','#43AA8B'],n,3):stPick(ST_SHIRT,n,3);
@@ -665,7 +700,7 @@ const StPerson=({ev,mood,hasCup,rainy})=>{
     <g className={"st-arm st-arm-a"+(hasCup?' st-hold':'')}>
       <rect x="12" y="37" width="5" height="19" rx="2.5" fill={shirt} stroke="rgba(0,0,0,0.12)" strokeWidth="0.6"/>
       <circle cx="14.5" cy="56" r="2.6" fill={skin}/>
-      {hasCup && <g transform="translate(9.5 49)"><path d="M0 0 L9 0 L7.6 11 L1.4 11 Z" fill="#FFF" stroke="#C9C6E0" strokeWidth="0.6"/><rect x="0.8" y="3" width="7.4" height="6" fill="#FFE14D"/><line x1="6" y1="-4" x2="5" y2="3" stroke="#FF5C7A" strokeWidth="1.2" strokeLinecap="round"/></g>}
+      {hasCup && <g transform="translate(9.5 49)"><path d="M0 0 L9 0 L7.6 11 L1.4 11 Z" fill="#FFF" stroke="#C9C6E0" strokeWidth="0.6"/><rect x="0.8" y="3" width="7.4" height="6" fill="#FFE14D"/>{branded&&<circle cx="4.5" cy="6" r="2.2" fill="#3FA34D" stroke="#fff" strokeWidth="0.6"/>}<line x1="6" y1="-4" x2="5" y2="3" stroke="#FF5C7A" strokeWidth="1.2" strokeLinecap="round"/></g>}
     </g>
     {/* head */}
     <g className="st-head">
@@ -713,7 +748,7 @@ const StComp=({c})=>(<div className="st-comp">
   <span className="st-comp-price">₪{c.pr}</span>
 </div>);
 
-const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false})=>{
+const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[]})=>{
   const wrapRef=useRef(null);const [W,setW]=useState(343);
   const actorsRef=useRef(new Map()),queueRef=useRef([]),seenRef=useRef(null),timersRef=useRef([]);
   const [,setTick]=useState(0);const bump=()=>setTick(t=>t+1);
@@ -791,6 +826,13 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
       <svg viewBox="0 0 40 50" width="40" height="50" aria-hidden="true"><path d="M6 50 L12 6 M34 50 L28 6" stroke="#8C6A4F" strokeWidth="3"/><rect x="3" y="4" width="34" height="30" rx="3" fill="#2F3B35" stroke="#8C6A4F" strokeWidth="2.5"/>
         <text x="20" y="22" textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff" fontFamily="Rubik,sans-serif">₪{price}</text><text x="20" y="30.5" textAnchor="middle" fontSize="6" fill="#FFE14D" fontFamily="Rubik,sans-serif">לכוס</text></svg>
     </div>
+    {/* bought marketing: big sign, sunshade, today's balloons / flyers / social buzz */}
+    {ups.includes('shade')&&<div className="st-shade" style={{left:g.serve-8}}><svg viewBox="0 0 100 150" width="100" height="150" aria-hidden="true"><path d="M50 20 L50 150" stroke="#8C6A4F" strokeWidth="4"/>
+      {[0,1,2,3,4,5].map(k=><path key={k} d={`M50 10 L${4+k*15.3} 46 L${19.3+k*15.3} 46 Z`} fill={k%2?'#fff':'#FF5C7A'}/>)}</svg></div>}
+    {ups.includes('sign')&&<div className="st-bigsign" style={{left:g.serve-74-70+10}} dir="rtl"><b>🍋 לימונדה קרה!</b><i/></div>}
+    {acts.includes('banner')&&<div className="st-balloons" style={{left:g.serve-74-70-14}}>{['#FF5C7A','#FFC800','#5CC8F0','#8E7CF8'].map((c,k)=><span key={k} style={{background:c,left:k*13,animationDelay:k*0.4+'s',bottom:56+150+k%2*16}}/>)}</div>}
+    {acts.includes('flyer')&&<div className="st-flyers">{[0,1,2].map(k=><span key={k} style={{top:40+k*38,animationDelay:k*-3+'s'}}>📄</span>)}</div>}
+    {acts.includes('social')&&<div className="st-hearts" style={{left:g.serve-74-20}}>{[0,1,2].map(k=><span key={k} style={{animationDelay:k*0.9+'s',left:k*14}}>{['❤️','👍','📱'][k]}</span>)}</div>}
     {/* the stand */}
     <div className="st-stand" style={{left:g.serve-74-70}}>
       <svg className="st-stand-back" viewBox="0 0 140 150" width="140" height="150" aria-hidden="true">
@@ -814,7 +856,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
           <rect x="1" y="2" width="26" height="3" rx="1.5" fill="#9FB7C9"/>
         </g>
         {/* cup stack */}
-        <g transform="translate(92 70)">{[0,1,2].map(i=><path key={i} d={`M0 ${i*-5+18} L12 ${i*-5+18} L11 ${i*-5+22} L1 ${i*-5+22} Z`} fill="#fff" stroke="#C9C6E0" strokeWidth="0.7"/>)}<path d="M0 6 L12 6 L10.6 22 L1.4 22 Z" fill="#fff" stroke="#C9C6E0" strokeWidth="0.7" opacity="0"/></g>
+        <g transform="translate(92 70)">{[0,1,2].map(i=><path key={i} d={`M0 ${i*-5+18} L12 ${i*-5+18} L11 ${i*-5+22} L1 ${i*-5+22} Z`} fill={ups.includes('cups')?"#FFE14D":"#fff"} stroke={ups.includes('cups')?"#E0A400":"#C9C6E0"} strokeWidth="0.7"/>)}{ups.includes('cups')&&<circle cx="6" cy="10" r="2.6" fill="#3FA34D"/>}<path d="M0 6 L12 6 L10.6 22 L1.4 22 Z" fill="#fff" stroke="#C9C6E0" strokeWidth="0.7" opacity="0"/></g>
         {/* tip jar */}
         <g transform="translate(112 72)"><rect x="0" y="0" width="16" height="20" rx="4" fill="rgba(255,255,255,0.6)" stroke="#9FB7C9" strokeWidth="1.3"/><circle cx="6" cy="15" r="3" fill="#FFC800" stroke="#D18D00" strokeWidth="0.7"/><circle cx="10.5" cy="12" r="3" fill="#FFC800" stroke="#D18D00" strokeWidth="0.7"/><rect x="2" y="-2" width="12" height="3" rx="1" fill="#9FB7C9"/></g>
         {/* counter */}
@@ -835,7 +877,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
         {a.bubble&&<div className={"st-bubble st-b-"+stMood(a.ev.rx)+(a.ev.isVip?' st-b-vip':'')} style={{bottom:kid?86:104}} dir="rtl"><span className="st-b-em">{ST_EM[a.ev.rx]||a.ev.rx}</span><span className="st-b-tx">{txt}</span></div>}
         <div className={"st-flip"+(a.flip?' st-flipped':'')}>
           <div className={"st-body"+(kid?' st-kid':'')+(a.shake?' st-shake':'')+(a.ev.isVip?' st-vip':'')}>
-            <StPerson ev={a.ev} mood={a.mood||'flat'} hasCup={!!a.hasCup} rainy={rainy}/>
+            <StPerson ev={a.ev} mood={a.mood||'flat'} hasCup={!!a.hasCup} rainy={rainy} branded={ups.includes('cups')}/>
           </div>
         </div>
       </div>;})}
@@ -1028,10 +1070,21 @@ const WxLayer=({kind})=>{const sunny=['sunny','nice','hot','heat'].includes(kind
   {kind==='cold'&&Array.from({length:26}).map((_,i)=><i key={i} className="wx-snow" style={{left:(i*37%100)+'%',animationDuration:(6+i%5)+'s',animationDelay:(-i*0.7)+'s'}}/>)}
  </div>;};
 
+// The stand with its marketing extras; `fresh` is the one being installed right now
+const StandArt=({ups=[],fresh,sign=true})=>{const has=id=>ups.includes(id)||fresh===id,fr=id=>fresh===id?' fresh':'';
+ return <div className="op-stand">
+  {has('sign')&&<div className={"sa-sign"+fr('sign')}>🍋 לימונדה קרה!{fresh==='sign'&&<i className="sa-spark">✨</i>}</div>}
+  {has('shade')&&<div className={"sa-shade"+fr('shade')}><svg viewBox="0 0 100 120" width="100" height="120" aria-hidden="true"><path d="M50 18 L50 118" stroke="#8C6A4F" strokeWidth="4"/>
+   {[0,1,2,3,4,5].map(k=><path key={k} d={`M50 10 L${8+k*14} 44 L${22+k*14} 44 Z`} fill={k%2?'#fff':'#FF5C7A'}/>)}<path d="M8 44 Q50 34 92 44" fill="none" stroke="#C73E5A" strokeWidth="2"/></svg>{fresh==='shade'&&<i className="sa-spark">✨</i>}</div>}
+  <div className="op-awning"/>
+  <div className="op-body">{sign&&<div className="op-sign"><span className="op-front">סגור</span><span className="op-back">פתוח!</span></div>}
+   <div className={"op-cups"+fr('cups')}>{has('cups')?[0,1,2].map(k=><span key={k} className="bcup">🍋</span>):'🥤🥤🥤'}{fresh==='cups'&&<i className="sa-spark">✨</i>}</div></div>
+ </div>;};
+
 // Sky transition between parts of the day
-const SkyShow=({kind,wx,line1,line2,onDone})=>{useEffect(()=>{const t=setTimeout(onDone,kind==='open'?1900:2300);return()=>clearTimeout(t);},[]);
- if(kind==='open')return <div className="sky sky-open" onClick={onDone}>
-  <div className="op-stand"><div className="op-awning"/><div className="op-body"><div className="op-sign"><span className="op-front">סגור</span><span className="op-back">פתוח!</span></div><div className="op-cups">🥤🥤🥤</div></div></div>
+const SkyShow=({kind,wx,line1,line2,onDone,ups,item})=>{useEffect(()=>{const t=setTimeout(onDone,kind==='open'?1900:2300);return()=>clearTimeout(t);},[]);
+ if(kind==='open'||kind==='install')return <div className={"sky sky-"+kind} onClick={onDone}>
+  <StandArt ups={ups} fresh={kind==='install'?item:null} sign={kind==='open'}/>
   <div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>
  </div>;
  return <div className={"sky sky-"+kind+(wx?" sky-w-"+wx:"")} onClick={onDone}>
@@ -1092,7 +1145,8 @@ function Game(){
  const temp=W.t,wInfo=WE[W.w];
 
  // What limits the number of cups (stock of each ingredient, or serving capacity)
- const limits=[{k:'l',n:'לימונים',em:'🍋',have:lm,per:recipe.l},{k:'h',n:'סוכר',em:'🍬',have:sugar,per:recipe.h},{k:'i',n:'קרח',em:'🧊',have:ice,per:recipe.i}]
+ const inCart=phase==='evening'?buy:{l:0,h:0,i:0};
+ const limits=[{k:'l',n:'לימונים',em:'🍋',have:lm+inCart.l,per:recipe.l},{k:'h',n:'סוכר',em:'🍬',have:sugar+inCart.h,per:recipe.h},{k:'i',n:'קרח',em:'🧊',have:ice+inCart.i,per:recipe.i}]
   .filter(x=>x.per>0).map(x=>({...x,cups:Math.floor(x.have/x.per)}));
  const stockMax=Math.min(...limits.map(x=>x.cups));
  const maxCups=Math.min(stockMax,cap);
@@ -1294,8 +1348,10 @@ function Game(){
    <div className="blk-h"><h3>💰 מחיר וכמות</h3><span className="tag">עלות כוס {fmt2(costCup)}</span></div>
    <div className="pq">
     <div className="pq-c"><small>מחיר לכוס</small><div className="big num">₪{price}</div><Stepper v={price} set={setPrice} min={1} max={20}/>{research&&<div className="ing-d">₪{price-1}: <Delta d={buyersFor(R,price-1)-buyers}/> · ₪{price+1}: <Delta d={buyersFor(R,price+1)-buyers}/></div>}</div>
-    <div className="pq-c"><small>כמה להכין</small><div className="big num">{cups}</div><Stepper v={cups} set={v=>setCupsWanted(v)} min={0} max={maxCups} big5/>
-     <div className="limit">{phase==='morning'||isEve?<>מקסימום <b>{maxCups}</b> · מגבלה: {limiter?.em} {limiter?.n}{limiter&&limiter.k?` (${limiter.have} במלאי)`:''}</>:null}</div></div>
+    <div className="pq-c"><small>{isEve?'כמה להכין מחר':'כמה להכין'}</small><div className="big num">{cups}</div><Stepper v={cups} set={v=>setCupsWanted(v)} min={0} max={maxCups} big5/>
+     {isEve&&maxCups===0?<div className="limit">אין עדיין מצרכים לכוס אחת<button className="btn sm" style={{marginTop:6}} onClick={()=>setTab('stock')}>🛒 לקנות בשוק ›</button></div>
+     :<div className="limit">{phase==='morning'||isEve?<>מקסימום <b>{maxCups}</b> · מגבלה: {limiter?.em} {limiter?.n}{limiter&&limiter.k?` (${limiter.have} ${isEve?'כולל הסל':'במלאי'})`:''}</>:null}</div>}
+     {isEve&&maxCups>0&&<div className="ing-d">מכינים בבוקר · צריך עוד? <a className="lnk" onClick={()=>setTab('stock')}>לשוק</a></div>}</div>
    </div>
   </section>
   <section className={"blk aud"+(research?'':' blur')}>
@@ -1347,7 +1403,7 @@ function Game(){
   <div className="budget">💰 פנוי להוצאות: <b className="num">{fmt(free)}</b>{committed>0&&<span> · כבר התחייבת ל-{fmt(committed)} שיורדים בסוף היום</span>}</div>
   <section className="blk"><div className="blk-h"><h3>⭐ קבוע</h3><span className="tag">משלמים עכשיו · עובד עד סוף המשחק</span></div>
    <div className="shop">{UPG_MKT.map(u=>{const own=ups.includes(u.id);return <div key={u.id} className={"item"+(own?' own':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
-    {own?<span className="badge g">✓ שלך</span>:<button className="btn sm" disabled={free<u.c} onClick={e=>{setUps(x=>[...x,u.id]);pay(u.c);flyCoin(e,'−₪'+u.c);}}>{free<u.c?`חסר ${fmt(u.c-free)}`:<>קנה · ₪{u.c}</>}</button>}</div>;})}</div></section>
+    {own?<span className="badge g">✓ שלך</span>:<button className="btn sm" disabled={free<u.c} onClick={e=>{setUps(x=>[...x,u.id]);pay(u.c);flyCoin(e,'−₪'+u.c);setShow({kind:'install',item:u.id,l1:`${u.em} ${u.n} — חדש בדוכן!`,l2:u.d});}}>{free<u.c?`חסר ${fmt(u.c-free)}`:<>קנה · ₪{u.c}</>}</button>}</div>;})}</div></section>
   <section className="blk"><div className="blk-h"><h3>🤍 להיום</h3><span className="tag">{isEve?'זמין בבוקר':'משלמים בסוף היום'}</span></div>
    <div className="shop">{MKTG.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n}</b><span>{a.d}</span></div>
     {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm g" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ נבחר · בטל</button>:<button className="btn sm" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הוסף · ₪{a.c}</>}</button>}</div>;})}</div></section>
@@ -1420,7 +1476,7 @@ function Game(){
 
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1];return <div className="simwrap">
   <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,cups-s.sold)} cupsTotal={cups}
-   weather={{id:W.w,temp}} comps={rivalsToday.map(c=>({n:c.n,pr:c.pr}))} done={s.done}/>
+   weather={{id:W.w,temp}} comps={rivalsToday.map(c=>({n:c.n,pr:c.pr}))} done={s.done} ups={ups} acts={acts}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div><div><small>לא קנו</small><b className="num r">{s.walk}</b></div></div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
  </div>;};
@@ -1490,7 +1546,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   </div>}
   {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
   {confirm&&<div className="dlg-bg"><div className="dlg"><b>{confirm.t}</b><p>{confirm.s}</p><div className="dlg-b"><button className="btn ghost" onClick={()=>{const f=confirm.onNo;setConfirm(null);f&&f();}}>{confirm.no}</button><button className="btn" onClick={()=>{const f=confirm.onYes;setConfirm(null);f();}}>{confirm.yes}</button></div></div></div>}
-  {show&&<SkyShow kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} onDone={()=>setShow(null)}/>}
+  {show&&<SkyShow kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} onDone={()=>setShow(null)}/>}
  </div>;
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<Game/>);
