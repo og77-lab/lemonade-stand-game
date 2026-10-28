@@ -459,6 +459,16 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .intro-btns{display:flex;gap:8px;align-items:center;margin-top:6px}
 .intro-btns .cta{flex:1}
 
+/* Rivals */
+.locs.four{grid-template-columns:repeat(4,1fr)}
+.rivals{display:flex;flex-direction:column;gap:5px}
+.rival{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--panel-2);border-radius:11px;padding:7px 10px}
+.rv-x{font-size:12.5px;font-weight:600;color:var(--lemon);white-space:nowrap}
+.lb{display:grid;grid-template-columns:24px minmax(0,1fr) auto 64px;gap:8px;align-items:center;font-size:13px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.lb:last-child{border-bottom:none}
+.lb.me{background:#2E2A12;border-radius:8px}
+.lb-r{font-weight:700;color:var(--dim)}.lb-s{font-size:11.5px;color:var(--dim)}.lb b{text-align:left}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -820,7 +830,7 @@ const MKTG=[{id:"flyer",em:"📄",n:"פליירים",c:5,dm:1.10,d:"+10% מבק�
 const BLACK=[{id:"ads",em:"📢",n:"קמפיין נגד המתחרה",c:8,d:"גונב 18% מהלקוחות שלו",risk:0},{id:"rumor",em:"🗣️",n:"הפצת שמועות",c:4,d:"−5 מוניטין למתחרה",risk:30},{id:"signs",em:"🚫",n:"הסרת השלטים שלו",c:6,d:"פחות חשיפה למתחרה",risk:40}];
 const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.65,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.8,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
 const RESEARCH_C=4,SPY_C=3;
-const DIFF={easy:{n:'קלה',em:'🌱',d:'יותר לקוחות, מתחרה חלש',dm:1.3,npc:0.45,par:[1650,1350]},medium:{n:'בינונית',em:'⚖️',d:'מאוזן',dm:1,npc:0.65,par:[1350,850]},hard:{n:'קשה',em:'🔥',d:'פחות לקוחות, מתחרה חזק',dm:0.8,npc:0.85,par:[1050,550]}};
+const DIFF={easy:{n:'קלה',em:'🌱',d:'יותר לקוחות, מתחרה חלש',dm:1.3,npc:0.45,par:[1650,1350,1100,900]},medium:{n:'בינונית',em:'⚖️',d:'מאוזן',dm:1,npc:0.65,par:[1350,850,600,450]},hard:{n:'קשה',em:'🔥',d:'פחות לקוחות, מתחרה חזק',dm:0.8,npc:0.85,par:[1050,550,350,250]}};
 const PRESETS=[{id:'classic',n:'קלאסי',r:{l:3,h:1,i:1},fit:'כולם'},{id:'kids',n:'מתוק לילדים',r:{l:2,h:2,i:1},fit:'👦 ילדים'},{id:'sport',n:'רענן לספורטאים',r:{l:3,h:0,i:3},fit:'🏃 ספורטאים'},
  {id:'chef',n:'עשיר לשפים',r:{l:4,h:1,i:1},fit:'🧑‍🍳 שפים'},{id:'hot',n:'קפוא ליום חם',r:{l:3,h:1,i:2},fit:'☀️ ימים חמים'}];
 const sameR=(a,b)=>a.l===b.l&&a.h===b.h&&a.i===b.i;
@@ -831,7 +841,9 @@ const Banner=({kind,ic,title,sub,onBack})=><div className={"banner bn-"+kind}>
  {onBack&&<button className="bn-back" onClick={onBack}>‹ מרכז</button>}
 </div>;
 const EVENTS=[{n:"🎪 פסטיבל ברחוב",dm:1.8},{n:"🏃 מרתון בשכונה",dm:1.6},{n:"🚧 עבודות בכביש",dm:0.5},{n:"🎵 הופעה בפארק",dm:1.7},{n:"🌧️ הפסקת חשמל",dm:0.5}];
-const COMP={n:"דוד יוסי",em:"🧓"};
+const PERSONAS=[{id:'budget',n:'זולי הזול',em:'💸',tag:'תמיד מוזיל מחירים',pb:-1.6,r:{l:2,h:1,i:1}},{id:'premium',n:'שף גורמה',em:'👨‍🍳',tag:'איכות במחיר גבוה',pb:2.4,r:{l:4,h:1,i:1}},
+ {id:'steady',n:'דוד יוסי',em:'🧓',tag:'יציב ואמין',pb:0,r:{l:3,h:1,i:1}},{id:'trendy',n:'טרנדי',em:'😎',tag:'רודף אחרי הטרנד',pb:0.6,r:{l:3,h:1,i:2}},
+ {id:'gambler',n:'המהמר',em:'🎲',tag:'בלתי צפוי לחלוטין',pb:0,r:null},{id:'veteran',n:'הוותיקה',em:'👵',tag:'ניסיון של שנים',pb:0.3,r:{l:4,h:1,i:2}}];
 
 // A glass of lemonade drawn in 3D: its colour, pulp, ice and sugar follow the recipe
 const ICE_POS=[[56,48,-12],[84,46,14],[70,62,4],[94,64,-20],[46,66,22]];
@@ -956,7 +968,11 @@ function Game(){
  const world=useMemo(()=>buildWorld(seed),[seed]);
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
- const [diff,setDiff]=useState('medium'),[withComp,setWithComp]=useState(true);
+ const [diff,setDiff]=useState('medium'),[nComp,setNComp]=useState(2);
+ const withComp=nComp>0;
+ // Which characters run the other stands (fixed for the whole season)
+ const rivals=useMemo(()=>{const r=rng(seed*7+3),p=[...PERSONAS];for(let k=p.length-1;k>0;k--){const j=Math.floor(r()*(k+1));[p[k],p[j]]=[p[j],p[k]];}return p;},[seed]);
+ const comps=rivals.slice(0,nComp);
  const [tab,setTab]=useState('news');
  const [show,setShow]=useState(null);
  const [cash,setCash]=useState(80),[loan,setLoan]=useState(0);
@@ -1004,11 +1020,14 @@ function Game(){
  const cups=Math.min(cupsWanted,maxCups);
 
  // Demand model
- const compPrice=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],temp),0)*0.95);
+ const rivalsFor=(T=temp)=>{const pAvg=TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0);return comps.map((p,i)=>{const rr=rng(seed+day*71+i*13);
+  const r=p.r||{l:2+Math.floor(rr()*3),h:Math.floor(rr()*3),i:Math.floor(rr()*3)},pr=Math.max(2,Math.round(pAvg*0.95+p.pb+(p.r?0:(rr()-0.5)*6)));
+  return{...p,rec:r,pr,attr:standAttr(r,pr,55,T)*(acts.includes('signs')?0.8:1)};});};
+ const rivalsToday=rivalsFor(temp);
  const visitorsFor=(r,pr,T=temp,fm=wInfo.fm,evm=W.ev?.dm)=>{const boost=acts.reduce((m,id)=>m*(MKTG.find(a=>a.id===id)?.dm||1),1);
   const dm=60*softEnv(T,fm,evm)*boost*(0.7+rep/100*0.6)*LOC[loc].dm*(ups.includes('sign')?1.15:1)*(ups.includes('shade')&&T>=28?1.2:1)*(vipBoost&&T===temp?1.3:1)*DIFF[diff].dm;
   const cpT=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0)*0.95);
-  const my=standAttr(r,pr,rep,T),them=standAttr({l:3,h:1,i:1},cpT,55,T)*(acts.includes('signs')?0.8:1);
+  const my=standAttr(r,pr,rep,T),them=rivalsFor(T).reduce((s,c)=>s+c.attr,0);
   const share=withComp?1/(1+DIFF[diff].npc*them/my):1;return Math.max(3,Math.round(dm*share+(withComp&&acts.includes('ads')?dm*(1-share)*0.18:0)));};
  const perType=(r,pr,T=temp,fm,evm)=>{const v=visitorsFor(r,pr,T,fm,evm);return TYPES.map(k=>{const c=CT[k],s=cSc(r.l,r.h,r.i,T,c),p=buyProb(s.sc,pr,rep,c,T),vis=Math.round(v*MIX[k]);return{k,c,p,vis,buy:Math.round(vis*p),why:whyOf(c,r,pr,T)};});};
  const whyOf=(c,r,pr,T=temp)=>{const w=CUP-r.l-r.h-r.i,sw=SW[r.h],sour=Math.max(0,SR[r.l]-0.5*sw),ratio=pr/pMt(c,T),fr=fSc(r.i,r.h,T);
@@ -1044,7 +1063,7 @@ function Game(){
   else inbox.push({id:'rs'+day,ic:'📋',t:`סקר שוק: ~${buyers} יקנו מתוך ~${visitors}`,s:aud.filter(x=>x.why[1]!=='good').slice(0,2).map(x=>`${x.c.nm}: ${x.why[0]}`).join(' · ')||'כולם אוהבים את הכוס',go:()=>setTab('product'),cta:'למוצר'});
   if(maxCups===0)inbox.push({id:'nc'+day,ic:'⚠️',t:'אין מספיק מלאי לכוס אחת',s:'היום הדוכן ייסגר. בערב אפשר לקנות',warn:true});
   else if(cupsWanted>maxCups)inbox.push({id:'cap'+day,ic:'⚠️',t:`אפשר להכין רק ${maxCups} כוסות`,s:`מגבלה: ${limiter.em} ${limiter.n}`,warn:true,go:()=>setTab('product'),cta:'למוצר'});
-  if(spy&&withComp)inbox.push({id:'sp'+day,ic:'🕵️',t:`${COMP.em} ${COMP.n} מוכר היום ב-₪${compPrice}`,s:'מתכון: 3🍋 1🍬 1🧊',go:null});
+  if(spy&&withComp)inbox.push({id:'sp'+day,ic:'🕵️',t:'המודיעין על המתחרים הגיע',s:rivalsToday.map(c=>`${c.em} ₪${c.pr} (${c.rec.l}🍋${c.rec.h}🍬${c.rec.i}🧊)`).join(' · '),go:()=>setTab('intel'),cta:'למודיעין'});
  }
  // The assistant manager: concrete, number-based advice
  if(phase==='evening'&&helper){const T=fcast?fcast.t:25,N=buyersFor(recipe,price,T,fcast?WE[fcast.w].fm:1,1),rec=Math.min(cap,Math.round(N*1.1));
@@ -1106,7 +1125,7 @@ function Game(){
   if(R.signs==='caught')tips.push({k:'bad',t:'🚫 נתפסת מוריד שלטים: −15 מוניטין וקנס ₪15'});else if(R.signs==='ok')tips.push({k:'good',t:'🚫 השלטים שלו ירדו — פחות אנשים ראו אותו'});
   if(!tips.length)tips.push({k:'good',t:'יום מאוזן — המשך כך'});
   setVipBoost(R.vip===true);
-  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comp:Math.round(R.visitors*0.5*0.6)*compPrice-30};
+  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:rivalsToday.map(c=>{const vis=Math.round(R.visitors*DIFF[diff].npc*c.attr/Math.max(0.01,standAttr(recipe,price,rep,temp))),sold=Math.round(vis*0.6);return{em:c.em,n:c.n,sold,profit:Math.round(sold*(c.pr-2)-(c.id==='premium'?6:3))};})};
   setRep(newRep);setReport(rpt);setHistory(h=>[...h,rpt]);setSpentToday(0);setPhase('report');};
  const nextEvening=()=>{if(day>=DAYS){setPhase('over');return;}
   setDay(d=>d+1);setActs([]);setFcast(null);setSpy(false);setResearch(false);setInspPaid(false);setPhase('evening');setTab('news');setSim(null);simFast.current=false;
@@ -1132,7 +1151,7 @@ function Game(){
   {k:'stock',ic:'📦',t:'מלאי למחר',v:`מספיק ל-${afterCups} כוסות${helper?` · העוזר ממליץ ~${advRec}`:''}`,st:afterCups===0?'bad':helper&&afterCups<advRec*0.8?'warn':'ok',note:afterCups===0?'אין מלאי — הדוכן לא ייפתח':helper&&afterCups<advRec*0.8?'כנראה לא יספיק לכל הקונים':null},
   {k:'biz',ic:'🧑‍💼',t:'עוזר',v:helper?'מועסק — ממליץ כמה לקנות ואיזה מחיר לקבוע':`אין · ₪${HELPER_C} ליום: מגיש יותר כוסות ונותן המלצות`,st:helper?'ok':'opt'},
   {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה — קונים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
-  ...(withComp?[{k:'intel',ic:'🕵️',t:`ריגול אחרי ${COMP.n}`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'}]:[]),
+  ...(withComp?[{k:'intel',ic:'🕵️',t:`ריגול אחרי המתחרים (${nComp})`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'}]:[]),
  ]:[
   ...(W.insp&&!inspPaid?[{k:'news',ic:'🏛️',t:'פיקוח עירוני',v:'צריך לשלם ₪8 כדי לפתוח היום',st:'bad',act:{label:'שלם ₪8',fn:()=>{if(cash>=8){pay(8);setInspPaid(true);}}}}]:[]),
   {k:'product',ic:'👥',t:'מי מגיע היום',v:TYPES.map(k=>`${CT[k].em} ${Math.round(MIX[k]*100)}%`).join(' · '),st:'ok',note:mixToday.why.length?mixToday.why.join(' · '):'יום רגיל'},
@@ -1251,7 +1270,7 @@ function Game(){
   <section className="blk"><div className="blk-h"><h3>🤍 להיום</h3><span className="tag">{isEve?'זמין בבוקר':'משלמים בסוף היום'}</span></div>
    <div className="shop">{MKTG.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n}</b><span>{a.d}</span></div>
     {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm g" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ נבחר · בטל</button>:<button className="btn sm" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הוסף · ₪{a.c}</>}</button>}</div>;})}</div></section>
-  {withComp&&<section className="blk"><div className="blk-h"><h3>🖤 נגד {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'זמין בבוקר':'להיום · יש סיכון'}</span></div>
+  {withComp&&<section className="blk"><div className="blk-h"><h3>🖤 נגד המתחרים</h3><span className="tag">{isEve?'זמין בבוקר':'להיום · יש סיכון'}</span></div>
    <div className="shop">{BLACK.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item dark"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n} {a.risk>0&&<em>{a.risk}% להיתפס</em>}</b><span>{a.d}</span></div>
     {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm r" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ פעיל · בטל</button>:<button className="btn sm ghost" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הפעל · ₪{a.c}</>}</button>}</div>;})}</div></section>}
  </div>;
@@ -1273,8 +1292,9 @@ function Game(){
    </>:<div className="item"><span className="it-e">📋</span><div className="it-t"><b>מי יקנה היום ולמה</b><span>לכל סוג לקוח: כמה יגיעו, כמה יקנו ומה מפריע להם. התוצאה תופיע כאן ובמטבח</span></div>
     {isEve?<span className="badge">בבוקר</span>:<button className="btn sm" disabled={free<RESEARCH_C} onClick={e=>{setResearch(true);pay(RESEARCH_C);flyCoin(e,'−₪'+RESEARCH_C);}}>קנה · ₪{RESEARCH_C}</button>}</div>}
   </section>
-  {withComp&&<section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
-   <div className="item"><span className="it-e">🕵️</span><div className="it-t"><b>המחיר והמתכון שלו</b><span>{spy&&!isEve?`מוכר ב-₪${compPrice} · מתכון 3🍋 1🍬 1🧊`:'כדי לדעת אם להוזיל או לשפר את הכוס'}</span></div>
+  {withComp&&<section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי המתחרים</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
+   <div className="rivals">{comps.map((c,i)=>{const t=rivalsToday[i];return <div key={c.id} className="rival"><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div>{spy&&!isEve?<span className="rv-x num">₪{t.pr} · {t.rec.l}🍋{t.rec.h}🍬{t.rec.i}🧊</span>:<span className="rv-x">?</span>}</div>;})}</div>
+   <div className="item"><span className="it-e">🕵️</span><div className="it-t"><b>המחיר והמתכון של כולם</b><span>{spy?(isEve?'נקנה — יוצג בבוקר':'הפרטים מופיעים למעלה'):'כדי לדעת אם להוזיל או לשפר את הכוס'}</span></div>
     {spy?<span className="badge g">✓ נקנה</span>:<button className="btn sm" disabled={free<SPY_C} onClick={e=>{setSpy(true);pay(SPY_C);flyCoin(e,'−₪'+SPY_C);}}>קנה · ₪{SPY_C}</button>}</div>
   </section>}
  </div>;
@@ -1303,8 +1323,10 @@ function Game(){
    <div><small>מבקרים</small><b className="num">{r.visitors}</b></div>
    <div><small>נמכרו</small><b className="num">{r.sold}<i>/{r.cups}</i></b></div>
    <div><small>מוניטין</small><b className={"num "+(r.repD>=0?'g':'r')}>{r.repD>=0?'+':'−'}{Math.abs(r.repD)}</b><i>עכשיו {r.rep}</i></div>
-   {withComp?<div><small>{COMP.em} {COMP.n}</small><b className="num">{fmt(r.comp)}</b><i>{r.profit>=r.comp?'ניצחת היום 🏆':'הוא הרוויח יותר'}</i></div>:<div><small>הכנסות</small><b className="num">{fmt(r.rev)}</b><i>{fmt(r.rev/Math.max(1,r.sold))} לכוס</i></div>}
+   {r.comps&&r.comps.length?(()=>{const place=1+r.comps.filter(c=>c.profit>r.profit).length;return <div><small>מקום ברחוב</small><b className="num">{place}<i>/{r.comps.length+1}</i></b><i>{place===1?'הרווחת הכי הרבה 🏆':'יש מי שהרוויח יותר'}</i></div>;})()
+    :<div><small>הכנסות</small><b className="num">{fmt(r.rev)}</b><i>{fmt(r.rev/Math.max(1,r.sold))} לכוס</i></div>}
   </div>
+  {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">הרחוב היום · לפי רווח</div>{[{em:'🍋',n:'אתה',profit:r.profit,sold:r.sold,me:true},...r.comps].sort((x,y)=>y.profit-x.profit).map((c,i)=><div key={i} className={"lb"+(c.me?' me':'')}><span className="lb-r num">{i+1}</span><span className="lb-n">{c.em} {c.n}</span><span className="num lb-s">{c.sold} כוסות</span><b className={"num "+(c.profit>=0?'g':'r')}>{fmt(c.profit)}</b></div>)}</div>}
   {r.byType&&r.visitors>0&&<div className="rp-types"><div className="cl-h">מי קנה היום</div>{TYPES.map(k=>{const t=r.byType[k],w=r.whys?.[k];return <div key={k} className="rt-r">
    <span className="rt-n">{CT[k].em} {CT[k].nm}</span><span className="aud-b"><i className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'} style={{width:(t.vis?Math.round(t.buy/t.vis*100):0)+'%'}}/></span>
    <span className="num rt-x"><b>{t.buy}</b>/{t.vis}</span>{w&&<span className={"why "+w[1]}>{t.miss>0&&t.miss>=t.vis-t.buy?'נגמר המלאי':w[0]}</span>}</div>;})}</div>}
@@ -1314,12 +1336,12 @@ function Game(){
 
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1];return <div className="simwrap">
   <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,cups-s.sold)} cupsTotal={cups}
-   weather={{id:W.w,temp}} comps={withComp?[{n:COMP.n,pr:compPrice}]:[]} done={s.done}/>
+   weather={{id:W.w,temp}} comps={rivalsToday.map(c=>({n:c.n,pr:c.pr}))} done={s.done}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div><div><small>לא קנו</small><b className="num r">{s.walk}</b></div></div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
  </div>;};
 
- const Over=()=>{const tot=history.reduce((s,h)=>s+h.profit,0),PAR=DIFF[diff].par[withComp?1:0],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
+ const Over=()=>{const tot=history.reduce((s,h)=>s+h.profit,0),PAR=DIFF[diff].par[nComp],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
   const mx=Math.max(10,...history.map(h=>Math.abs(h.profit)));
   return <div className="report"><div className="rp-hero"><div className="rp-day">סוף העונה</div>
    <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:i*0.15+'s'}}>★</span>)}</div>
@@ -1348,9 +1370,10 @@ function Game(){
    <h2>הגדרות המשחק</h2>
    <div className="cl-h">רמת קושי</div>
    <div className="locs">{Object.entries(DIFF).map(([k,d])=><button key={k} className={"loc"+(diff===k?' on':'')} onClick={()=>setDiff(k)}><span>{d.em}</span><b>{d.n}</b><small>{d.d}</small></button>)}</div>
-   <div className="cl-h">מתחרה ברחוב</div>
-   <div className="locs two">{[[false,'🌳','לבד ברחוב','כל הלקוחות שלך'],[true,COMP.em,COMP.n,'דוכן מתחרה על אותם לקוחות']].map(([v,em,n,d])=><button key={String(v)} className={"loc"+(withComp===v?' on':'')} onClick={()=>setWithComp(v)}><span>{em}</span><b>{n}</b><small>{d}</small></button>)}</div>
-   <div className="note">💡 בפעם הראשונה? קלה ולבד ברחוב.</div>
+   <div className="cl-h">מתחרים ברחוב</div>
+   <div className="locs four">{[0,1,2,3].map(n=><button key={n} className={"loc"+(nComp===n?' on':'')} onClick={()=>setNComp(n)}><span>{n===0?'🌳':['','🧍','🧍🧍','🧍🧍🧍'][n]}</span><b>{n===0?'לבד':n}</b><small>{n===0?'כל הלקוחות שלך':n===1?'מתחרה':'מתחרים'}</small></button>)}</div>
+   {nComp>0&&<div className="rivals">{comps.map(c=><div key={c.id} className="rival"><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div></div>)}</div>}
+   <div className="note">💡 בפעם הראשונה? קלה ובלי מתחרים.</div>
    <div className="intro-btns"><button className="btn ghost" onClick={()=>setPhase('title')}>‹ חזרה</button><button className="cta" onClick={start}>התחל משחק ›</button></div>
   </div>}
  </div>;
