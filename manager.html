@@ -443,6 +443,22 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .glass-cap.full{color:var(--warn);font-weight:600}
 .rt-badge{font-style:normal;font-size:10.5px;font-weight:700;background:var(--lemon);color:var(--lemon-ink);padding:1px 6px;border-radius:6px;margin-inline-end:6px}
 
+/* Title and setup */
+.intro{justify-content:center}
+.intro-in{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px max(16px,env(safe-area-inset-left,0px));text-align:center;overflow-y:auto;max-height:100%}
+.intro-glass .glass{width:170px;animation:heroBob 4s ease-in-out infinite}
+@keyframes heroBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.intro-title{font-family:var(--f-display);font-size:44px;font-weight:600;margin:0;color:var(--lemon);text-shadow:0 4px 24px rgba(255,210,63,.35)}
+.intro-sub{margin:0;color:var(--dim);font-size:15px}
+.intro-pts{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:6px}
+.intro-pts span{background:rgba(28,31,56,.9);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px}
+.intro .cta{max-width:340px}
+.setup{align-items:stretch;text-align:right;width:100%;max-width:460px;margin:0 auto}
+.setup h2{font-size:26px;text-align:center}
+.locs.two{grid-template-columns:1fr 1fr}
+.intro-btns{display:flex;gap:8px;align-items:center;margin-top:6px}
+.intro-btns .cta{flex:1}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -804,6 +820,7 @@ const MKTG=[{id:"flyer",em:"📄",n:"פליירים",c:5,dm:1.10,d:"+10% מבק�
 const BLACK=[{id:"ads",em:"📢",n:"קמפיין נגד המתחרה",c:8,d:"גונב 18% מהלקוחות שלו",risk:0},{id:"rumor",em:"🗣️",n:"הפצת שמועות",c:4,d:"−5 מוניטין למתחרה",risk:30},{id:"signs",em:"🚫",n:"הסרת השלטים שלו",c:6,d:"פחות חשיפה למתחרה",risk:40}];
 const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.65,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.8,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
 const RESEARCH_C=4,SPY_C=3;
+const DIFF={easy:{n:'קלה',em:'🌱',d:'יותר לקוחות, מתחרה חלש',dm:1.3,npc:0.45,par:[1650,1350]},medium:{n:'בינונית',em:'⚖️',d:'מאוזן',dm:1,npc:0.65,par:[1350,850]},hard:{n:'קשה',em:'🔥',d:'פחות לקוחות, מתחרה חזק',dm:0.8,npc:0.85,par:[1050,550]}};
 const PRESETS=[{id:'classic',n:'קלאסי',r:{l:3,h:1,i:1},fit:'כולם'},{id:'kids',n:'מתוק לילדים',r:{l:2,h:2,i:1},fit:'👦 ילדים'},{id:'sport',n:'רענן לספורטאים',r:{l:3,h:0,i:3},fit:'🏃 ספורטאים'},
  {id:'chef',n:'עשיר לשפים',r:{l:4,h:1,i:1},fit:'🧑‍🍳 שפים'},{id:'hot',n:'קפוא ליום חם',r:{l:3,h:1,i:2},fit:'☀️ ימים חמים'}];
 const sameR=(a,b)=>a.l===b.l&&a.h===b.h&&a.i===b.i;
@@ -819,7 +836,7 @@ const COMP={n:"דוד יוסי",em:"🧓"};
 // A glass of lemonade drawn in 3D: its colour, pulp, ice and sugar follow the recipe
 const ICE_POS=[[56,48,-12],[84,46,14],[70,62,4],[94,64,-20],[46,66,22]];
 const PULP=[[48,96],[86,112],[62,130],[78,82],[56,150],[92,140],[70,104],[50,122],[84,158],[66,72],[60,90],[88,96],[74,136],[54,108],[80,124],[64,160],[46,140],[90,76],[72,150],[58,140]];
-const GlassSvg=({l,h,i,temp=25})=>{
+const GlassSvg=({l,h,i,temp=25,bare})=>{
  const w=Math.max(0,6-l-h-i);
  // Colour: lemons make it deep yellow, water washes it out (sugar has its own look: crystals and a sugared rim)
  const strength=l/(l+w+0.0001);
@@ -832,7 +849,7 @@ const GlassSvg=({l,h,i,temp=25})=>{
  const KC={l:['#FFD23F','🍋'],h:['#FF8FB1','🍬'],i:['#5CC8F0','🧊'],w:['none','💧']};
  return <svg viewBox="0 0 166 200" className="glass" role="img" aria-label={`כוס לימונדה: ${l} לימון, ${h} סוכר, ${i} קרח, ${w} מים`}>
   {/* measuring column: one cell per place, filled from the bottom */}
-  <g>
+  <g style={{display:bare?'none':null}}>
    <text x="13" y="20" textAnchor="middle" fontSize="11" fontWeight="700" fill={w===0?'#FBBF24':'#F3F1E8'} fontFamily="Fredoka,Rubik,sans-serif">{6-w}/6</text>
    {kinds.map((k,n)=>{const y=172-(n+1)*24;return <g key={'g'+n} className="gauge-cell" style={{animationDelay:n*0.04+'s'}}>
     <rect x="2" y={y+2} width="22" height="21" rx="5" fill={KC[k][0]} fillOpacity={k==='w'?0:0.9} stroke={k==='w'?'#6A70A8':'#fff'} strokeOpacity={k==='w'?1:0.5} strokeDasharray={k==='w'?'3 2':null}/>
@@ -938,9 +955,10 @@ function Game(){
  const [seed]=useState(()=>Date.now()%100000);
  const world=useMemo(()=>buildWorld(seed),[seed]);
  const [day,setDay]=useState(1);
- const [phase,setPhase]=useState('evening'); // evening (before `day`) | morning | sim | report | over
+ const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
+ const [diff,setDiff]=useState('medium'),[withComp,setWithComp]=useState(true);
  const [tab,setTab]=useState('news');
- const [show,setShow]=useState({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});
+ const [show,setShow]=useState(null);
  const [cash,setCash]=useState(80),[loan,setLoan]=useState(0);
  const [lemons,setLemons]=useState([{q:40,d:1}]),[sugar,setSugar]=useState(0),[ice,setIce]=useState(0);
  const [rep,setRep]=useState(50);
@@ -988,10 +1006,10 @@ function Game(){
  // Demand model
  const compPrice=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],temp),0)*0.95);
  const visitorsFor=(r,pr,T=temp,fm=wInfo.fm,evm=W.ev?.dm)=>{const boost=acts.reduce((m,id)=>m*(MKTG.find(a=>a.id===id)?.dm||1),1);
-  const dm=60*softEnv(T,fm,evm)*boost*(0.7+rep/100*0.6)*LOC[loc].dm*(ups.includes('sign')?1.15:1)*(ups.includes('shade')&&T>=28?1.2:1)*(vipBoost&&T===temp?1.3:1);
+  const dm=60*softEnv(T,fm,evm)*boost*(0.7+rep/100*0.6)*LOC[loc].dm*(ups.includes('sign')?1.15:1)*(ups.includes('shade')&&T>=28?1.2:1)*(vipBoost&&T===temp?1.3:1)*DIFF[diff].dm;
   const cpT=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0)*0.95);
   const my=standAttr(r,pr,rep,T),them=standAttr({l:3,h:1,i:1},cpT,55,T)*(acts.includes('signs')?0.8:1);
-  const share=1/(1+0.65*them/my);return Math.max(3,Math.round(dm*share+(acts.includes('ads')?dm*(1-share)*0.18:0)));};
+  const share=withComp?1/(1+DIFF[diff].npc*them/my):1;return Math.max(3,Math.round(dm*share+(withComp&&acts.includes('ads')?dm*(1-share)*0.18:0)));};
  const perType=(r,pr,T=temp,fm,evm)=>{const v=visitorsFor(r,pr,T,fm,evm);return TYPES.map(k=>{const c=CT[k],s=cSc(r.l,r.h,r.i,T,c),p=buyProb(s.sc,pr,rep,c,T),vis=Math.round(v*MIX[k]);return{k,c,p,vis,buy:Math.round(vis*p),why:whyOf(c,r,pr,T)};});};
  const whyOf=(c,r,pr,T=temp)=>{const w=CUP-r.l-r.h-r.i,sw=SW[r.h],sour=Math.max(0,SR[r.l]-0.5*sw),ratio=pr/pMt(c,T),fr=fSc(r.i,r.h,T);
   if(ratio>1.2)return['יקר להם','bad'];if(w>=3)return['מימי מדי','bad'];if(sour>c.sTh)return['חמוץ להם','bad'];if(sw>c.swI[1])return['מתוק מדי','warn'];
@@ -1026,7 +1044,7 @@ function Game(){
   else inbox.push({id:'rs'+day,ic:'📋',t:`סקר שוק: ~${buyers} יקנו מתוך ~${visitors}`,s:aud.filter(x=>x.why[1]!=='good').slice(0,2).map(x=>`${x.c.nm}: ${x.why[0]}`).join(' · ')||'כולם אוהבים את הכוס',go:()=>setTab('product'),cta:'למוצר'});
   if(maxCups===0)inbox.push({id:'nc'+day,ic:'⚠️',t:'אין מספיק מלאי לכוס אחת',s:'היום הדוכן ייסגר. בערב אפשר לקנות',warn:true});
   else if(cupsWanted>maxCups)inbox.push({id:'cap'+day,ic:'⚠️',t:`אפשר להכין רק ${maxCups} כוסות`,s:`מגבלה: ${limiter.em} ${limiter.n}`,warn:true,go:()=>setTab('product'),cta:'למוצר'});
-  if(spy)inbox.push({id:'sp'+day,ic:'🕵️',t:`${COMP.em} ${COMP.n} מוכר היום ב-₪${compPrice}`,s:'מתכון: 3🍋 1🍬 1🧊',go:null});
+  if(spy&&withComp)inbox.push({id:'sp'+day,ic:'🕵️',t:`${COMP.em} ${COMP.n} מוכר היום ב-₪${compPrice}`,s:'מתכון: 3🍋 1🍬 1🧊',go:null});
  }
  // The assistant manager: concrete, number-based advice
  if(phase==='evening'&&helper){const T=fcast?fcast.t:25,N=buyersFor(recipe,price,T,fcast?WE[fcast.w].fm:1,1),rec=Math.min(cap,Math.round(N*1.1));
@@ -1114,7 +1132,7 @@ function Game(){
   {k:'stock',ic:'📦',t:'מלאי למחר',v:`מספיק ל-${afterCups} כוסות${helper?` · העוזר ממליץ ~${advRec}`:''}`,st:afterCups===0?'bad':helper&&afterCups<advRec*0.8?'warn':'ok',note:afterCups===0?'אין מלאי — הדוכן לא ייפתח':helper&&afterCups<advRec*0.8?'כנראה לא יספיק לכל הקונים':null},
   {k:'biz',ic:'🧑‍💼',t:'עוזר',v:helper?'מועסק — ממליץ כמה לקנות ואיזה מחיר לקבוע':`אין · ₪${HELPER_C} ליום: מגיש יותר כוסות ונותן המלצות`,st:helper?'ok':'opt'},
   {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה — קונים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
-  {k:'intel',ic:'🕵️',t:`ריגול אחרי ${COMP.n}`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'},
+  ...(withComp?[{k:'intel',ic:'🕵️',t:`ריגול אחרי ${COMP.n}`,v:spy?'נקנה — המחיר שלו יוצג בבוקר':'לא נקנה',st:spy?'ok':'opt'}]:[]),
  ]:[
   ...(W.insp&&!inspPaid?[{k:'news',ic:'🏛️',t:'פיקוח עירוני',v:'צריך לשלם ₪8 כדי לפתוח היום',st:'bad',act:{label:'שלם ₪8',fn:()=>{if(cash>=8){pay(8);setInspPaid(true);}}}}]:[]),
   {k:'product',ic:'👥',t:'מי מגיע היום',v:TYPES.map(k=>`${CT[k].em} ${Math.round(MIX[k]*100)}%`).join(' · '),st:'ok',note:mixToday.why.length?mixToday.why.join(' · '):'יום רגיל'},
@@ -1233,9 +1251,9 @@ function Game(){
   <section className="blk"><div className="blk-h"><h3>🤍 להיום</h3><span className="tag">{isEve?'זמין בבוקר':'משלמים בסוף היום'}</span></div>
    <div className="shop">{MKTG.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n}</b><span>{a.d}</span></div>
     {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm g" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ נבחר · בטל</button>:<button className="btn sm" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הוסף · ₪{a.c}</>}</button>}</div>;})}</div></section>
-  <section className="blk"><div className="blk-h"><h3>🖤 נגד {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'זמין בבוקר':'להיום · יש סיכון'}</span></div>
+  {withComp&&<section className="blk"><div className="blk-h"><h3>🖤 נגד {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'זמין בבוקר':'להיום · יש סיכון'}</span></div>
    <div className="shop">{BLACK.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item dark"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n} {a.risk>0&&<em>{a.risk}% להיתפס</em>}</b><span>{a.d}</span></div>
-    {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm r" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ פעיל · בטל</button>:<button className="btn sm ghost" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הפעל · ₪{a.c}</>}</button>}</div>;})}</div></section>
+    {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm r" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ פעיל · בטל</button>:<button className="btn sm ghost" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הפעל · ₪{a.c}</>}</button>}</div>;})}</div></section>}
  </div>;
 
  const Intel=()=> <div className="pane">
@@ -1255,10 +1273,10 @@ function Game(){
    </>:<div className="item"><span className="it-e">📋</span><div className="it-t"><b>מי יקנה היום ולמה</b><span>לכל סוג לקוח: כמה יגיעו, כמה יקנו ומה מפריע להם. התוצאה תופיע כאן ובמטבח</span></div>
     {isEve?<span className="badge">בבוקר</span>:<button className="btn sm" disabled={free<RESEARCH_C} onClick={e=>{setResearch(true);pay(RESEARCH_C);flyCoin(e,'−₪'+RESEARCH_C);}}>קנה · ₪{RESEARCH_C}</button>}</div>}
   </section>
-  <section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
+  {withComp&&<section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי {COMP.em} {COMP.n}</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
    <div className="item"><span className="it-e">🕵️</span><div className="it-t"><b>המחיר והמתכון שלו</b><span>{spy&&!isEve?`מוכר ב-₪${compPrice} · מתכון 3🍋 1🍬 1🧊`:'כדי לדעת אם להוזיל או לשפר את הכוס'}</span></div>
     {spy?<span className="badge g">✓ נקנה</span>:<button className="btn sm" disabled={free<SPY_C} onClick={e=>{setSpy(true);pay(SPY_C);flyCoin(e,'−₪'+SPY_C);}}>קנה · ₪{SPY_C}</button>}</div>
-  </section>
+  </section>}
  </div>;
 
  const Biz=()=> <div className="pane">
@@ -1285,7 +1303,7 @@ function Game(){
    <div><small>מבקרים</small><b className="num">{r.visitors}</b></div>
    <div><small>נמכרו</small><b className="num">{r.sold}<i>/{r.cups}</i></b></div>
    <div><small>מוניטין</small><b className={"num "+(r.repD>=0?'g':'r')}>{r.repD>=0?'+':'−'}{Math.abs(r.repD)}</b><i>עכשיו {r.rep}</i></div>
-   <div><small>{COMP.em} {COMP.n}</small><b className="num">{fmt(r.comp)}</b><i>{r.profit>=r.comp?'ניצחת היום 🏆':'הוא הרוויח יותר'}</i></div>
+   {withComp?<div><small>{COMP.em} {COMP.n}</small><b className="num">{fmt(r.comp)}</b><i>{r.profit>=r.comp?'ניצחת היום 🏆':'הוא הרוויח יותר'}</i></div>:<div><small>הכנסות</small><b className="num">{fmt(r.rev)}</b><i>{fmt(r.rev/Math.max(1,r.sold))} לכוס</i></div>}
   </div>
   {r.byType&&r.visitors>0&&<div className="rp-types"><div className="cl-h">מי קנה היום</div>{TYPES.map(k=>{const t=r.byType[k],w=r.whys?.[k];return <div key={k} className="rt-r">
    <span className="rt-n">{CT[k].em} {CT[k].nm}</span><span className="aud-b"><i className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'} style={{width:(t.vis?Math.round(t.buy/t.vis*100):0)+'%'}}/></span>
@@ -1296,12 +1314,12 @@ function Game(){
 
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1];return <div className="simwrap">
   <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,cups-s.sold)} cupsTotal={cups}
-   weather={{id:W.w,temp}} comps={[{n:COMP.n,pr:compPrice}]} done={s.done}/>
+   weather={{id:W.w,temp}} comps={withComp?[{n:COMP.n,pr:compPrice}]:[]} done={s.done}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div><div><small>לא קנו</small><b className="num r">{s.walk}</b></div></div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
  </div>;};
 
- const Over=()=>{const tot=history.reduce((s,h)=>s+h.profit,0),PAR=850,th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
+ const Over=()=>{const tot=history.reduce((s,h)=>s+h.profit,0),PAR=DIFF[diff].par[withComp?1:0],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
   const mx=Math.max(10,...history.map(h=>Math.abs(h.profit)));
   return <div className="report"><div className="rp-hero"><div className="rp-day">סוף העונה</div>
    <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:i*0.15+'s'}}>★</span>)}</div>
@@ -1317,6 +1335,25 @@ function Game(){
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
  const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
+ const start=()=>{setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});};
+ if(phase==='title'||phase==='setup')return <div className="app bg-night intro">
+  <WxLayer kind="night"/>
+  {phase==='title'?<div className="intro-in">
+   <div className="intro-glass"><GlassSvg l={3} h={1} i={2} temp={30} bare/></div>
+   <h1 className="intro-title">דוכן הלימונדה</h1>
+   <p className="intro-sub">10 ימים · דוכן אחד · כמה תרוויח?</p>
+   <div className="intro-pts"><span>🛒 קונים בשוק</span><span>🥤 ממציאים כוס</span><span>📣 מושכים לקוחות</span></div>
+   <button className="cta" onClick={()=>setPhase('setup')}>משחק חדש ›</button>
+  </div>:<div className="intro-in setup">
+   <h2>הגדרות המשחק</h2>
+   <div className="cl-h">רמת קושי</div>
+   <div className="locs">{Object.entries(DIFF).map(([k,d])=><button key={k} className={"loc"+(diff===k?' on':'')} onClick={()=>setDiff(k)}><span>{d.em}</span><b>{d.n}</b><small>{d.d}</small></button>)}</div>
+   <div className="cl-h">מתחרה ברחוב</div>
+   <div className="locs two">{[[false,'🌳','לבד ברחוב','כל הלקוחות שלך'],[true,COMP.em,COMP.n,'דוכן מתחרה על אותם לקוחות']].map(([v,em,n,d])=><button key={String(v)} className={"loc"+(withComp===v?' on':'')} onClick={()=>setWithComp(v)}><span>{em}</span><b>{n}</b><small>{d}</small></button>)}</div>
+   <div className="note">💡 בפעם הראשונה? קלה ולבד ברחוב.</div>
+   <div className="intro-btns"><button className="btn ghost" onClick={()=>setPhase('title')}>‹ חזרה</button><button className="cta" onClick={start}>התחל משחק ›</button></div>
+  </div>}
+ </div>;
  return <div className={"app sky-"+skyKind+" bg-"+wxKind}>
   <WxLayer kind={wxKind}/>
   <header className="top">
