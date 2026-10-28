@@ -469,6 +469,58 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .lb.me{background:#2E2A12;border-radius:8px}
 .lb-r{font-weight:700;color:var(--dim)}.lb-s{font-size:11.5px;color:var(--dim)}.lb b{text-align:left}
 
+/* ── Motion round 1 ── */
+/* Things flying to the HUD, and the HUD reacting */
+.flyer{position:fixed;z-index:300;pointer-events:none;font-size:22px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+.hit{animation:hit .45s var(--spring)}
+@keyframes hit{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
+.roll{display:inline-block}
+/* Glass reactions */
+.fx-drop{animation:fxDrop .55s cubic-bezier(.5,0,.75,0) forwards;transform-box:fill-box}
+@keyframes fxDrop{from{transform:translateY(-30px);opacity:0}15%{opacity:1}to{transform:translateY(62px);opacity:0}}
+.fx-sugar{animation:fxSugar .7s ease-in forwards;opacity:0}
+@keyframes fxSugar{from{transform:translateY(0);opacity:1}to{transform:translateY(80px);opacity:0}}
+.fx-splash{opacity:0;animation:fxSplash .6s ease-out .45s forwards;transform-box:fill-box;transform-origin:center}
+@keyframes fxSplash{from{opacity:.9;transform:scale(.4)}to{opacity:0;transform:scale(3.2)}}
+.fx-out{animation:fxOut .8s var(--ease-out) forwards}
+@keyframes fxOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-55px) rotate(25deg);opacity:0}}
+.surf-wobble{animation:wobble .7s ease-out;transform-box:fill-box;transform-origin:center}
+@keyframes wobble{0%{transform:scaleY(1)}25%{transform:scaleY(1.9) translateY(-1px)}50%{transform:scaleY(.6)}75%{transform:scaleY(1.3)}100%{transform:scaleY(1)}}
+/* Opening the stand */
+.sky-open{background:radial-gradient(circle at 50% 40%,#FFE9A8,#FFB84C 55%,#E2852B)}
+.op-stand{position:absolute;top:22%;left:50%;transform:translateX(-50%);width:210px;text-align:center}
+.op-awning{height:46px;border-radius:14px 14px 0 0;background:repeating-linear-gradient(90deg,#FFD23F 0 26px,#fff 26px 52px);transform-origin:top;animation:awning .7s var(--spring) both;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+@keyframes awning{from{transform:scaleY(0)}}
+.op-body{background:linear-gradient(180deg,#8A5A2B,#5E3A18);height:120px;border-radius:0 0 12px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;perspective:400px}
+.op-sign{position:relative;width:120px;height:44px;transform-style:preserve-3d;animation:flip .6s ease-in-out .6s both}
+.op-sign span{position:absolute;inset:0;display:grid;place-items:center;border-radius:10px;font-family:var(--f-display);font-weight:600;font-size:22px;backface-visibility:hidden}
+.op-front{background:#B4404A;color:#fff}.op-back{background:#2F9E5B;color:#fff;transform:rotateY(180deg)}
+@keyframes flip{from{transform:rotateY(0)}to{transform:rotateY(180deg)}}
+.op-cups{font-size:22px;letter-spacing:4px;animation:pop .4s var(--spring) .9s both}
+.sky-open .sky-text{margin-top:240px;color:#3A2100;text-shadow:0 2px 12px rgba(255,255,255,.5)}
+/* End-of-day register */
+.rp-hero{position:relative;overflow:hidden}
+.rp-coins span{position:absolute;top:-30px;font-size:20px;animation:coinFall 1s cubic-bezier(.5,0,.6,1) both}
+@keyframes coinFall{from{transform:translateY(0) rotate(0);opacity:0}20%{opacity:1}to{transform:translateY(190px) rotate(540deg);opacity:0}}
+.register{display:inline-block;animation:ring .5s ease-in-out 1.1s 2}
+@keyframes ring{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+.confetti i{position:absolute;top:-12px;width:7px;height:12px;border-radius:2px;animation:conf 1.8s ease-in forwards}
+@keyframes conf{from{transform:translateY(0) rotate(0);opacity:1}to{transform:translateY(260px) rotate(720deg);opacity:0}}
+.rp-grid>div{animation:pop .4s var(--spring) both}
+.rp-grid>div:nth-child(2){animation-delay:.08s}.rp-grid>div:nth-child(3){animation-delay:.16s}.rp-grid>div:nth-child(4){animation-delay:.24s}
+/* Control center */
+.hub-ring{background:radial-gradient(circle,#1D3326 60%,transparent 61%),conic-gradient(var(--good) 0 var(--p,100%),rgba(255,255,255,.12) var(--p,100%) 100%)}
+.hub-ring.warn{background:radial-gradient(circle,#2E2516 60%,transparent 61%),conic-gradient(var(--warn) 0 var(--p,100%),rgba(255,255,255,.12) var(--p,100%) 100%)}
+.tk-st{display:inline-block;animation:pop .35s var(--spring)}
+.ready{display:flex;justify-content:center;align-items:center;gap:8px;background:linear-gradient(90deg,#1D3326,#255C3A,#1D3326);border:1px solid #2F6B47;border-radius:12px;padding:8px;font-family:var(--f-display);font-size:17px;color:var(--good);animation:pop .5s var(--spring)}
+.ready span{animation:twinkle 1s ease-in-out infinite alternate}
+/* Tabs slide in from the direction you moved; the nav icon hops */
+.main.from-l{animation:slideL .32s var(--ease-out)}.main.from-r{animation:slideR .32s var(--ease-out)}
+@keyframes slideL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+.nav button.on span{animation:navHop .45s var(--spring)}
+@keyframes navHop{0%{transform:scale(1)}40%{transform:scale(1.35) translateY(-4px)}100%{transform:scale(1.12)}}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -849,6 +901,9 @@ const PERSONAS=[{id:'budget',n:'אבי הזול',em:'💸',tag:'קונה לימ�
 const ICE_POS=[[56,48,-12],[84,46,14],[70,62,4],[94,64,-20],[46,66,22]];
 const PULP=[[48,96],[86,112],[62,130],[78,82],[56,150],[92,140],[70,104],[50,122],[84,158],[66,72],[60,90],[88,96],[74,136],[54,108],[80,124],[64,160],[46,140],[90,76],[72,150],[58,140]];
 const GlassSvg=({l,h,i,temp=25,bare})=>{
+ const prev=useRef({l,h,i}),[fx,setFx]=useState([]);
+ useEffect(()=>{const p=prev.current,n=[];['l','h','i'].forEach(k=>{const d=({l,h,i})[k]-p[k];if(d)n.push({id:Date.now()+k,k,up:d>0});});prev.current={l,h,i};
+  if(n.length){setFx(f=>[...f,...n]);const ids=n.map(x=>x.id);setTimeout(()=>setFx(f=>f.filter(x=>!ids.includes(x.id))),1100);}},[l,h,i]);
  const w=Math.max(0,6-l-h-i);
  // Colour: lemons make it deep yellow, water washes it out (sugar has its own look: crystals and a sugared rim)
  const strength=l/(l+w+0.0001);
@@ -894,7 +949,13 @@ const GlassSvg=({l,h,i,temp=25,bare})=>{
    {[0,1,2,3,4].map(k=><circle key={'b'+k} className="glass-bub" cx={50+k*10} cy="168" r={1.5+(k%2)} fill="#fff" opacity=".6" style={{animationDelay:k*0.7+'s',animationDuration:(2.6+k*0.4)+'s'}}/>)}
   </g>
   {/* surface of the drink */}
-  <ellipse cx="70" cy={yTop} rx={rT} ry="8" fill="url(#gl-surf)"/>
+  <ellipse cx="70" cy={yTop} rx={rT} ry="8" fill="url(#gl-surf)" className={fx.some(x=>x.up)?'surf-wobble':''} key={'s'+fx.length}/>
+  {fx.map(x=>x.up?<g key={x.id}>
+    {x.k==='l'&&<g className="fx-drop"><circle cx="70" cy="0" r="11" fill="#FFE45C" stroke="#F2B90C" strokeWidth="2"/><circle cx="70" cy="0" r="7" fill="#FFF6B8"/></g>}
+    {x.k==='i'&&<rect className="fx-drop" x="60" y="-10" width="20" height="20" rx="5" fill="url(#gl-ice)" stroke="#fff"/>}
+    {x.k==='h'&&Array.from({length:14}).map((_,n)=><rect key={n} className="fx-sugar" x={64+(n*5)%12} y={-6-n*4} width="2.4" height="2.4" fill="#fff" style={{animationDelay:n*0.03+'s'}}/>)}
+    {x.k!=='h'&&<ellipse className="fx-splash" cx="70" cy={yTop} rx="10" ry="3" fill="none" stroke="#fff" strokeWidth="2"/>}
+   </g>:<text key={x.id} className="fx-out" x="70" y={yTop} textAnchor="middle" fontSize="16">{x.k==='l'?'🍋':x.k==='h'?'🍬':'🧊'}</text>)}
   {/* ice cubes floating at the top */}
   {ICE_POS.slice(0,i).map(([x,y,r],k)=><g key={'i'+k} transform={`rotate(${r} ${x} ${y})`} className="glass-ice" style={{animationDelay:k*0.08+'s'}}>
    <rect x={x-13} y={y-13} width="26" height="26" rx="6" fill="url(#gl-ice)" stroke="#fff" strokeWidth="1.6"/><path d={`M${x-13} ${y+6} L${x+13} ${y+6}`} stroke="#7FD3F0" strokeWidth="1" opacity=".7"/>
@@ -930,12 +991,27 @@ const fmt2=v=>(v<0?'−':'')+'₪'+Math.abs(v).toFixed(2);
 
 /* ───────── Small UI parts ───────── */
 const Stepper=({v,set,min=0,max=99,big5})=><div className="stp">
- {big5&&<button className="stp-5" disabled={v<=min} onClick={()=>set(Math.max(min,v-5))}>−5</button>}
- <button disabled={v<=min} onClick={()=>set(v-1)} aria-label="פחות">−</button>
+ {big5&&<button className="stp-5" disabled={v<=min} onClick={e=>set(Math.max(min,v-5),e)}>−5</button>}
+ <button disabled={v<=min} onClick={e=>set(v-1,e)} aria-label="פחות">−</button>
  <span className="stp-v num">{v}</span>
- <button disabled={v>=max} onClick={()=>set(v+1)} aria-label="עוד">+</button>
- {big5&&<button className="stp-5" disabled={v>=max} onClick={()=>set(Math.min(max,v+5))}>+5</button>}
+ <button disabled={v>=max} onClick={e=>set(v+1,e)} aria-label="עוד">+</button>
+ {big5&&<button className="stp-5" disabled={v>=max} onClick={e=>set(Math.min(max,v+5),e)}>+5</button>}
 </div>;
+// Counts up from zero (used for the day's result)
+const CountTo=({v})=>{const [d,setD]=useState(0);useEffect(()=>{const t0=performance.now();let raf;const tick=t=>{const k=Math.min(1,(t-t0)/1100),e=1-Math.pow(1-k,3);setD(Math.round(v*e));if(k<1)raf=requestAnimationFrame(tick);};raf=requestAnimationFrame(tick);return()=>cancelAnimationFrame(raf);},[v]);return <span>{d}</span>;};
+// Numbers roll to their new value instead of jumping
+const Roll=({v,f=x=>Math.round(x)})=>{const [d,setD]=useState(v);const from=useRef(v);
+ useEffect(()=>{const a0=from.current,b=v;if(a0===b)return;const t0=performance.now();let raf;
+  const tick=t=>{const k=Math.min(1,(t-t0)/600),e=1-Math.pow(1-k,3);setD(a0+(b-a0)*e);if(k<1)raf=requestAnimationFrame(tick);else{from.current=b;}};
+  raf=requestAnimationFrame(tick);return()=>{cancelAnimationFrame(raf);from.current=b;};},[v]);
+ return <span className="num roll">{f(d)}</span>;};
+// Something flies from where you tapped to a target on screen (an emoji, a coin…)
+const flyTo=(e,content,sel,reverse)=>{try{const t=document.querySelector(sel);if(!t)return;const r=t.getBoundingClientRect();
+ const sx=e?.clientX??innerWidth/2,sy=e?.clientY??innerHeight/2,tx=r.left+r.width/2,ty=r.top+r.height/2;
+ const [x0,y0,x1,y1]=reverse?[tx,ty,sx,sy]:[sx,sy,tx,ty];
+ const el=document.createElement('div');el.className='flyer';el.textContent=content;el.style.left=x0+'px';el.style.top=y0+'px';document.body.appendChild(el);
+ const dx=x1-x0,dy=y1-y0;el.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:0},{transform:`translate(calc(-50% + ${dx*0.3}px),calc(-50% + ${dy*0.3-60}px)) scale(1.25)`,opacity:1,offset:.35},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.7)`,opacity:.9}],{duration:700,easing:'cubic-bezier(.3,.7,.4,1)'}).onfinish=()=>{el.remove();
+  if(!reverse){t.classList.remove('hit');void t.offsetWidth;t.classList.add('hit');}};}catch(_){}};
 const Delta=({d})=>d===0?<span className="dl">±0</span>:<span className={"dl "+(d>0?'up':'dn')}>{d>0?'+':'−'}{Math.abs(d)} קונים</span>;
 const flyCoin=(e,text,good)=>{try{const el=document.createElement('div');el.className='fly'+(good?' good':'');el.textContent=text;
  el.style.left=(e?.clientX||innerWidth/2)+'px';el.style.top=(e?.clientY||innerHeight/2)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}catch(_){}};
@@ -953,7 +1029,11 @@ const WxLayer=({kind})=>{const sunny=['sunny','nice','hot','heat'].includes(kind
  </div>;};
 
 // Sky transition between parts of the day
-const SkyShow=({kind,wx,line1,line2,onDone})=>{useEffect(()=>{const t=setTimeout(onDone,2300);return()=>clearTimeout(t);},[]);
+const SkyShow=({kind,wx,line1,line2,onDone})=>{useEffect(()=>{const t=setTimeout(onDone,kind==='open'?1900:2300);return()=>clearTimeout(t);},[]);
+ if(kind==='open')return <div className="sky sky-open" onClick={onDone}>
+  <div className="op-stand"><div className="op-awning"/><div className="op-body"><div className="op-sign"><span className="op-front">סגור</span><span className="op-back">פתוח!</span></div><div className="op-cups">🥤🥤🥤</div></div></div>
+  <div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>
+ </div>;
  return <div className={"sky sky-"+kind+(wx?" sky-w-"+wx:"")} onClick={onDone}>
   {wx&&<WxLayer kind={wx}/>}
   <div className="sky-stars">{Array.from({length:40}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',top:(i*53%70)+'%',animationDelay:(i%9)*0.12+'s'}}/>)}</div>
@@ -1098,13 +1178,13 @@ function Game(){
   let fine=0;if(rumor==='caught'){repD-=8;fine+=10;}if(signs==='caught'){repD-=15;fine+=15;}
   const usedL=c0*recipe.l-(ups.includes('juicer')?Math.floor(c0/10):0);
   setSim({list,shown:[],sold:0,rev:0,walk:0,done:closed,result:{sold,rev,repD,walk,miss,visitors:v,usedL,cups:c0,byType,whys,vip,rumor,signs,fine,closed:!!closed}});
-  setPhase('sim');};
+  setPhase('sim');if(!closed)setShow({kind:'open',l1:'הדוכן נפתח!',l2:`${cups} כוסות × ₪${price}`});};
  // Feed customers to the street one by one
- useEffect(()=>{if(phase!=='sim'||!sim||sim.done)return;
+ useEffect(()=>{if(phase!=='sim'||!sim||sim.done||show)return;
   const spd=sim.list.length>40?380:sim.list.length>20?550:800;
   const t=setTimeout(()=>{setSim(s=>{if(!s)return s;const n=simFast.current?s.list.length:s.shown.length+1;const shown=s.list.slice(0,n);
    const sold=shown.filter(c=>c.buys).length;return{...s,shown,sold,rev:sold*price,walk:shown.filter(c=>c.rx==='🚶').length,done:n>=s.list.length};});},simFast.current?50:spd);
-  return()=>clearTimeout(t);},[phase,sim]);
+  return()=>clearTimeout(t);},[phase,sim,show]);
  const finishDay=()=>{const R=sim.result;
   let rem=Math.min(R.usedL,lm);const nl=[];for(const b of lemons){if(rem<=0){nl.push(b);continue;}if(b.q<=rem)rem-=b.q;else{nl.push({...b,q:b.q-rem});rem=0;}}
   const kept=nl.filter(b=>day+1-b.d<3),spoiled=nl.reduce((s,b)=>s+b.q,0)-kept.reduce((s,b)=>s+b.q,0);
@@ -1177,13 +1257,14 @@ function Game(){
  const News=()=>{const ok=tasks.filter(t=>t.st==='ok'||t.st==='opt').length;return <div className="pane">
   <div className="hub-head">
    <div><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הכנות למחר. עבור על הרשימה, ואז "המשך ללילה".':'הכנות להיום. עבור על הרשימה, ואז "פתח את הדוכן".'}</p></div>
-   <div className={"hub-ring"+(attention.length?' warn':'')}><b className="num">{ok}/{tasks.length}</b><small>{attention.length?`${attention.length} לטיפול`:'הכל מוכן'}</small></div>
+   <div className={"hub-ring"+(attention.length?' warn':'')} style={{'--p':Math.round(ok/tasks.length*100)+'%'}}><b className="num">{ok}/{tasks.length}</b><small>{attention.length?`${attention.length} לטיפול`:'הכל מוכן'}</small></div>
   </div>
+  {!attention.length&&<div className="ready" key={'ready'+day+phase}><span>✨</span><b>{isEve?'מוכן ללילה!':'מוכן לפתוח!'}</b><span>✨</span></div>}
   <div className="tasks">{tasks.map((t,i)=><button key={i} className={"task "+t.st} onClick={()=>setTab(t.k)}>
    <span className="tk-ic">{t.ic}</span>
    <span className="tk-tx"><b>{t.t}</b><span>{t.v}</span>{t.note&&<em>{t.note}</em>}
     {t.act&&<span className="msg-act" role="button" onClick={e=>{e.stopPropagation();t.act.fn();flyCoin(e,'✓',true);}}>{t.act.label}</span>}</span>
-   <span className="tk-st">{t.st==='ok'?'✓':t.st==='opt'?'רשות':'⚠'}</span>
+   <span className="tk-st" key={t.st}>{t.st==='ok'?'✓':t.st==='opt'?'רשות':'⚠'}</span>
   </button>)}</div>
   {inbox.length>0&&<div className="feed"><div className="cl-h">עדכונים</div>
    <div className="inbox">{inbox.map(m=><button key={m.id} className={"msg"+(read[m.id]?'':' new')+(m.warn?' warn':'')} onClick={()=>{setRead(r=>({...r,[m.id]:1}));m.go&&m.go();}}>
@@ -1243,7 +1324,7 @@ function Game(){
      <div className="stall-info"><b>{n}</b><span>{life}</span></div>
      <div className="tag-price num">₪{p.toFixed(2)}<small className={pct>0?'up':pct<0?'dn':''}>{pct>0?'▲':pct<0?'▼':'•'}{Math.abs(pct)}%</small></div>
     </div>
-    <div className="stall-buy"><Stepper v={buy[k]} set={v=>{const cost=(v-buy[k])*p;if(v<0||cost>free+0.001)return;setBuy(b=>({...b,[k]:v}));}} min={0} max={500} big5/>
+    <div className="stall-buy"><Stepper v={buy[k]} set={(v,e)=>{const cost=(v-buy[k])*p;if(v<0||cost>free+0.001)return;if(v>buy[k]){flyTo(e,'🪙','[data-hud="cash"]',true);setTimeout(()=>flyTo(e,em,'[data-hud="'+k+'"]'),180);}setBuy(b=>({...b,[k]:v}));}} min={0} max={500} big5/>
      <span className="num stall-sum">{buy[k]?fmt2(buy[k]*p):''}</span></div>
    </div>;})}</div>}
   <section className="blk inv">
@@ -1317,7 +1398,10 @@ function Game(){
  </div>;
 
  const Report=()=>{const r=report;return <div className="report">
-  <div className="rp-hero"><div className="rp-day">סיום יום {r.day}</div><div className={"rp-big num "+(r.profit>=0?'g':'r')}>{r.profit>=0?'+':'−'}₪{Math.abs(Math.round(r.profit))}</div>
+  <div className="rp-hero">
+   <div className="rp-coins" aria-hidden="true">{Array.from({length:Math.min(14,Math.max(0,Math.ceil(r.rev/12)))}).map((_,i)=><span key={i} style={{left:(8+i*6.3)%92+'%',animationDelay:(0.1+i*0.08)+'s'}}>🪙</span>)}</div>
+   {r.profit>=60&&<div className="confetti" aria-hidden="true">{Array.from({length:26}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',background:['#FFD23F','#4ADE80','#FF8FB1','#5CC8F0'][i%4],animationDelay:(i%8)*0.09+'s'}}/>)}</div>}
+   <div className="rp-day"><span className="register">🧾</span> סיום יום {r.day}</div><div className={"rp-big num "+(r.profit>=0?'g':'r')}>{r.profit>=0?'+':'−'}₪<CountTo v={Math.abs(Math.round(r.profit))}/></div>
    <div className="rp-sub">הכנסות {fmt(r.rev)} · הוצאות {fmt(r.exp)}</div></div>
   <div className="rp-grid">
    <div><small>מבקרים</small><b className="num">{r.visitors}</b></div>
@@ -1352,6 +1436,8 @@ function Game(){
   <button className="cta" onClick={()=>location.reload()}>עונה חדשה</button></div>;};
 
  /* ── Layout ── */
+const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
+ const lastTab=useRef(tab);const slideDir=navIdx(tab)>=navIdx(lastTab.current)?'from-l':'from-r';useEffect(()=>{lastTab.current=tab;},[tab]);
  const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','🛒','שוק'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
  const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום העונה ›':`לערב · לפני יום ${day+1} ›`):'';
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
@@ -1382,17 +1468,17 @@ function Game(){
   <header className="top">
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{DAYS}</i></b></div>
-    <div className="t-cash"><small>בקופה</small><b className="num">{fmt(cash)}</b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div>
+    <div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div>
    </div>
    <div className="res">
-    <span>🍋 <b className="num">{lm}</b>{phase==='evening'&&buy.l>0&&<i>←{lm+buy.l}</i>}</span>
-    <span>🍬 <b className="num">{sugar}</b>{phase==='evening'&&buy.h>0&&<i>←{sugar+buy.h}</i>}</span>
-    <span>🧊 <b className="num">{ice}</b>{phase==='evening'&&buy.i>0&&<i>←{ice+buy.i}</i>}</span>
-    <span>⭐ <b className="num">{rep}</b></span>
+    <span data-hud="l">🍋 <b className="num"><Roll v={lm}/></b>{phase==='evening'&&buy.l>0&&<i>←{lm+buy.l}</i>}</span>
+    <span data-hud="h">🍬 <b className="num"><Roll v={sugar}/></b>{phase==='evening'&&buy.h>0&&<i>←{sugar+buy.h}</i>}</span>
+    <span data-hud="i">🧊 <b className="num"><Roll v={ice}/></b>{phase==='evening'&&buy.i>0&&<i>←{ice+buy.i}</i>}</span>
+    <span data-hud="rep">⭐ <b className="num"><Roll v={rep}/></b></span>
     {loan>0&&<span className="r">🏦 {fmt(loan)}</span>}
    </div>
   </header>
-  <main className="main" key={phase+tab}>
+  <main className={"main "+slideDir} key={phase+tab}>
    {phase==='sim'?Sim():phase==='report'?Report():phase==='over'?Over():
     tab==='lastrep'&&report?<div className="pane"><button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>{Report()}</div>:
     tab==='news'?News():tab==='product'?Product():tab==='stock'?Stock():tab==='mkt'?Mkt():tab==='intel'?Intel():Biz()}
