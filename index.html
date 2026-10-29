@@ -710,6 +710,22 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .fx-ribbon{align-self:flex-start;font-size:10.5px;font-weight:700;background:var(--lemon);color:var(--lemon-ink);border-radius:6px;padding:1px 6px;margin-bottom:3px}
 .fin-facts{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12.5px;color:var(--dim);margin-top:10px}
 
+/* Rivals' day */
+.rv-day{display:flex;flex-direction:column;gap:1px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.rv-day:last-of-type{border-bottom:none}.rv-day span{color:var(--dim)}.rv-day em{font-style:normal;color:var(--lemon);font-size:12px}
+.rival{grid-template-columns:34px minmax(0,1fr) auto}
+.rv-plan{grid-column:1/-1;font-size:11.5px;color:var(--dim);line-height:1.5}.rv-plan b{color:var(--bad)}
+
+/* Community records */
+.cb-p{margin:0 0 8px;font-size:13px;color:var(--dim);line-height:1.5}
+.cb-row{display:flex;gap:8px}
+.cb-in{flex:1;min-width:0;background:var(--night);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;font-size:15px;padding:8px 10px}
+.cb-in:focus{outline:2px solid var(--lemon);outline-offset:1px}
+.cb-rank{text-align:center;font-size:14px;margin-bottom:8px}.cb-rank b{color:var(--lemon);font-size:20px}
+.cb-f{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.chip.on{border-color:var(--lemon);background:#2E2A12;color:var(--lemon)}
+.intro .btn.ghost{max-width:340px;width:100%}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -826,6 +842,8 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     @keyframes stRise { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-60px) scale(1.1); opacity: 0; } }
     @media (prefers-reduced-motion: reduce) { .st-shade, .st-bigsign, .st-balloons span, .st-flyers span, .st-hearts span { animation: none !important; } .st-hearts span { opacity: 1; } }
 
+    .st-comp-fx { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 14px; background: rgba(255,255,255,.85); border-radius: 8px; padding: 0 4px; animation: stBob 2.4s ease-in-out infinite; }
+
 </style>
 </head>
 <body>
@@ -916,6 +934,7 @@ const StComp=({c})=>(<div className="st-comp">
     <rect x="2" y="40" width="60" height="20" rx="3" fill="#C9A27A"/><rect x="0" y="38" width="64" height="4" rx="2" fill="#9C7A58"/>
   </svg>
   <span className="st-comp-price">₪{c.pr}</span>
+  {c.fx&&<span className="st-comp-fx">{c.fx}</span>}
 </div>);
 
 const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[]})=>{
@@ -1109,6 +1128,42 @@ const EVENTS=[{n:"🎪 פסטיבל ברחוב",dm:1.8},{n:"🏃 מרתון בש
 const PERSONAS=[{id:'budget',n:'אבי הזול',em:'💸',tag:'קונה לימונים בסיטונאות ומוכר הכי זול ברחוב',pb:-1.6,r:{l:2,h:1,i:1}},{id:'premium',n:'שף מוריס',em:'👨‍🍳',tag:'עזב מסעדה ופתח דוכן גורמה: לימונדה עשירה ויקרה',pb:2.4,r:{l:4,h:1,i:1}},
  {id:'steady',n:'דוד יוסי',em:'🧓',tag:'מוכר לימונדה באותה פינה 20 שנה: קלאסי, בלי הפתעות',pb:0,r:{l:3,h:1,i:1}},{id:'trendy',n:'נועה הטרנדית',em:'😎',tag:'לימונדה קפואה עם הרבה קרח, הכל לאינסטגרם, קצת יקרה',pb:0.6,r:{l:3,h:1,i:2}},
  {id:'gambler',n:'מוטי המהמר',em:'🎲',tag:'משנה מחיר ומתכון כל יום, אף פעם לא יודעים מה יהיה',pb:0,r:null},{id:'veteran',n:'סבתא רחל',em:'👵',tag:'מכינה לפי המתכון של סבתא שלה: עשירה בלימון ואיכותית',pb:0.3,r:{l:4,h:1,i:2}}];
+
+// Community records: the project's existing Supabase tables (profiles, game_results)
+const SB_URL='https://xsnwsxhdqfcbhwujwgmr.supabase.co',SB_KEY='sb_publishable_GoNVy0V0T4F3hStcjXL3CQ_GvPqj4Vm',SB_SINCE='2026-10-29T00:00:00Z';
+const sbH=tok=>({apikey:SB_KEY,Authorization:'Bearer '+(tok||SB_KEY),'Content-Type':'application/json'});
+const sbLoad=()=>{try{return JSON.parse(localStorage.getItem('lm-sb')||'null');}catch(_){return null;}};
+const sbSave=s=>{try{localStorage.setItem('lm-sb',JSON.stringify(s));}catch(_){}};
+const sbSession=async nick=>{let s=sbLoad();
+ if(s&&s.exp>Date.now()/1000+60)return s;
+ if(s&&s.refresh){const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:sbH(),body:JSON.stringify({refresh_token:s.refresh})});
+  if(r.ok){const j=await r.json();s={...s,tok:j.access_token,refresh:j.refresh_token,exp:Date.now()/1000+j.expires_in};sbSave(s);return s;}}
+ const r=await fetch(SB_URL+'/auth/v1/signup',{method:'POST',headers:sbH(),body:JSON.stringify({data:{display_name:nick}})});
+ const j=await r.json().catch(()=>({}));if(!r.ok||!j.access_token)throw new Error(j.error_code==='anonymous_provider_disabled'||/anonymous/i.test(j.msg||j.message||'')?'off':'net');
+ s={uid:j.user.id,tok:j.access_token,refresh:j.refresh_token,exp:Date.now()/1000+j.expires_in,nick};sbSave(s);return s;};
+const sbSubmit=async(nick,g)=>{const s=await sbSession(nick);
+ if(s.nick!==nick){await fetch(SB_URL+'/rest/v1/profiles?id=eq.'+s.uid,{method:'PATCH',headers:sbH(s.tok),body:JSON.stringify({username:nick})});sbSave({...s,nick});}
+ const r=await fetch(SB_URL+'/rest/v1/game_results',{method:'POST',headers:{...sbH(s.tok),Prefer:'return=minimal'},body:JSON.stringify({user_id:s.uid,score:g.tot,difficulty:g.diff,competitors:g.n,stars:g.st,reputation_final:g.rep,cups_sold:g.sold})});
+ if(!r.ok)throw new Error('net');return s.uid;};
+const sbTop=async(diff,n)=>{const q='difficulty=eq.'+diff+'&competitors=eq.'+n+'&created_at=gte.'+SB_SINCE;
+ const r=await fetch(SB_URL+'/rest/v1/game_results?select=score,stars,cups_sold,created_at,user_id,profiles(username)&'+q+'&order=score.desc&limit=10',{headers:sbH()});
+ if(!r.ok)throw new Error('net');const rows=await r.json();
+ const c=await fetch(SB_URL+'/rest/v1/game_results?select=id&'+q,{method:'HEAD',headers:{...sbH(),Prefer:'count=exact',Range:'0-0'}});
+ const total=+((c.headers.get('content-range')||'/0').split('/')[1])||rows.length;return{rows,total,q};};
+const sbRank=async(q,score)=>{const c=await fetch(SB_URL+'/rest/v1/game_results?select=id&'+q+'&score=gt.'+score,{method:'HEAD',headers:{...sbH(),Prefer:'count=exact',Range:'0-0'}});
+ return 1+(+((c.headers.get('content-range')||'/0').split('/')[1])||0);};
+const BAD_NICK=['זונה','זין','מניאק','שרמוט','בן זונה','fuck','shit','bitch','dick','porn','sex','nazi','hitler'];
+const nickOk=n=>n.length>=2&&n.length<=16&&/^[\p{L}\p{N} _.\-]+$/u.test(n)&&!BAD_NICK.some(b=>n.toLowerCase().includes(b));
+
+// Rival strategies: chance to use each option (scaled by difficulty), and the order they buy upgrades in
+const AI={budget:{fc:[0.45,1],rs:0.1,spy:0.6,mk:{flyer:0.55,banner:0.05,social:0.1,taste:0},bh:{ads:0.12,rumor:0.15,signs:0.1},up:['juicer','cups'],hp:0.1},
+ premium:{fc:[0.9,3],rs:0.8,spy:0.2,mk:{flyer:0.1,banner:0.2,social:0.3,taste:0.6},bh:{},up:['shade','cups','station','sign'],hp:0.4},
+ steady:{fc:[0.8,2],rs:0.2,spy:0.1,mk:{flyer:0.4,banner:0.1,social:0,taste:0.1},bh:{},up:['sign','juicer'],hp:0.2},
+ trendy:{fc:[0.6,2],rs:0.3,spy:0.4,mk:{flyer:0.2,banner:0.5,social:0.9,taste:0.2},bh:{ads:0.3},up:['sign','cups','shade','station'],hp:0.3},
+ gambler:{fc:[0.4,1],rs:0.2,spy:0.3,mk:{flyer:0.3,banner:0.4,social:0.3,taste:0.2},bh:{ads:0.3,rumor:0.4,signs:0.35},up:['sign','team'],hp:0.3},
+ veteran:{fc:[0.9,2],rs:0.5,spy:0.2,mk:{flyer:0.3,banner:0.15,social:0.05,taste:0.4},bh:{},up:['shade','cups','juicer','station'],hp:0.5}};
+const SMART={easy:0.55,medium:0.8,hard:1};
+const ALL_UPS=[...UPG_MKT,...UPG_OPS],MK_EM=Object.fromEntries([...MKTG,...BLACK].map(x=>[x.id,x.em]));
 
 // A glass of lemonade drawn in 3D: its colour, pulp, ice and sugar follow the recipe
 const ICE_POS=[[56,48,-12],[84,46,14],[70,62,4],[94,64,-20],[46,66,22]];
@@ -1354,15 +1409,58 @@ function Game(){
  const cups=Math.min(cupsWanted,maxCups);
 
  // Demand model
- const rivalsFor=(T=temp)=>{const pAvg=TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0);return comps.map((p,i)=>{const rr=rng(seed+day*71+i*13);
-  const r=p.r||{l:2+Math.floor(rr()*3),h:Math.floor(rr()*3),i:Math.floor(rr()*3)},pr=Math.max(2,Math.round(pAvg*0.95+p.pb+(p.r?0:(rr()-0.5)*6)));
-  return{...p,rec:r,pr,attr:standAttr(r,pr,55,T)*(acts.includes('signs')?0.8:1)};});};
+ // ── Rival stands: each one has its own cash, reputation and upgrades, and decides every day by its character ──
+ const [rv,setRv]=useState([]);
+ const rvS=i=>rv[i]||{cash:80,rep:50,ups:[],tot:0};
+ const myTot=history.reduce((s,h)=>s+h.profit,0),myLastPrice=history.length?history[history.length-1].price:6;
+ const hitOn=(all,who,id)=>all.filter(o=>o.i!==who&&o.bh.some(x=>x.id===id&&!x.caught&&x.target===who));
+ const rivalAttr=(b,all,T)=>standAttr(b.rec,b.pr,b.st.rep,T)*(acts.includes('signs')?0.8:1)*Math.pow(0.8,hitOn(all,b.i,'signs').length);
+ const rivalBoost=(b,T)=>b.mk.reduce((m,id)=>m*(MKTG.find(x=>x.id===id)?.dm||1),1)*(b.ups.includes('sign')?1.15:1)*(b.ups.includes('shade')&&T>=28?1.2:1)*(0.7+b.st.rep/100*0.6);
+ const myAttr=(r,pr,T,all)=>standAttr(r,pr,rep,T)*Math.pow(0.8,hitOn(all,'me','signs').length);
+ const rivalDemand=(b,all,T,fm,evm)=>{const street=60*softEnv(T,fm,evm)*LOC[loc].dm*DIFF[diff].dm,npc=DIFF[diff].npc;
+  const den=Math.max(0.01,myAttr(recipe,price,T,all)+npc*all.reduce((s,o)=>s+rivalAttr(o,all,T),0));
+  const steal=hitOn(all,b.i,'ads').length+(acts.includes('ads')?1:0);
+  const vis=street*rivalBoost(b,T)*npc*rivalAttr(b,all,T)/den*Math.pow(0.82,steal);
+  const br=TYPES.reduce((s,k)=>s+MIX[k]*buyProb(cSc(b.rec.l,b.rec.h,b.rec.i,T,CT[k]).sc,b.pr,b.st.rep,CT[k],T),0);
+  return{vis:Math.round(vis),br,sold:Math.round(vis*br)};};
+ const plans=useMemo(()=>{const S=SMART[diff],w=world[day],T=w.t,P=world[day-1].p;
+  const all=comps.map((p,i)=>{const st=rvS(i),ai=AI[p.id],rr=rng(seed*13+day*101+i*7),cost={rent:LOC[loc].rent},news=[];let cash=st.cash-LOC[loc].rent;
+   const spend=(k,c)=>{if(c>cash)return false;cash-=c;cost[k]=(cost[k]||0)+c;return true;};
+   const ups=[...st.ups],nx=ai.up.map(id=>ALL_UPS.find(u=>u.id===id)).find(u=>u&&!ups.includes(u.id)&&(!u.ad||u.ad<=day));
+   if(nx&&cash>=nx.c+35&&rr()<0.45*S&&spend('ups',nx.c)){ups.push(nx.id);news.push(nx.id);}
+   let fc=null;if(rr()<ai.fc[0]*S){const f=FORECAST[ai.fc[1]-1];if(cash>=f.c+20&&spend('intel',f.c))fc=f;}
+   const Test=fc?Math.round(T+(rr()-0.5)*2*(1-fc.ac)*12):24,wEst=fc?w.w:'nice',evEst=fc&&fc.lv>=2&&w.ev?w.ev.dm:1;
+   const rs=rr()<ai.rs*S&&cash>=RESEARCH_C+20&&spend('intel',RESEARCH_C),spy=rr()<ai.spy*S&&cash>=SPY_C+20&&spend('intel',SPY_C);
+   const rec=p.r?{...p.r}:{l:2+Math.floor(rr()*3),h:Math.floor(rr()*3),i:Math.floor(rr()*3)},Tk=rs?T:Test;
+   if(rs&&Tk>=30&&rec.l+rec.h+rec.i<CUP)rec.i++;
+   let pr=TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],Tk),0)*0.95+(rs?p.pb*0.5:p.pb)+(p.r?0:(rr()-0.5)*6);
+   if(spy){if(p.id==='budget')pr=Math.min(pr,myLastPrice-1);else if(p.id!=='premium')pr=(pr*2+myLastPrice)/3;}
+   pr=Math.max(2,Math.round(pr));
+   const hype=(Test>=28?1.25:1)*(evEst>1?1.4:1),mk=[];
+   const pre=60*softEnv(Test,WE[wEst].fm,evEst)*LOC[loc].dm*DIFF[diff].dm*DIFF[diff].npc/(1+DIFF[diff].npc*Math.max(1,nComp))*0.55; // cups they expect to sell
+   const worth=m=>m.id==='taste'?rec.l>=3:pre*(m.dm-1)*pr>=m.c*0.8; // smart rivals skip what won't pay back
+   MKTG.forEach(m=>{if(rr()<(ai.mk[m.id]||0)*hype&&(worth(m)||rr()>S)&&cash>=m.c+20&&spend('mkt',m.c))mk.push(m.id);});
+   const bh=[];Object.entries(ai.bh).forEach(([id,pp])=>{const b=BLACK.find(x=>x.id===id);if(rr()<pp*(0.6+0.4*S)&&cash>=b.c+20&&spend('bh',b.c))bh.push({id,caught:rr()*100<b.risk});});
+   const baseCap=ups.includes('team')?999:ups.includes('station')?70:30;
+   const helper=pre*1.1>baseCap*0.85&&rr()<ai.hp*S*((Test>=28||evEst>1)?1.6:0.6)+0.3*(1-S)&&cash>=HELPER_C+20&&spend('helper',HELPER_C);
+   return{...p,i,st:{...st},ups,news,fc,rs,spy,rec,pr,mk,bh,helper,Test,wEst,evEst,cash,cost};});
+  // dirty tricks go against whoever leads (you included)
+  const totals=[{who:'me',tot:myTot},...all.map(b=>({who:b.i,tot:b.st.tot}))];
+  all.forEach(b=>b.bh.forEach(x=>{x.target=totals.filter(t=>t.who!==b.i).sort((p,q)=>q.tot-p.tot)[0].who;}));
+  // cups: from what they think the day looks like (a forecast makes this much better)
+  all.forEach(b=>{b.cap=(b.ups.includes('team')?999:b.ups.includes('station')?70:30)+(b.helper?HELPER_B:0);
+   b.unit=b.rec.l*P.l*(b.ups.includes('juicer')?0.9:1)+b.rec.h*P.h+b.rec.i*P.i*(b.ups.includes('cooler')?0.75:1);
+   const est=rivalDemand(b,all,b.Test,WE[b.wEst].fm,b.evEst);
+   b.cups=Math.max(0,Math.min(b.cap,Math.round(est.sold*1.1),Math.floor(Math.max(0,b.cash)/Math.max(0.01,b.unit))));
+   b.cost.stock=Math.round(b.cups*b.unit*10)/10;b.cash-=b.cost.stock;});
+  return all;},[day,rv,diff,nComp,seed,history.length,loc,recipe,price]);
+ const rivalsFor=(T=temp)=>plans.map(b=>({...b,attr:rivalAttr(b,plans,T)}));
  const rivalsToday=rivalsFor(temp);
  const visitorsFor=(r,pr,T=temp,fm=wInfo.fm,evm=W.ev?.dm)=>{const boost=acts.reduce((m,id)=>m*(MKTG.find(a=>a.id===id)?.dm||1),1);
   const dm=60*softEnv(T,fm,evm)*boost*(0.7+rep/100*0.6)*LOC[loc].dm*(ups.includes('sign')?1.15:1)*(ups.includes('shade')&&T>=28?1.2:1)*(vipBoost&&T===temp?1.3:1)*DIFF[diff].dm;
   const cpT=Math.round(TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],T),0)*0.95);
-  const my=standAttr(r,pr,rep,T),them=rivalsFor(T).reduce((s,c)=>s+c.attr,0);
-  const share=withComp?1/(1+DIFF[diff].npc*them/my):1;return Math.max(3,Math.round(dm*share+(withComp&&acts.includes('ads')?dm*(1-share)*0.18:0)));};
+  const my=myAttr(r,pr,T,plans),them=rivalsFor(T).reduce((s,c)=>s+c.attr,0);
+  const share=withComp?1/(1+DIFF[diff].npc*them/my):1;return Math.max(3,Math.round((dm*share+(withComp&&acts.includes('ads')?dm*(1-share)*0.18:0))*Math.pow(0.82,hitOn(plans,'me','ads').length)));};
  const perType=(r,pr,T=temp,fm,evm)=>{const v=visitorsFor(r,pr,T,fm,evm);return TYPES.map(k=>{const c=CT[k],s=cSc(r.l,r.h,r.i,T,c),p=buyProb(s.sc,pr,rep,c,T),vis=Math.round(v*MIX[k]);return{k,c,p,vis,buy:Math.round(vis*p),why:whyOf(c,r,pr,T)};});};
  const whyOf=(c,r,pr,T=temp)=>{const w=CUP-r.l-r.h-r.i,sw=SW[r.h],sour=Math.max(0,SR[r.l]-0.5*sw),ratio=pr/pMt(c,T),fr=fSc(r.i,r.h,T);
   if(ratio>1.2)return['יקר להם','bad'];if(w>=3)return['מימי מדי','bad'];if(sour>c.sTh)return['חמוץ להם','bad'];if(sw>c.swI[1])return['מתוק מדי','warn'];
@@ -1478,8 +1576,9 @@ function Game(){
    <h4>אחריות</h4><p>המשחק ניתן "כמו שהוא" (AS IS). אנחנו משתדלים שיעבוד היטב, אבל לא מתחייבים שיהיה זמין תמיד או נקי מתקלות.</p>
    <h4>שינויים</h4><p>המשחק והתנאים יכולים להשתנות מדי פעם. הגרסה העדכנית תמיד כאן.</p>
   </div>:setPage==='privacy'?<div className="sheet-b legal">
-   <h4>מה אנחנו אוספים</h4><p>כלום. המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה.</p>
+   <h4>מה אנחנו אוספים</h4><p>המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה. המידע היחיד שיוצא מהמכשיר הוא תוצאה שבחרת לשלוח לטבלת השיאים (ראו למטה).</p>
    <h4>מה נשמר במכשיר</h4><p>רק ההגדרות שלך (סאונד ונגישות) נשמרות בדפדפן במכשיר שלך, כדי שלא תצטרך לבחור אותן שוב. הן לא נשלחות לשום מקום. אפשר למחוק אותן בכפתור למטה.</p>
+   <h4>טבלת שיאי הקהילה</h4><p>רק אם תבחר לשלוח תוצאה בסוף משחק: נשלחים הכינוי שבחרת והתוצאה (רווח, כוכבים, כוסות, מוניטין, רמת קושי ומספר מתחרים) לשרת של Supabase, והם מוצגים לכל השחקנים. לא נשלחים שם, אימייל או כל פרט אישי אחר. אל תשתמש בשם האמיתי שלך ככינוי. כדי למחוק תוצאות, כתוב לנו: alwaysbusinessday@gmail.com.</p>
    <h4>התקדמות במשחק</h4><p>התקדמות המשחק לא נשמרת כרגע. רענון הדף מתחיל משחק חדש.</p>
    <h4>שירותים חיצוניים</h4><p>כדי לטעון את המשחק הדפדפן מוריד גופנים מ-Google Fonts וקוד מ-cdnjs (Cloudflare), והאתר מאוחסן ב-Vercel. כמו בכל אתר, שירותים אלה רואים פרטים טכניים כמו כתובת IP. המשחק לא משתמש בעוגיות פרסום או במעקב.</p>
    <button className="btn ghost" onClick={()=>{try{localStorage.removeItem('lm-cfg');}catch(_){}setCfgS({...CFG0});}}>🗑️ מחק את ההגדרות השמורות</button>
@@ -1506,8 +1605,23 @@ function Game(){
   const dayCash=(R.closed?0:actCost+LOC[loc].rent)+(helper?HELPER_C:0)+R.fine,interest=loan*LOAN_INT;
   setCash(c=>c+R.rev-dayCash-interest);if(loan)setLoan(l=>l*(1+LOAN_INT));
   const profit=R.rev-spentToday-dayCash-interest;
-  const newRep=Math.max(0,Math.min(100,rep+R.repD+Math.round((50-rep-R.repD)*0.06)));
   const tips=[];
+  // rivals' day, with the same rules and costs as yours
+  const myRumorOn=R.rumor==='ok'&&plans.length?plans.slice().sort((p,q)=>q.st.tot-p.st.tot)[0].i:null;
+  const rres=plans.map(b=>{const d=!R.closed&&b.cups>0?rivalDemand(b,plans,temp,wInfo.fm,W.ev?.dm):{vis:0,br:0,sold:0};
+   const sold=Math.min(d.sold,b.cups),miss=Math.max(0,d.sold-b.cups),fines=b.bh.filter(x=>x.caught).reduce((s,x)=>s+(x.id==='rumor'?10:x.id==='signs'?15:0),0);
+   const rev=sold*b.pr,spent=Object.values(b.cost).reduce((s,x)=>s+x,0)+fines,profit=Math.round((rev-spent)*10)/10,rr=rng(seed*17+day*31+b.i);
+   let rd=Math.max(-6,Math.min(6,Math.round(sold*(d.br-0.45)*0.4)))-Math.min(6,miss)+(b.ups.includes('cups')?1:0)+(b.mk.includes('taste')&&b.rec.l>=3?3:0)+(b.mk.includes('social')&&rr()<0.5?2:0)
+    -5*hitOn(plans,b.i,'rumor').length-(myRumorOn===b.i?5:0)-b.bh.filter(x=>x.caught).reduce((s,x)=>s+(x.id==='rumor'?8:x.id==='signs'?15:0),0);
+   const nrep=Math.max(0,Math.min(100,Math.round(b.st.rep+rd+(50-b.st.rep-rd)*0.06)));
+   return{b,sold,vis:d.vis,miss,rev,profit,fines,nrep,cash:Math.round((b.cash+rev-fines)*10)/10};});
+  setRv(rres.map(x=>({cash:x.cash,rep:x.nrep,ups:x.b.ups,tot:x.b.st.tot+x.profit})));
+  const onMe=id=>plans.filter(b=>b.bh.some(x=>x.id===id&&x.target==='me'));
+  const rumorsOnMe=onMe('rumor').filter(b=>!b.bh.find(x=>x.id==='rumor').caught).length;
+  const newRep=Math.max(0,Math.min(100,rep+R.repD-5*rumorsOnMe+Math.round((50-rep-R.repD)*0.06)));
+  onMe('ads').forEach(b=>tips.push({k:'bad',t:`📢 ${b.em} ${b.n} הריץ קמפיין נגדך: איבדת כ-18% מהלקוחות`}));
+  onMe('rumor').forEach(b=>{const c=b.bh.find(x=>x.id==='rumor').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מפיץ עליך שמועות: −8 מוניטין לו וקנס ₪10`}:{k:'bad',t:'🗣️ מישהו הפיץ עליך שמועות: −5 מוניטין'});});
+  onMe('signs').forEach(b=>{const c=b.bh.find(x=>x.id==='signs').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מוריד לך שלטים: −15 מוניטין לו וקנס ₪15`}:{k:'bad',t:'🚫 מישהו הוריד לך את השלטים: פחות אנשים ראו את הדוכן'});});
   if(R.miss>=3)tips.push({k:'warn',t:`${R.miss} לקוחות רצו לקנות אבל נגמר המלאי — הכן יותר מחר`});
   if(R.cups-R.sold>=5)tips.push({k:'warn',t:`${R.cups-R.sold} כוסות נזרקו — הכן פחות, או הורד מחיר`});
   const worst=aud.filter(x=>x.why[1]==='bad').sort((a,b)=>b.vis-a.vis)[0];if(worst)tips.push({k:'bad',t:`${worst.c.nm}: "${worst.why[0]}" — שם הפסדת הכי הרבה קונים`});
@@ -1519,8 +1633,9 @@ function Game(){
   if(R.signs==='caught')tips.push({k:'bad',t:'🚫 נתפסת מוריד שלטים: −15 מוניטין וקנס ₪15'});else if(R.signs==='ok')tips.push({k:'good',t:'🚫 השלטים שלו ירדו — פחות אנשים ראו אותו'});
   if(!tips.length)tips.push({k:'good',t:'יום מאוזן — המשך כך'});
   setVipBoost(R.vip===true);
-  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:(()=>{const street=R.closed?0:60*softEnv(temp,wInfo.fm,W.ev?.dm)*(0.7+55/100*0.6)*LOC[loc].dm*DIFF[diff].dm,npc=DIFF[diff].npc,them=rivalsToday.reduce((s,c)=>s+c.attr,0),my=R.closed?0:standAttr(recipe,price,rep,temp),den=Math.max(0.01,my+npc*them);
-   return rivalsToday.map(c=>{const vis=Math.round(street*npc*c.attr/den*(acts.includes('ads')?0.82:1)),sold=Math.round(vis*0.6);return{em:c.em,n:c.n,pr:c.pr,rec:spy?c.rec:null,sold,profit:Math.round(sold*(c.pr-2)-LOC[loc].rent-(c.id==='premium'?3:0))};});})(),
+  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:rres.map(x=>{const b=x.b;return{em:b.em,n:b.n,pr:b.pr,rec:spy?b.rec:null,sold:x.sold,profit:x.profit,rep:x.nrep,
+    seen:[...b.mk,...b.news.map(u=>'+'+u),...(b.helper?['helper']:[]),...b.bh.filter(z=>z.id==='ads'||z.caught).map(z=>'!'+z.id)],
+    hidden:spy?{fc:b.fc?b.fc.lv:0,rs:b.rs,spy:b.spy,bh:b.bh.filter(z=>z.id!=='ads'&&!z.caught).map(z=>z.id+':'+(z.target==='me'?'me':plans[z.target]?.n))}:null};}),
    w:W.w,t:temp,fc:fcast?{w:fcast.w,t:fcast.t}:null,recipe:{...recipe},price,quality,tP:{...tP},acts:[...acts],ev:W.ev?W.ev.n:null,vipDay:!!W.vip,inspDay:!!W.insp,closed:!!R.closed,
    cost:{...spentCat.current,mkt:R.closed?0:actCost,rent:R.closed?0:LOC[loc].rent,helper:helper?HELPER_C:0,fine:(spentCat.current.fine||0)+R.fine,interest:Math.round(interest*10)/10}};
   spentCat.current={};
@@ -1697,7 +1812,8 @@ function Game(){
     {isEve?<span className="badge">בבוקר</span>:<button className="btn sm" disabled={free<RESEARCH_C} onClick={e=>{setResearch(true);pay(RESEARCH_C,'intel');flyCoin(e,'−₪'+RESEARCH_C);}}>קנה · ₪{RESEARCH_C}</button>}</div>}
   </section>
   {withComp&&<section className="blk"><div className="blk-h"><h3>🕵️ ריגול אחרי המתחרים</h3><span className="tag">{isEve?'יוצג בבוקר':'להיום'}</span></div>
-   <div className={"rivals"+(spy&&!isEve&&fresh('spy'+day)?' scan':'')}>{spy&&!isEve&&<span className="scan-bino" aria-hidden="true">🔭</span>}{comps.map((c,i)=>{const t=rivalsToday[i];return <div key={c.id} className="rival" style={{'--d':0.5+i*0.3+'s'}}><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div>{spy&&!isEve?<span className="rv-x num">₪{t.pr} · {t.rec.l}🍋{t.rec.h}🍬{t.rec.i}🧊</span>:<span className="rv-x">?</span>}</div>;})}</div>
+   <div className={"rivals"+(spy&&!isEve&&fresh('spy'+day)?' scan':'')}>{spy&&!isEve&&<span className="scan-bino" aria-hidden="true">🔭</span>}{comps.map((c,i)=>{const t=rivalsToday[i];return <div key={c.id} className="rival" style={{'--d':0.5+i*0.3+'s'}}><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div>{spy&&!isEve?<span className="rv-x num">₪{t.pr} · {t.rec.l}🍋{t.rec.h}🍬{t.rec.i}🧊</span>:<span className="rv-x">?</span>}
+    {spy&&!isEve&&<span className="rv-plan">💰 קופה ~{fmt(Math.round(t.st.cash/5)*5)} · ⭐ {t.st.rep}{t.mk.length?' · היום: '+t.mk.map(id=>MK_EM[id]).join(''):''}{t.fc?' · 🔮':''}{t.rs?' · 📋':''}{t.cups?` · מכין ~${Math.round(t.cups/5)*5} כוסות`:''}{t.bh.length?<b> · ⚠️ מתכנן: {t.bh.map(x=>MK_EM[x.id]+(x.target==='me'?' נגדך':' נגד '+(plans[x.target]?.n||''))).join(', ')}</b>:''}</span>}</div>;})}</div>
    <div className="item"><span className="it-e">🕵️</span><div className="it-t"><b>המחיר והמתכון של כולם</b><span>{spy?(isEve?'נקנה — יוצג בבוקר':'הפרטים מופיעים למעלה'):'כדי לדעת אם להוזיל או לשפר את הכוס'}</span></div>
     {spy?<span className="badge g">✓ נקנה</span>:<button className="btn sm" disabled={free<SPY_C} onClick={e=>{setSpy(true);pay(SPY_C,'intel');flyCoin(e,'−₪'+SPY_C);}}>קנה · ₪{SPY_C}</button>}</div>
   </section>}
@@ -1721,6 +1837,8 @@ function Game(){
     {loan>0?<button className="btn sm" disabled={cash<loan} onClick={()=>{setCash(c=>c-loan);setLoan(0);}}>החזר · {fmt(loan)}</button>:<button className="btn sm ghost" onClick={e=>{setLoan(20);setCash(c=>c+20);flyCoin(e,'+₪20',true);}}>קח ₪20</button>}</div></section>
  </div>;
 
+ const seenTxt=c=>c.seen.map(k=>k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
+ const hidTxt=h=>[h.fc?['','👂','📡','🛰️'][h.fc]+' תחזית':null,h.rs?'📋 סקר שוק':null,h.spy?'🔭 ריגל':null,...h.bh.map(x=>{const[id,t]=x.split(':');return MK_EM[id]+' '+(id==='rumor'?'שמועות':'הסרת שלטים')+' נגד '+(t==='me'?'אתה':t);})].filter(Boolean).join(' · ');
  const Report=()=>{const r=report;return <div className="report">
   <div className="rp-hero">
    <div className="rp-coins" aria-hidden="true">{Array.from({length:Math.min(14,Math.max(0,Math.ceil(r.rev/12)))}).map((_,i)=><span key={i} style={{left:(8+i*6.3)%92+'%',animationDelay:(0.1+i*0.08)+'s'}}>🪙</span>)}</div>
@@ -1735,6 +1853,7 @@ function Game(){
     :<div><small>הכנסות</small><b className="num">{fmt(r.rev)}</b><i>{fmt(r.rev/Math.max(1,r.sold))} לכוס</i></div>}
   </div>
   {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">הרחוב היום · לפי רווח</div>{[{em:'🍋',n:'אתה',profit:r.profit,sold:r.sold,me:true},...r.comps].sort((x,y)=>y.profit-x.profit).map((c,i)=><div key={i} className={"lb"+(c.me?' me':'')}><span className="lb-r num">{i+1}</span><span className="lb-n">{c.em} {c.n}</span><span className="num lb-s">{c.sold} כוסות</span><b className={"num "+(c.profit>=0?'g':'r')}>{fmt(c.profit)}</b></div>)}</div>}
+  {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">🏙️ מה עשו המתחרים היום</div>{r.comps.map((c,i)=><div key={i} className="rv-day"><b>{c.em} {c.n}</b><span>{c.seen&&c.seen.length?seenTxt(c):'יום שקט, בלי שיווק'}</span>{c.hidden&&<em>🕵️ {hidTxt(c.hidden)||'לא קנה מודיעין'}</em>}</div>)}{!r.comps.some(c=>c.hidden)&&<div className="hint">מה שהם עשו מאחורי הקלעים (מודיעין, שמועות) רואים רק עם ריגול</div>}</div>}
   {r.byType&&r.visitors>0&&<div className="rp-types"><div className="cl-h">מי קנה היום</div>{TYPES.map(k=>{const t=r.byType[k],w=r.whys?.[k];return <div key={k} className="rt-r">
    <span className="rt-n">{CT[k].em} {CT[k].nm}</span><span className="aud-b"><i className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'} style={{width:(t.vis?Math.round(t.buy/t.vis*100):0)+'%'}}/></span>
    <span className="num rt-x"><b>{t.buy}</b>/{t.vis}</span>{w&&<span className={"why "+w[1]}>{t.miss>0&&t.miss>=t.vis-t.buy?'נגמר המלאי':w[0]}</span>}</div>;})}</div>}
@@ -1745,7 +1864,7 @@ function Game(){
 
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1];return <div className="simwrap">
   <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,cups-s.sold)} cupsTotal={cups}
-   weather={{id:W.w,temp}} comps={rivalsToday.map(c=>({n:c.n,pr:c.pr}))} done={s.done} ups={ups} acts={acts}/>
+   weather={{id:W.w,temp}} comps={rivalsToday.map(c=>({n:c.n,pr:c.pr,fx:[...c.mk.map(id=>MK_EM[id]),...c.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(x=>x.id===u).em),...(c.helper?['🧑‍💼']:[])].join('')}))} done={s.done} ups={ups} acts={acts}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div><div><small>לא קנו</small><b className="num r">{s.walk}</b></div></div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
  </div>;};
@@ -1778,7 +1897,7 @@ function Game(){
      <div className="pod-who" style={{animationDelay:1.6+(3-p)*0.35+'s'}}><span>{x.em}</span><b>{x.n}</b><i className="num">{fmt(x.profit)}</i></div>
      <div className="pod-bar" style={{height:podH[p],animationDelay:1.2+(3-p)*0.35+'s'}}><b>{p}</b></div></div>;})}</div>
     {board.length>3&&<div className="pod-rest">{board.slice(3).map((x,i)=><span key={x.n} className={x.me?'me':''}>{i+4}. {x.em} {x.n} · <b className="num">{fmt(x.profit)}</b></span>)}</div>}
-    <div className="hint">הרווחים של המתחרים הם הערכה</div></section>}
+    </section>}
 
    <section className="blk"><div className="blk-h"><h3>🏅 השיאים שלך</h3><span className="tag">{DIFF[diff].n} · {nComp?`${nComp} מתחרים`:'לבד'}</span></div>
     <div className="fx-recs">
@@ -1795,10 +1914,42 @@ function Game(){
      <tbody>{[...f.games].sort((x,y)=>y.tot-x.tot).slice(0,8).map((g,i)=><tr key={g.at} className={g.at===f.at?'me':''}><td>{i===0?'🥇':i+1}</td><td className="num">{new Date(g.at).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})}</td><td className="nw">{DIFF[g.diff]?.em} {g.n?g.n+'🧍':'לבד'}</td><td className={"num "+(g.tot>=0?'g':'r')}>{fmt(g.tot)}</td><td className="num">{g.n?g.place+'/'+(g.n+1):'—'}</td><td className="num">{g.st}</td></tr>)}</tbody></table></div>
    </section>}
 
+   {CommunityPanel()}
    <button className="btn ghost" onClick={()=>setDashOpen(true)}>📊 כל הנתונים של המשחק ›</button>
    <button className="cta" onClick={()=>location.reload()}>🔁 משחק חדש</button></div>;};
 
  const [finalRec,setFinalRec]=useState(null);
+ // Community board: what's shown, and whether this game was sent
+ const [cb,setCb]=useState({diff:'medium',n:2,data:null,err:null,loading:false}),[sent,setSent]=useState(null),[nick,setNick]=useState(()=>(sbLoad()||{}).nick||''),[cbOpen,setCbOpen]=useState(false);
+ const loadBoard=async(d,n)=>{setCb(c=>({...c,diff:d,n,loading:true,err:null}));try{const data=await sbTop(d,n);setCb(c=>({...c,data,loading:false}));return data;}catch(e){setCb(c=>({...c,loading:false,err:'net'}));}};
+ const sendScore=async()=>{const g=(finalRec&&finalRec.games||[]).find(x=>x.at===finalRec.at);if(!g||!nickOk(nick.trim()))return;
+  setSent({state:'sending'});try{const uid=await sbSubmit(nick.trim(),g);const data=await loadBoard(diff,nComp);const rank=data?await sbRank(data.q,g.tot):null;setSent({state:'ok',uid,rank,total:data?.total});sfx('sparkle');}
+  catch(e){setSent({state:e.message==='off'?'off':'err'});}};
+ const Board=({mine})=>{const d=cb.data;return <>
+  {cb.loading&&<div className="hint">טוען…</div>}
+  {cb.err&&<div className="note">אין חיבור לטבלת השיאים כרגע. נסה שוב מאוחר יותר.</div>}
+  {d&&(d.rows.length?<div className="dtbl"><table><thead><tr><th>#</th><th>שחקן</th><th>רווח</th><th>★</th><th>כוסות</th></tr></thead>
+   <tbody>{d.rows.map((x,i)=><tr key={i} className={mine&&x.user_id===mine?'me':''}><td>{['🥇','🥈','🥉'][i]||i+1}</td><td className="dn">{(x.profiles&&x.profiles.username)||'שחקן'}</td><td className={"num "+(x.score>=0?'g':'r')}>{fmt(x.score)}</td><td className="num">{x.stars}</td><td className="num">{x.cups_sold}</td></tr>)}</tbody></table></div>
+   :<div className="hint">עוד אין תוצאות בהגדרות האלה. אולי תהיה הראשון?</div>)}
+ </>;};
+ const BoardSheet=()=><div className="dlg-bg" onClick={()=>setCbOpen(false)}><div className="sheet" role="dialog" aria-label="שיאי הקהילה" onClick={e=>e.stopPropagation()}>
+  <div className="sheet-h"><h2>🌍 שיאי הקהילה</h2><button className="sheet-x" aria-label="סגור" onClick={()=>setCbOpen(false)}>✕</button></div>
+  <div className="sheet-b"><div className="cb-f">{Object.entries(DIFF).map(([k,x])=><button key={k} className={"chip"+(cb.diff===k?' on':'')} onClick={()=>loadBoard(k,cb.n)}>{x.em} {x.n}</button>)}</div>
+   <div className="cb-f">{[0,1,2,3].map(n=><button key={n} className={"chip"+(cb.n===n?' on':'')} onClick={()=>loadBoard(cb.diff,n)}>{n?n+' מתחרים':'לבד'}</button>)}</div>
+   {Board({mine:(sbLoad()||{}).uid})}<div className="hint">משווים רק משחקים עם אותה רמת קושי ואותו מספר מתחרים</div></div></div></div>;
+
+ const CommunityPanel=()=><section className="blk"><div className="blk-h"><h3>🌍 שיאי הקהילה</h3><span className="tag">{DIFF[diff].n} · {nComp?nComp+' מתחרים':'לבד'}</span></div>
+  {!sent||sent.state==='err'?<>
+   <p className="cb-p">רוצה להופיע בטבלה? בחר כינוי. יפורסמו רק הכינוי והתוצאה, בלי שם אמיתי ובלי הרשמה.</p>
+   <div className="cb-row"><input className="cb-in" value={nick} maxLength={16} placeholder="כינוי (2–16 תווים)" onChange={e=>setNick(e.target.value)} aria-label="כינוי"/>
+    <button className="btn sm" disabled={!nickOk(nick.trim())} onClick={sendScore}>📤 שלח</button></div>
+   {nick.trim()&&!nickOk(nick.trim())&&<div className="hint">כינוי של 2–16 אותיות או מספרים, בלי מילים פוגעניות</div>}
+   {sent&&sent.state==='err'&&<div className="note">השליחה נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.</div>}
+  </>:sent.state==='sending'?<div className="hint">שולח…</div>
+  :sent.state==='off'?<div className="note">טבלת השיאים עוד לא פתוחה. התוצאה נשמרה אצלך במכשיר.</div>
+  :<><div className="cb-rank">אתה במקום <b className="num">{sent.rank}</b> מתוך <b className="num">{sent.total}</b> שחקנים בהגדרות האלה</div>{Board({mine:sent.uid})}</>}
+ </section>;
+
  useEffect(()=>{if(phase!=='over'||finalRec)return;let games=[];try{games=JSON.parse(localStorage.getItem('lm-games')||'[]');}catch(_){}
   const H=history,tot=Math.round(H.reduce((s,h)=>s+h.profit,0)),PAR=DIFF[diff].par[nComp],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
   const day1=Math.round(Math.max(...H.map(h=>h.profit))),sold=H.reduce((s,h)=>s+h.sold,0),place=finalBoard().findIndex(x=>x.me)+1;
@@ -1885,7 +2036,7 @@ function Game(){
    </div>
    <div className="dbest"><span>🏆 היום הטוב: <b>יום {best.day}</b> <em className="g num">{fmt(best.profit)}</em></span><span>📉 הקשה: <b>יום {worst.day}</b> <em className={"num "+(worst.profit>=0?'g':'r')}>{fmt(worst.profit)}</em></span></div>
 
-   {names.length>0&&<section className="blk"><div className="blk-h"><h3>🏁 טבלת הרחוב</h3><span className="tag">מצטבר · הערכה</span></div>
+   {names.length>0&&<section className="blk"><div className="blk-h"><h3>🏁 טבלת הרחוב</h3><span className="tag">מצטבר</span></div>
     <div className="dtbl"><table><thead><tr><th>#</th><th>דוכן</th><th>רווח</th><th>כוסות</th><th>מחיר ממוצע</th><th>ימים במקום 1</th></tr></thead>
      <tbody>{stands.map((s,i)=><tr key={s.n} className={s.me?'me':''}><td>{i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td className="dn">{s.em} {s.n}</td><td className={"num "+(s.profit>=0?'g':'r')}>{fmt(s.profit)}</td><td className="num">{s.sold}</td><td className="num">{fmt2(s.avgPr)}</td><td className="num">{s.wins}</td></tr>)}</tbody></table></div>
     <div className="cl-h">רווח מצטבר</div>
@@ -1894,7 +2045,7 @@ function Game(){
     <div className="cl-h">המחיר שלי מול המתחרים</div>
     <Line series={[{v:H.map(h=>h.price||0),c:PAL[0],w:3},...names.map((c,i)=>({v:H.map(h=>h.comps?.[i]?.pr||0),c:PAL[(i+1)%PAL.length],w:1.8}))]} labels={days} fmtY={v=>'₪'+Math.round(v)}/>
     <Legend items={[{c:PAL[0],label:'🍋 אתה'},...names.map((c,i)=>({c:PAL[(i+1)%PAL.length],label:c.em+' '+c.n}))]}/>
-    <div className="hint">המחירים של המתחרים נראים לכולם על השלט שלהם ברחוב. הרווחים שלהם הם הערכה.</div>
+    <div className="hint">המחירים והשיווק של המתחרים נראים לכולם ברחוב. מה שהם עושים מאחורי הקלעים רואים רק עם ריגול.</div>
    </section>}
 
    <section className="blk"><div className="blk-h"><h3>💰 כסף</h3></div>
@@ -1937,7 +2088,7 @@ function Game(){
    </section>}
 
    {rec.length>0&&<section className="blk"><div className="blk-h"><h3>📅 אירועים ופעולות</h3></div>
-    {rec.map(h=>{const items=[h.closed&&'🔒 הדוכן היה סגור',h.ev,h.vipDay&&'🎩 מבקר אוכל',h.inspDay&&'🏛️ פיקוח',...(h.acts||[]).map(x=>ACTN[x])].filter(Boolean);
+    {rec.map(h=>{const items=[h.closed&&'🔒 הדוכן היה סגור',h.ev,h.vipDay&&'🎩 מבקר אוכל',h.inspDay&&'🏛️ פיקוח',...(h.acts||[]).map(x=>ACTN[x]),...(h.comps||[]).filter(c=>c.seen&&c.seen.length).map(c=>c.em+' '+seenTxt(c))].filter(Boolean);
      return items.length?<div key={h.day} className="dlog"><b>יום {h.day}</b><span>{items.join(' · ')}</span></div>:null;})}
     {!rec.some(h=>h.closed||h.ev||h.vipDay||h.inspDay||(h.acts||[]).length)&&<div className="hint">עוד לא היו אירועים או פעולות שיווק</div>}
    </section>}
@@ -1956,12 +2107,14 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   <WxLayer kind="night"/>
   <div className="intro-gear">{Gear()}</div>
   {setOpen&&Settings()}
+  {cbOpen&&BoardSheet()}
   {phase==='title'?<div className="intro-in">
    <div className="intro-glass"><GlassSvg l={3} h={1} i={2} temp={30} bare/></div>
    <h1 className="intro-title">{GAME_NAME}</h1>
    <p className="intro-sub">10 ימים · דוכן אחד · כמה תרוויח?</p>
    <div className="intro-pts"><span>🛒 קונים בשוק</span><span>🥤 ממציאים כוס</span><span>📣 מושכים לקוחות</span></div>
    <button className="cta" onClick={()=>setPhase('setup')}>משחק חדש ›</button>
+   <button className="btn ghost" onClick={()=>{setCbOpen(true);loadBoard(cb.diff,cb.n);}}>🌍 שיאי הקהילה</button>
   </div>:<div className="intro-in setup">
    <h2>הגדרות המשחק</h2>
    <div className="cl-h">רמת קושי</div>
