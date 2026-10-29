@@ -679,6 +679,11 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .coach-b{display:flex;align-items:center;gap:8px}
 .coach-n{flex:1;font-size:12px;color:var(--dim)}
 
+.coach-tip.welcome{text-align:center;bottom:auto!important;top:50%!important;transform:translateY(-50%);animation:none}
+.coach-tip.welcome b{font-size:24px;display:block}
+.coach-tip.welcome p{white-space:pre-line;font-size:15px}
+.coach-tip.welcome .coach-b{justify-content:center}.coach-tip.welcome .coach-n{display:none}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -1026,6 +1031,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
 
 
 /* ───────── Economy engine (same formulas as the game) ───────── */
+const GAME_NAME='דוכן הלימונדה';
 const CUP=6,DAYS=10,CAP_BASE=30,CAP_STATION=70,CAP_TEAM=999,HELPER_B=20,HELPER_C=8,LOAN_INT=0.08;
 const TP=[0,10,22,34,44,50,54],SR=[0,0,3,7,12,18,24],SW=[0,10,18,25,30,33,35];
 const ITP=[0,0,-1,-3,-6,-12,-20],WTP=[0,0,-4,-10,-20,-32,-46],HFR=[0,-2,3,0,-3,-5,-5];
@@ -1439,7 +1445,7 @@ function Game(){
    {phase!=='title'&&phase!=='setup'&&<button className="btn ghost set-quit" onClick={()=>{setConfirm({t:'לצאת למסך הפתיחה?',s:'המשחק הנוכחי לא יישמר.',yes:'כן, לצאת',no:'להמשיך לשחק',onYes:()=>location.reload(),onNo:()=>{}});setSetOpen(false);}}>🏠 יציאה למסך הפתיחה</button>}
    <div className="set-ver">Lemonade Manager · גרסת ניסיון</div>
   </div>:setPage==='terms'?<div className="sheet-b legal">
-   <p>ברוכים הבאים ל"דוכן הלימונדה". השימוש במשחק מהווה הסכמה לתנאים האלה.</p>
+   <p>ברוכים הבאים ל"{GAME_NAME}". השימוש במשחק מהווה הסכמה לתנאים האלה.</p>
    <h4>מה זה המשחק</h4><p>משחק סימולציה לניהול דוכן לימונדה, לשימוש אישי ולהנאה. כל הכסף, המחירים, הלקוחות והתוצאות במשחק דמיוניים, ואינם ייעוץ עסקי, כלכלי או פיננסי.</p>
    <h4>בלי כסף אמיתי</h4><p>אין במשחק רכישות, פרסומות או תשלומים בכסף אמיתי.</p>
    <h4>זכויות</h4><p>המשחק, הגרפיקה, הטקסטים והמוזיקה שייכים ליוצרי המשחק. אין להעתיק, למכור או להפיץ אותם בלי רשות.</p>
@@ -1729,7 +1735,9 @@ function Game(){
 
  /* ── Tutorial: a few spotlights on the first evening, then one tip the first time each moment comes ── */
  const TUT={
-  intro:[{sel:'news',tab:'news',t:'🏠 מרכז הבקרה',s:'רשימת המשימות של היום. כשהכל ירוק, אתה מוכן. לחיצה על משימה לוקחת אותך למקום הנכון.'},
+  intro:[{sel:null,tab:'news',welcome:true,t:`🍋 ברוכים הבאים ל${GAME_NAME}!`,s:`יש לך ${DAYS} ימים, דוכן אחד ו-₪80 בקופה. המטרה: להרוויח כמה שיותר${nComp>0?` ולנצח את ${nComp===1?'המתחרה':`${nComp} המתחרים`} ברחוב`:''}.
+כל ערב מתכוננים, כל בוקר פותחים את הדוכן, ובסוף היום רואים מה עבד. בוא נעשה סיבוב קצר.`},
+   {sel:'news',tab:'news',t:'🏠 מרכז הבקרה',s:'רשימת המשימות של היום. כשהכל ירוק, אתה מוכן. לחיצה על משימה לוקחת אותך למקום הנכון.'},
    {sel:'intel',tab:'intel',t:'🔍 מודיעין: הלב של המשחק',s:'כאן קונים ידע: תחזית מזג אוויר, סקר שוק'+(nComp>0?' וריגול אחרי המתחרים':'')+'. ככל שהמידע איכותי יותר, ההחלטות שלך מחושבות יותר. אבל כל מידע עולה כסף, ולבחור מה שווה לקנות זה חלק מהאתגר.'},
    {sel:'fc',tab:'intel',t:'🔮 עכשיו, בערב',s:'התחזית נקנית בערב, לפני שקונים מצרכים. תחזית זולה פחות מדויקת, יקרה מדויקת יותר. בלי תחזית קונים בעיוורון.'},
    {sel:'stock',tab:'stock',t:'🛒 שוק',s:'קונים לימונים, סוכר וקרח לקראת מחר. בלי מצרכים אין לימונדה.'},
@@ -1744,18 +1752,18 @@ function Game(){
  useEffect(()=>{if(phase==='evening'&&day===1)tutStart('intro');else if(phase==='morning')tutStart('morning');else if(phase==='report')tutStart('report');},[phase]);
  const tutStep=tut&&TUT[tut.k][tut.i];
  useEffect(()=>{if(!tutStep)return;if(tutStep.tab)setTab(tutStep.tab);
-  const place=()=>{const el=document.querySelector('[data-tut="'+tutStep.sel+'"]');setTutRect(el?el.getBoundingClientRect():null);};
+  const place=()=>{const el=tutStep.sel&&document.querySelector('[data-tut="'+tutStep.sel+'"]');setTutRect(el?el.getBoundingClientRect():null);};
   // bring it into view once the tab has rendered, then measure again after the tab's slide-in settles
-  const t=setTimeout(()=>{const el=document.querySelector('[data-tut="'+tutStep.sel+'"]');if(el&&el.closest('.main'))el.scrollIntoView({block:'start',behavior:'instant'});place();},60),t2=setTimeout(place,420);
+  const t=setTimeout(()=>{const el=tutStep.sel&&document.querySelector('[data-tut="'+tutStep.sel+'"]');if(el&&el.closest('.main'))el.scrollIntoView({block:'start',behavior:'instant'});place();},60),t2=setTimeout(place,420);
   addEventListener('resize',place);return()=>{clearTimeout(t);clearTimeout(t2);removeEventListener('resize',place);};},[tut&&tut.k,tut&&tut.i]);
  const tutNext=()=>{sfx('tap');if(tut.i+1<TUT[tut.k].length)setTut({...tut,i:tut.i+1});else{tutMark(tut.k);setTut(null);}};
  const tutSkip=()=>{['intro','morning','report'].forEach(tutMark);setTut(null);};
  const Coach=()=>{if(!tutStep||show||setOpen||dashOpen||confirm)return null;const r=tutRect,below=r&&r.top<innerHeight/2,last=tut.i+1>=TUT[tut.k].length;
   return <div className="coach" key={tut.k+tut.i}>
    {r?<div className="coach-hole" style={{left:r.left-6,top:r.top-6,width:r.width+12,height:r.height+12}}/>:<div className="coach-dim"/>}
-   <div className="coach-tip" role="dialog" aria-label={tutStep.t} style={below?{top:Math.min(innerHeight-220,r.bottom+14)}:{bottom:r?Math.max(12,innerHeight-r.top+14):'40%'}}>
+   <div className={"coach-tip"+(tutStep.welcome?' welcome':'')} role="dialog" aria-label={tutStep.t} style={below?{top:Math.min(innerHeight-220,r.bottom+14)}:{bottom:r?Math.max(12,innerHeight-r.top+14):'40%'}}>
     <b>{tutStep.t}</b><p>{tutStep.s}</p>
-    <div className="coach-b"><span className="coach-n">{TUT[tut.k].length>1?`${tut.i+1}/${TUT[tut.k].length}`:''}</span><button className="chip" onClick={tutSkip}>דלג על ההדרכה</button><button className="btn sm" onClick={tutNext}>{last?'הבנתי ✓':'הבא ›'}</button></div>
+    <div className="coach-b"><span className="coach-n">{TUT[tut.k].length>1?`${tut.i+1}/${TUT[tut.k].length}`:''}</span><button className="chip" onClick={tutSkip}>דלג על ההדרכה</button><button className="btn sm" onClick={tutNext}>{tutStep.welcome?'בוא נתחיל ›':last?'הבנתי ✓':'הבא ›'}</button></div>
    </div></div>;};
 
  /* ── Dashboard: the whole season in numbers ── */
@@ -1874,7 +1882,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   {setOpen&&Settings()}
   {phase==='title'?<div className="intro-in">
    <div className="intro-glass"><GlassSvg l={3} h={1} i={2} temp={30} bare/></div>
-   <h1 className="intro-title">דוכן הלימונדה</h1>
+   <h1 className="intro-title">{GAME_NAME}</h1>
    <p className="intro-sub">10 ימים · דוכן אחד · כמה תרוויח?</p>
    <div className="intro-pts"><span>🛒 קונים בשוק</span><span>🥤 ממציאים כוס</span><span>📣 מושכים לקוחות</span></div>
    <button className="cta" onClick={()=>setPhase('setup')}>משחק חדש ›</button>
