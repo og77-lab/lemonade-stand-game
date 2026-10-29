@@ -769,6 +769,14 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .sim-alert.bad{background:#3D1E28;color:#FFD0D8;border:1px solid #7A2A3C}
 .sim-alert.good{background:#3A3012;color:#FFE58A;border:1px solid #6B5A1E}
 
+/* Event scenes: a fixed 300×200 stage, actors placed by keyframes */
+.ev-scene{position:relative;width:300px;height:200px;flex-shrink:0;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 2px rgba(255,255,255,.15)}
+.ev-scene.grd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:rgba(0,0,0,.18);box-shadow:inset 0 3px 0 rgba(255,255,255,.15)}
+.eva{position:absolute;left:0;top:0;line-height:1;z-index:1;opacity:0;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3));will-change:transform}
+.eva.chip-a{background:#fff;color:#1F7A45;font-family:var(--f-display);font-weight:600;padding:3px 10px;border-radius:999px;box-shadow:0 3px 0 rgba(0,0,0,.2);filter:none}
+.eva.chip-a.bad{color:#C0243A}
+.eva.chip-a{direction:ltr;unicode-bidi:isolate}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -1204,6 +1212,71 @@ const MEV=[{id:'lshort',n:'🍋 מחסור בלימונים',m:{l:1.7},d:'לימ
  {id:'prices',n:'📈 עליית מחירים',m:{l:1.3,h:1.3,i:1.3},d:'הכל יקר ב-30% הלילה',anim:'shake',fx:['📈','💸'],good:false},
  {id:'solar',n:'🛰️ סערה סולארית',acc:-0.2,d:'הלוויינים משתבשים: כל התחזיות הלילה פחות מדויקות (−20%)',anim:'flicker',fx:['🛰️','⚡','📡'],good:false},
  {id:'survey',n:'📋 מבצע בחברת הסקרים',res:2,d:'סקר שוק מחר בבוקר ב-₪2 בלבד',anim:'pop',fx:['📋','🏷️','📊'],good:true}];
+const EV_SCENES={
+ fest:{bg:'#7B3FA0,#E0679B',a:[{t:'🎪',s:96,k:[[150,125,0,0],[150,125,0,1.15],[150,125,0,1]],d:700},
+  ...[0,1,2].map(i=>({t:'🎈',s:40,k:[[60+i*90,230,-8],[70+i*90,120,8],[60+i*90,20,-8],[70+i*90,-40,8,1,0]],d:2200,dl:300+i*250})),
+  {t:'🤹',s:44,k:[[40,150],[40,130],[40,150]],d:500,dl:600,n:4},{t:'🎠',s:44,k:[[262,150,0],[262,150,360]],d:1800,dl:700}]},
+ marathon:{bg:'#1F7A8C,#7FD1AE',ground:1,a:[...['🏃‍♀️','🏃','🏃‍♂️','🏃‍♀️'].map((t,i)=>({t,s:52,k:[[360,150-(i%2)*14],[-60,150-(i%2)*14]],d:1700,dl:i*330,e:'linear'})),
+  {t:'🏁',s:46,k:[[40,60,-10,0],[40,60,10,1],[40,60,-10,1]],d:600,dl:200,n:3},{t:'🏅',s:50,k:[[150,-30,0,0.5],[150,60,20,1.2],[150,60,0,1]],d:700,dl:1500}]},
+ roadworks:{bg:'#6B5A3A,#C9A36B',ground:1,a:[...[0,1,2].map(i=>({t:'🚧',s:54,k:[[60+i*90,-40],[60+i*90,150],[60+i*90,140],[60+i*90,150]],d:500,dl:i*250,e:'ease-in'})),
+  {t:'👷',s:52,k:[[-40,110],[120,110]],d:1100,dl:800},{t:'🚜',s:64,k:[[360,100],[230,100],[236,100],[230,100]],d:1400,dl:600},{t:'💨',s:34,k:[[260,120,0,0.5,0],[290,110,0,1.4,0.9],[320,100,0,2,0]],d:900,dl:1300,n:2}]},
+ concert:{bg:'#2A1B5C,#B23AA0',a:[{t:'🎸',s:84,k:[[150,120,-15],[150,115,15],[150,120,-15]],d:600,n:4},{t:'🎤',s:44,k:[[60,130,0,0],[60,130,-10,1.2],[60,130,0,1]],d:500,dl:300},
+  ...['🎵','🎶','🎵','🎶'].map((t,i)=>({t,s:34,k:[[150+(i-1.5)*30,100],[150+(i-1.5)*60,40,-20],[150+(i-1.5)*80,-10,20,1,0]],d:1400,dl:300+i*300}))]},
+ blackout:{bg:'#0C0E1A,#2B2F4A',a:[{t:'💡',s:90,k:[[150,90,0,1,1],[150,90,0,1,0.1],[150,90,0,1,1],[150,90,0,1,0.05],[150,90,0,1,0.6],[150,90,0,1,0.1]],d:1600},
+  {t:'⚡',s:60,k:[[150,-40,0,1,0],[150,90,0,1.3,1],[150,90,0,1,0]],d:400,dl:500,n:2},{t:'🔦',s:46,k:[[60,160,-40],[60,160,20],[60,160,-40]],d:1400,dl:900}]},
+ trip:{bg:'#F2A93B,#FFE08A',ground:1,a:[{t:'🚌',s:96,k:[[400,120],[150,120],[160,120],[150,120]],d:1200,e:'cubic-bezier(.2,.8,.3,1)'},
+  ...['👦','👧','🧒','👦'].map((t,i)=>({t,s:36,k:[[150,130,0,0],[90+i*40,60,0,1.1],[90+i*40,80,0,1]],d:500,dl:1200+i*220}))]},
+ tourists:{bg:'#2E7DBA,#9ED6F5',ground:1,a:[{t:'🚐',s:84,k:[[400,125],[170,125]],d:1100,e:'cubic-bezier(.2,.8,.3,1)'},
+  {t:'🗺️',s:56,k:[[70,70,0,0],[70,70,-8,1.1],[70,70,0,1]],d:600,dl:900},...[0,1,2].map(i=>({t:'📸',s:38,k:[[120+i*55,50,0,1,0],[120+i*55,50,0,1.4,1],[120+i*55,50,0,1,0.3]],d:400,dl:1300+i*250,n:2})),
+  {t:'💶',s:30,chip:0,k:[[240,150,0,0],[240,150,0,1]],d:400,dl:1900}]},
+ foodfest:{bg:'#B4473A,#F5B26B',a:[{t:'🍽️',s:96,k:[[150,135,0,0],[150,135,0,1]],d:500},...['🥘','🍰','🍕'].map((t,i)=>({t,s:40,k:[[80+i*70,-40,-30],[120+i*30,115,0,1.2],[120+i*30,120,0,1]],d:650,dl:500+i*300,e:'ease-in'})),
+  {t:'🧑‍🍳',s:54,k:[[262,120,0,0],[262,120,-12,1.1],[262,120,8,1],[262,120,0,1]],d:900,dl:1300}]},
+ football:{bg:'#2E7D32,#9CCC65',ground:1,a:[{t:'🏟️',s:120,k:[[150,95,0,1,0],[150,95,0,1,0.35]],d:600},{t:'⚽',s:46,k:[[20,150],[90,40,180],[160,150,360],[220,90,540],[270,150,720]],d:1600,dl:300,e:'linear'},
+  {t:'📣',s:44,k:[[50,60,-15],[50,60,15],[50,60,-15]],d:300,dl:500,n:5}]},
+ market:{bg:'#C77D2E,#F5D27A',a:[{t:'🧺',s:84,k:[[150,135,0,0],[150,135,0,1]],d:400},...['🍅','🥖','🍎','🥕'].map((t,i)=>({t,s:36,k:[[i%2?320:-20,40+i*10],[150,30],[150+(i-1.5)*14,120]],d:800,dl:300+i*280,e:'ease-out'})),
+  {t:'🛍️',s:46,k:[[45,90,-12],[45,90,12],[45,90,-12]],d:700,dl:400,n:3}]},
+ healthy:{bg:'#4E9A3A,#C8E89A',a:[{t:'📰',s:90,k:[[150,95,-900,0],[150,95,-4,1]],d:1000,e:'cubic-bezier(.2,.8,.3,1)'},{t:'🍋',s:44,k:[[60,160,0,0],[60,160,-10,1.2],[60,160,0,1]],d:500,dl:1000},
+  {t:'💪',s:44,k:[[240,160,0,0],[240,160,0,1.3],[240,160,0,1],[240,160,0,1.3],[240,160,0,1]],d:900,dl:1200},{t:'+3⭐',chip:1,s:18,k:[[150,175,0,0],[150,175,0,1]],d:400,dl:1500}]},
+ flu:{bg:'#5B6F7A,#B5C7CF',a:[{t:'🤧',s:90,k:[[150,100,0,1],[150,100,-6,1.15],[150,100,10,0.9],[150,100,0,1]],d:700,dl:200,n:2},
+  {t:'💨',s:40,k:[[180,100,0,0.4,0],[230,90,0,1.2,1],[290,80,0,1.8,0]],d:600,dl:600,n:2},{t:'🌡️',s:46,k:[[50,170,0,1,0],[50,90,0,1,1]],d:900,dl:300},{t:'💊',s:34,k:[[250,-30,0],[250,160,540]],d:900,dl:1200,e:'ease-in'}]},
+ graduation:{bg:'#283A8F,#8FA3F0',a:[...[0,1,2].map(i=>({t:'🎓',s:46,k:[[90+i*60,170,0],[70+i*80,20,360],[80+i*70,150,720]],d:1600,dl:i*200,e:'ease-in-out'})),
+  {t:'🎉',s:60,k:[[150,90,0,0],[150,90,0,1.3],[150,90,0,1]],d:500,dl:900},{t:'📜',s:40,k:[[50,150,-20,0],[50,150,0,1]],d:500,dl:1200}]},
+ beach:{bg:'#2FA4D6,#F5E1A4',a:[{t:'☀️',s:60,k:[[250,140],[250,40]],d:1400},{t:'🏖️',s:90,k:[[120,130,0,0],[120,130,0,1]],d:600},
+  {t:'🌊',s:44,k:[[-20,175],[320,175]],d:1800,dl:200,e:'linear'},{t:'🚗',s:46,k:[[300,90],[-60,90]],d:1300,dl:900,e:'ease-in'}]},
+ fire:{bg:'#8E1F1F,#F2795B',ground:1,a:[{t:'🚒',s:96,k:[[400,130],[150,130],[150,130],[-120,130]],d:2400,e:'ease-in-out'},{t:'🚨',s:34,k:[[400,82,0,1,1],[150,82,0,1,0.2],[150,82,0,1,1],[-120,82,0,1,0.2]],d:2400},
+  {t:'💦',s:40,k:[[120,110,0,0],[60,60,0,1.3],[30,40,0,1.6,0]],d:600,dl:1000,n:2}]},
+ payday:{bg:'#2F7D4A,#B6E3A3',a:[{t:'💰',s:90,k:[[150,120,0,0],[150,110,0,1.2],[150,120,0,1]],d:600},...Array.from({length:9},(_,i)=>({t:i%2?'💸':'🪙',s:30,k:[[30+i*30,-30,0],[30+i*30+(i%3-1)*20,210,360]],d:1300,dl:i*160,e:'ease-in'}))]},
+ tax:{bg:'#4A4A5E,#A8A8C0',a:[{t:'🧾',s:96,k:[[150,260],[150,100]],d:600,e:'ease-out'},{t:'🧮',s:44,k:[[50,150,-10],[50,150,10],[50,150,-10]],d:400,dl:500,n:3},
+  {t:'−₪5',chip:1,bad:1,s:22,k:[[150,100,-14,3,0],[150,100,-14,1,1]],d:350,dl:1100,e:'ease-in'}]},
+ movie:{bg:'#1E1E28,#5A4A80',a:[{t:'🎬',s:96,k:[[150,100,0,0],[150,100,0,1.1],[150,100,-8,1],[150,100,0,1]],d:900},{t:'🎥',s:50,k:[[260,60,-20],[260,60,20],[260,60,-20]],d:1400,dl:300},
+  ...[0,1,2].map(i=>({t:'⭐',s:30,k:[[60+i*90,170,0,0],[60+i*90,160,180,1.3],[60+i*90,170,360,0.8]],d:700,dl:900+i*200})),{t:'+2⭐',chip:1,s:18,k:[[150,180,0,0],[150,180,0,1]],d:400,dl:1600}]},
+ bike:{bg:'#2B8C7A,#BCEBD6',ground:1,a:[...['🚴','🚴‍♀️','🚴'].map((t,i)=>({t,s:54,k:[[380,140],[260,130],[150,145],[40,130],[-60,140]],d:1900,dl:i*450,e:'linear'})),
+  {t:'🚲',s:44,k:[[250,60,0,0],[250,60,0,1],[250,55,0,1],[250,60,0,1]],d:700,dl:400}]},
+ scare:{bg:'#3A4A2A,#8A9A5A',a:[...[0,1,2].map(i=>({t:'🦠',s:50,k:[[150,100,0,0],[80+i*70,80+(i%2)*40,90,1],[80+i*70,80+(i%2)*40,180,1.1]],d:1100,dl:i*250})),
+  {t:'😷',s:64,k:[[150,170,0,0],[150,165,0,1.15],[150,170,0,1]],d:600,dl:1000},{t:'−3⭐',chip:1,bad:1,s:18,k:[[150,25,0,0],[150,25,0,1]],d:400,dl:1400}]},
+ lshort:{bg:'#5A3A1E,#B88A4A',a:[{t:'📦',s:96,k:[[150,125,0,0],[150,125,0,1]],d:400},{t:'🍋',s:40,k:[[150,105,-12],[150,105,12],[150,105,-12]],d:250,dl:400,n:6},
+  {t:'×1.7',chip:1,bad:1,s:22,k:[[240,60,0,0],[240,40,10,1.2],[240,40,0,1]],d:600,dl:900},{t:'😱',s:44,k:[[55,70,0,0],[55,70,0,1.2],[55,70,0,1]],d:400,dl:1200}]},
+ ltruck:{bg:'#C9A12E,#FFE58A',ground:1,a:[{t:'🚚',s:96,k:[[420,120],[180,120]],d:1100,e:'cubic-bezier(.2,.8,.3,1)'},...Array.from({length:6},(_,i)=>({t:'🍋',s:34,k:[[120,100],[60-i*6+i*14,40+i*4],[40+i*22,170]],d:700,dl:1200+i*120,e:'ease-in'})),
+  {t:'−40%',chip:1,s:20,k:[[250,40,0,0],[250,40,0,1]],d:400,dl:1600}]},
+ sugar:{bg:'#C2457A,#F7B2CF',a:[...Array.from({length:10},(_,i)=>({t:'🍬',s:28,k:[[20+i*29,-20,0],[20+i*29,210,(i%2?1:-1)*360]],d:1200,dl:i*130,e:'ease-in'})),
+  {t:'🏷️',s:70,k:[[150,100,-15],[150,100,15],[150,100,-15]],d:800,dl:200,n:2},{t:'½',chip:1,s:26,k:[[150,100,0,0],[150,100,0,1]],d:300,dl:1200}]},
+ icebreak:{bg:'#1F3D5A,#7FB8E0',a:[{t:'🧊',s:96,k:[[150,110,0,1],[146,110,-4,1],[154,110,4,1],[150,110,0,1]],d:200,n:6},{t:'💥',s:70,k:[[150,100,0,0],[150,100,0,1.5,1],[150,100,0,2,0]],d:500,dl:1200},
+  {t:'🔧',s:44,k:[[50,60,0],[50,60,360]],d:700,dl:300,n:2},{t:'×2.5',chip:1,bad:1,s:22,k:[[250,160,0,0],[250,160,0,1]],d:400,dl:1500}]},
+ farmers:{bg:'#5E8A2E,#D6E89A',ground:1,a:[...['🌾','🌾','🌾'].map((t,i)=>({t,s:46,k:[[60+i*90,170,-8],[60+i*90,170,8],[60+i*90,170,-8]],d:900,dl:i*150,n:2})),
+  ...['🧺','🥕','🍋','🍅'].map((t,i)=>({t,s:40,k:[[360,110],[-60,110]],d:2000,dl:200+i*300,e:'linear'})),{t:'−25%',chip:1,s:20,k:[[150,40,0,0],[150,40,0,1]],d:400,dl:1200}]},
+ prices:{bg:'#7A1F2A,#E07A6B',a:[{t:'📈',s:96,k:[[150,190,0,1,1],[150,100,0,1.1],[150,100,0,1]],d:900},...Array.from({length:5},(_,i)=>({t:'💸',s:34,k:[[150,100],[40+i*55,-40,(i%2?1:-1)*45]],d:900,dl:700+i*150,e:'ease-out'})),
+  {t:'+30%',chip:1,bad:1,s:22,k:[[240,160,0,0],[240,160,0,1]],d:400,dl:1500}]},
+ solar:{bg:'#3B1C0E,#E8812B',a:[{t:'☀️',s:110,k:[[150,95,0,1],[150,95,20,1.15],[150,95,0,1]],d:900,n:2},{t:'🛰️',s:46,k:[[40,50,0],[60,40,200],[50,60,400]],d:1600,dl:200},
+  {t:'📡',s:44,k:[[255,160,-20],[255,160,20],[255,160,-20]],d:250,dl:800,n:4},{t:'⚡',s:40,k:[[220,40,0,0],[220,40,0,1.3,1],[220,40,0,1,0]],d:300,dl:500,n:3}]},
+ survey:{bg:'#2E4A8F,#9DB6F2',a:[{t:'📋',s:96,k:[[150,105,0,0],[150,105,0,1]],d:400},...[0,1,2].map(i=>({t:'✅',s:26,k:[[132,80+i*24,0,0],[132,80+i*24,0,1.3],[132,80+i*24,0,1]],d:350,dl:600+i*300})),
+  {t:'₪2',chip:1,s:24,k:[[245,110,-10,0],[245,110,-10,1.2],[245,110,-10,1]],d:500,dl:1600},{t:'🏷️',s:44,k:[[245,60,-15],[245,60,15],[245,60,-15]],d:600,dl:1000,n:2}]}};
+// One actor, moved with the Web Animations API (keyframes from the scene table)
+const EvActor=({x})=>{const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;
+ const fr=x.k.map(([px,py,r=0,s=1,o=1])=>({transform:`translate(${px}px,${py}px) translate(-50%,-50%) rotate(${r}deg) scale(${s})`,opacity:o}));
+ if(reduced()){Object.assign(el.style,{transform:fr[fr.length-1].transform,opacity:fr[fr.length-1].opacity});return;}
+ const an=el.animate(fr,{duration:x.d||800,delay:x.dl||0,iterations:x.n||1,easing:x.e||'cubic-bezier(.34,1.3,.64,1)',fill:'both'});return()=>an.cancel();},[]);
+ return <span ref={ref} className={"eva"+(x.chip?' chip-a':'')+(x.bad?' bad':'')} style={{fontSize:x.s}}>{x.t}</span>;};
+const EvScene=({id})=>{const sc=EV_SCENES[id];if(!sc)return null;return <div className={"ev-scene"+(sc.ground?' grd':'')}>{sc.a.map((x,i)=><EvActor key={i} x={x}/>)}</div>;};
 // Midday surprises: the weather turns in the afternoon (a good forecast can warn you); a stand owner can fall ill and close early
 const SUR={shower:{id:'shower',n:'🌧️ ממטר פתאומי אחר הצהריים',f:0.35,wx:'lRain'},heat:{id:'heat',n:'🔥 גל חום פתאומי אחר הצהריים',f:1.5,wx:'heat'}};
 const PERSONAS=[{id:'budget',n:'אבי הזול',em:'💸',tag:'קונה לימונים בסיטונאות ומוכר הכי זול ברחוב',pb:-1.6,r:{l:2,h:1,i:1}},{id:'premium',n:'שף מוריס',em:'👨‍🍳',tag:'עזב מסעדה ופתח דוכן גורמה: לימונדה עשירה ויקרה',pb:2.4,r:{l:4,h:1,i:1}},
@@ -1413,6 +1486,7 @@ const SHOW_MS={event:3000,open:1900,install:2300,vip:2900,insp:2900,paper:2900,h
 const SHOW_SND={open:'register',install:'sparkle',vip:'fanfare',insp:'stamp',paper:'fanfare',helper:'sparkle',dawn:'whoosh',dusk:'whoosh'};
 const SkyShow=({kind,wx,line1,line2,onDone,ups,item,ev})=>{useEffect(()=>{const s=setTimeout(()=>sfx(kind==='event'?(evGood(ev)?'fanfare':'stamp'):SHOW_SND[kind]),kind==='insp'?1250:kind==='open'?900:300);const t=setTimeout(onDone,SHOW_MS[kind]||2300);return()=>{clearTimeout(t);clearTimeout(s);};},[]);
  const txt=<div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>;
+ if(kind==='event'&&EV_SCENES[ev.id]){const sc=EV_SCENES[ev.id],[c1,c2]=sc.bg.split(',');return <div className="sky sky-ev sky-event" style={{background:`linear-gradient(180deg,${c1},${c2})`}} onClick={onDone}><EvScene id={ev.id}/>{txt}</div>;}
  if(kind==='event'){const f=ev.fx,an=ev.anim;return <div className={"sky sky-ev sky-event an-"+an+(evGood(ev)?' good':' bad')} onClick={onDone}>
   <div className="ev-stage">
    {(an==='parade'||an==='run')&&Array.from({length:7}).map((_,k)=><span key={k} className="evm" style={{animationDelay:k*0.28+'s',bottom:10+(k%2)*26}}>{f[k%f.length]}</span>)}
