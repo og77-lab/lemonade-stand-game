@@ -1310,7 +1310,7 @@ function Game(){
   if(!research)inbox.push({id:'rs'+day,ic:'📋',t:'סקר שוק זמין',s:`₪${RESEARCH_C}: מי יקנה היום, מכל סוג לקוח, ולמה`,go:()=>setTab('intel'),cta:'למודיעין'});
   else inbox.push({id:'rs'+day,ic:'📋',t:`סקר שוק: ~${buyers} יקנו מתוך ~${visitors}`,s:aud.filter(x=>x.why[1]!=='good').slice(0,2).map(x=>`${x.c.nm}: ${x.why[0]}`).join(' · ')||'כולם אוהבים את הכוס',go:()=>setTab('product'),cta:'למוצר'});
   if(maxCups===0)inbox.push({id:'nc'+day,ic:'⚠️',t:'אין מספיק מלאי לכוס אחת',s:'היום הדוכן ייסגר. בערב אפשר לקנות',warn:true});
-  else if(cupsWanted>maxCups)inbox.push({id:'cap'+day,ic:'⚠️',t:`אפשר להכין רק ${maxCups} כוסות`,s:`מגבלה: ${limiter.em} ${limiter.n}`,warn:true,go:()=>setTab('product'),cta:'למוצר'});
+  else if(research&&buyers>cups*1.15)inbox.push({id:'cap'+day,ic:'⚠️',t:'יגיעו יותר קונים מכוסות',s:`צפויים ~${buyers} קונים ויש רק ${cups} כוסות — ${cups<maxCups?'אפשר להכין יותר':`כדי להכין יותר צריך עוד ${limiter?.em} ${limiter?.n}`}`,warn:true,go:()=>setTab('product'),cta:'למוצר'});
   if(spy&&withComp)inbox.push({id:'sp'+day,ic:'🕵️',t:'המודיעין על המתחרים הגיע',s:rivalsToday.map(c=>`${c.em} ₪${c.pr} (${c.rec.l}🍋${c.rec.h}🍬${c.rec.i}🧊)`).join(' · '),go:()=>setTab('intel'),cta:'למודיעין'});
  }
  // The assistant manager: concrete, number-based advice
@@ -1464,7 +1464,7 @@ function Game(){
   {k:'product',ic:'🥤',t:'מתכון',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · איכות ${quality}`,st:badFx.some(e=>e.v[1]==='bad')?'warn':'ok',note:badFx.length?badFx.map(e=>e.v[0]).join(' · '):null},
   ...(W.vip?[{k:'product',ic:'🎩',t:'מבקר אוכל היום',v:`רוצה איכות 65+ · שלך: ${quality}`,st:quality>=65?'ok':'warn',note:quality<65?'שפר את המתכון כדי שיתלהב':null}]:[]),
   {k:'product',ic:'💰',t:'מחיר',v:`₪${price} לכוס · עלות ${fmt2(costCup)}`,st:research&&bestPrice!==price?'warn':'ok',note:research&&bestPrice!==price?`העוזר: במחיר ₪${bestPrice} תכניס יותר`:null,act:research&&bestPrice!==price?{label:`קבע ₪${bestPrice}`,fn:()=>setPrice(bestPrice)}:null},
-  {k:'product',ic:'🔢',t:'כמה להכין',v:`${cups} כוסות (אפשר עד ${maxCups})`,st:cups===0?'bad':cupsWanted>maxCups||(research&&buyers>cups*1.15)?'warn':'ok',note:cups===0?'אין כוסות — הדוכן ייסגר':cupsWanted>maxCups?`מגבלה: ${limiter?.n}`:research&&buyers>cups*1.15?`צפויים ~${buyers} קונים — הכן יותר`:null},
+  {k:'product',ic:'🔢',t:'כמה להכין',v:`${cups} כוסות (אפשר עד ${maxCups})`,st:cups===0?'bad':research&&buyers>cups*1.15?'warn':'ok',note:cups===0?'אין כוסות — הדוכן ייסגר':research&&buyers>cups*1.15?`צפויים ~${buyers} קונים ויש רק ${cups} כוסות — ${cups<maxCups?'אפשר להכין יותר':`כדי להכין יותר צריך עוד ${limiter?.em} ${limiter?.n}`}`:null},
   {k:'mkt',ic:'📣',t:'שיווק להיום',v:mktNames.length?mktNames.join(', '):'לא נבחר',st:mktNames.length?'ok':'opt'},
   {k:'biz',ic:'📍',t:'מיקום ועוזר',v:`${LOC[loc].n} · ${helper?'עם עוזר':'בלי עוזר'}`,st:'ok'},
  ];
