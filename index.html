@@ -1519,7 +1519,8 @@ function Game(){
   if(R.signs==='caught')tips.push({k:'bad',t:'🚫 נתפסת מוריד שלטים: −15 מוניטין וקנס ₪15'});else if(R.signs==='ok')tips.push({k:'good',t:'🚫 השלטים שלו ירדו — פחות אנשים ראו אותו'});
   if(!tips.length)tips.push({k:'good',t:'יום מאוזן — המשך כך'});
   setVipBoost(R.vip===true);
-  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:rivalsToday.map(c=>{const vis=Math.round(R.visitors*DIFF[diff].npc*c.attr/Math.max(0.01,standAttr(recipe,price,rep,temp))),sold=Math.round(vis*0.6);return{em:c.em,n:c.n,pr:c.pr,rec:spy?c.rec:null,sold,profit:Math.round(sold*(c.pr-2)-(c.id==='premium'?6:3))};}),
+  const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:(()=>{const street=R.closed?0:60*softEnv(temp,wInfo.fm,W.ev?.dm)*(0.7+55/100*0.6)*LOC[loc].dm*DIFF[diff].dm,npc=DIFF[diff].npc,them=rivalsToday.reduce((s,c)=>s+c.attr,0),my=R.closed?0:standAttr(recipe,price,rep,temp),den=Math.max(0.01,my+npc*them);
+   return rivalsToday.map(c=>{const vis=Math.round(street*npc*c.attr/den*(acts.includes('ads')?0.82:1)),sold=Math.round(vis*0.6);return{em:c.em,n:c.n,pr:c.pr,rec:spy?c.rec:null,sold,profit:Math.round(sold*(c.pr-2)-LOC[loc].rent-(c.id==='premium'?3:0))};});})(),
    w:W.w,t:temp,fc:fcast?{w:fcast.w,t:fcast.t}:null,recipe:{...recipe},price,quality,tP:{...tP},acts:[...acts],ev:W.ev?W.ev.n:null,vipDay:!!W.vip,inspDay:!!W.insp,closed:!!R.closed,
    cost:{...spentCat.current,mkt:R.closed?0:actCost,rent:R.closed?0:LOC[loc].rent,helper:helper?HELPER_C:0,fine:(spentCat.current.fine||0)+R.fine,interest:Math.round(interest*10)/10}};
   spentCat.current={};
@@ -1706,6 +1707,7 @@ function Game(){
   <Banner kind="biz" ic="🏪" title="הדוכן" sub="מיקום, צוות, ציוד וכסף" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
   <section className="blk"><div className="blk-h"><h3>📍 מיקום הדוכן היום</h3><span className="tag">שכירות בסוף היום</span></div>
+   {withComp&&<div className="note">🧍 המתחרים עומדים איתך באותו מקום: במרכז הרחוב גם הם מקבלים יותר עוברים ושבים, וגם הם משלמים אותה שכירות.</div>}
    <div className="locs">{LOC.map(l=><button key={l.id} disabled={isEve} className={"loc"+(loc===l.id?' on':'')} onClick={()=>setLoc(l.id)}><span>{l.em}</span><b>{l.n}</b><small>{l.d}</small></button>)}</div>
    {isEve&&<div className="hint">בוחרים מיקום בבוקר, אחרי שרואים את מזג האוויר</div>}</section>
   <section className="blk"><div className="blk-h"><h3>🧑‍💼 עוזר</h3><span className="tag">₪{HELPER_C} לכל יום שהוא מועסק</span></div>
