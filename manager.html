@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121426">
-<title>Lemonade Manager</title>
+<title>🍋 לימונדה בע״מ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Rubik:wght@400;500;600;700&display=swap">
@@ -1031,7 +1031,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
 
 
 /* ───────── Economy engine (same formulas as the game) ───────── */
-const GAME_NAME='דוכן הלימונדה';
+const GAME_NAME='לימונדה בע״מ';
 const CUP=6,DAYS=10,CAP_BASE=30,CAP_STATION=70,CAP_TEAM=999,HELPER_B=20,HELPER_C=8,LOAN_INT=0.08;
 const TP=[0,10,22,34,44,50,54],SR=[0,0,3,7,12,18,24],SW=[0,10,18,25,30,33,35];
 const ITP=[0,0,-1,-3,-6,-12,-20],WTP=[0,0,-4,-10,-20,-32,-46],HFR=[0,-2,3,0,-3,-5,-5];
@@ -1443,7 +1443,7 @@ function Game(){
    <div className="cl-h">ℹ️ מידע</div>
    <div className="set-grp">{[['terms','📜','תנאי שימוש'],['privacy','🔒','פרטיות'],['a11y','♿','הצהרת נגישות']].map(([k,em,n])=><button key={k} className="set-row" onClick={()=>setSetPage(k)}><span className="set-t"><b>{em} {n}</b></span><span className="set-go">‹</span></button>)}</div>
    {phase!=='title'&&phase!=='setup'&&<button className="btn ghost set-quit" onClick={()=>{setConfirm({t:'לצאת למסך הפתיחה?',s:'המשחק הנוכחי לא יישמר.',yes:'כן, לצאת',no:'להמשיך לשחק',onYes:()=>location.reload(),onNo:()=>{}});setSetOpen(false);}}>🏠 יציאה למסך הפתיחה</button>}
-   <div className="set-ver">Lemonade Manager · גרסת ניסיון</div>
+   <div className="set-ver">{GAME_NAME} · גרסת ניסיון</div>
   </div>:setPage==='terms'?<div className="sheet-b legal">
    <p>ברוכים הבאים ל"{GAME_NAME}". השימוש במשחק מהווה הסכמה לתנאים האלה.</p>
    <h4>מה זה המשחק</h4><p>משחק סימולציה לניהול דוכן לימונדה, לשימוש אישי ולהנאה. כל הכסף, המחירים, הלקוחות והתוצאות במשחק דמיוניים, ואינם ייעוץ עסקי, כלכלי או פיננסי.</p>
