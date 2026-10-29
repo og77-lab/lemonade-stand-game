@@ -1484,7 +1484,7 @@ function Game(){
    <div><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הכנות למחר. עבור על הרשימה, ואז "המשך ללילה".':'הכנות להיום. עבור על הרשימה, ואז "פתח את הדוכן".'}</p></div>
    <div className={"hub-ring"+(attention.length?' warn':'')} style={{'--p':Math.round(ok/tasks.length*100)+'%'}}><b className="num">{ok}/{tasks.length}</b><small>{attention.length?`${attention.length} לטיפול`:'הכל מוכן'}</small></div>
   </div>
-  {!attention.length&&<div className="ready" key={'ready'+day+phase}><span>✨</span><b>{isEve?'מוכן ללילה!':'מוכן לפתוח!'}</b><span>✨</span></div>}
+  {!attention.length&&<div className="ready" key={'ready'+day+phase}><span>✨</span><b>{isEve?'מוכן לבוקר!':'מוכן לפתוח!'}</b><span>✨</span></div>}
   <div className="tasks">{tasks.map((t,i)=><button key={i} className={"task "+t.st} onClick={()=>setTab(t.k)}>
    <span className="tk-ic">{t.ic}</span>
    <span className="tk-tx"><b>{t.t}</b><span>{t.v}</span>{t.note&&<em>{t.note}</em>}
