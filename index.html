@@ -684,6 +684,32 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .coach-tip.welcome p{white-space:pre-line;font-size:15px}
 .coach-tip.welcome .coach-b{justify-content:center}.coach-tip.welcome .coach-n{display:none}
 
+/* ── The ending ── */
+.fin-hero{padding:22px 12px 18px;background:linear-gradient(170deg,#3B2A6B,#7A3E5E 55%,#D9773E)}
+.fin-rank{display:flex;flex-direction:column;align-items:center;margin:8px 0 2px;animation:popUp .6s var(--spring) .2s both}
+.fin-rank span{font-size:54px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35));animation:heroBob 3s ease-in-out 1s infinite}
+.fin-rank b{font-family:var(--f-display);font-size:28px;font-weight:600;color:#FFE58A;text-shadow:0 2px 14px rgba(255,210,63,.5)}
+.fin-pod{display:flex;align-items:flex-end;justify-content:center;gap:8px;padding-top:8px;min-height:190px}
+.pod-col{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center}
+.pod-who{display:flex;flex-direction:column;align-items:center;margin-bottom:6px;text-align:center;animation:popUp .5s var(--spring) both}
+.pod-who span{font-size:34px}.pod-who b{font-size:12.5px}.pod-who i{font-style:normal;font-size:13px;color:var(--lemon)}
+.pod-bar{width:100%;border-radius:10px 10px 0 0;display:grid;place-items:start center;padding-top:6px;transform-origin:bottom;animation:grow .7s var(--ease-out) both;background:linear-gradient(180deg,#5A608F,#353A63)}
+.pod-bar b{font-family:var(--f-display);font-size:24px;font-weight:600;color:rgba(255,255,255,.85)}
+.pod-col.p1 .pod-bar{background:linear-gradient(180deg,#FFD23F,#C9971B)}.pod-col.p1 .pod-bar b{color:#4A3500}
+.pod-col.p2 .pod-bar{background:linear-gradient(180deg,#D9DCEB,#9AA0BC)}.pod-col.p2 .pod-bar b{color:#2A2E4A}
+.pod-col.p3 .pod-bar{background:linear-gradient(180deg,#E5A26B,#A8633A)}
+.pod-col.me .pod-bar{box-shadow:0 0 0 3px var(--lemon),0 0 22px rgba(255,210,63,.55)}
+.pod-col.me .pod-who b{color:var(--lemon)}
+.pod-rest{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13px;color:var(--dim)}.pod-rest .me{color:var(--lemon)}
+.fx-recs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fx-rec{position:relative;background:var(--panel-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;overflow:hidden;animation:popUp .45s var(--spring) both}
+.fx-rec small{font-size:12px;color:var(--dim)}.fx-rec b{font-size:22px;font-weight:600}.fx-rec i{font-style:normal;font-size:11px;color:var(--dim)}
+.fx-rec.new{background:linear-gradient(150deg,#3A3012,#252949);box-shadow:inset 0 0 0 2px var(--lemon)}
+.fx-rec.new::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.25) 50%,transparent 70%);transform:translateX(-120%);animation:shine 1.6s ease-in-out 3.2s 2}
+@keyframes shine{to{transform:translateX(120%)}}
+.fx-ribbon{align-self:flex-start;font-size:10.5px;font-weight:700;background:var(--lemon);color:var(--lemon-ink);border-radius:6px;padding:1px 6px;margin-bottom:3px}
+.fin-facts{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12.5px;color:var(--dim);margin-top:10px}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -1722,16 +1748,64 @@ function Game(){
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
  </div>;};
 
+ // Final standings: you vs the rivals (their profits are estimates, as in the daily report)
+ const finalBoard=()=>{const H=history,tot=H.reduce((s,h)=>s+h.profit,0),last=H[H.length-1]?.comps||[];
+  return [{em:'🍋',n:'אתה',me:true,profit:tot,sold:H.reduce((s,h)=>s+h.sold,0)},...last.map((c,i)=>({em:c.em,n:c.n,profit:H.reduce((s,h)=>s+(h.comps?.[i]?.profit||0),0),sold:H.reduce((s,h)=>s+(h.comps?.[i]?.sold||0),0)}))].sort((x,y)=>y.profit-x.profit);};
+ const RANKS=[['מתלמד','🌱'],['סוחר מתחיל','🛒'],['יזם ממולח','💼'],['טייקון לימונים','🎩'],['מלך הלימונדה','👑']];
  const Over=()=>{const tot=history.reduce((s,h)=>s+h.profit,0),PAR=DIFF[diff].par[nComp],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
-  const mx=Math.max(10,...history.map(h=>Math.abs(h.profit)));
-  return <div className="report"><div className="rp-hero"><div className="rp-day">סוף העונה</div>
-   <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:i*0.15+'s'}}>★</span>)}</div>
-   <div className={"rp-big num "+(tot>=0?'g':'r')}>{fmt(tot)}</div><div className="rp-sub">רווח כולל ב-{history.length} ימים · מוניטין {rep}</div>
-   <div className="rp-sub">{st<5?`${st} מתוך 5 כוכבים · עוד ${fmt(th[st-1]-tot)} לכוכב הבא`:'5 כוכבים — עונה מושלמת!'}</div></div>
-  <div className="blk"><div className="blk-h"><h3>📈 רווח לפי יום</h3></div>
-   <div className="chart">{history.map(h=><div key={h.day} className="ch-col"><span className={"ch-bar "+(h.profit>=0?'g':'r')} style={{height:Math.max(4,Math.abs(h.profit)/mx*100)+'%'}}/><small className="num">{fmt(h.profit)}</small><i>{h.day}</i></div>)}</div></div>
-  <button className="btn ghost" onClick={()=>setDashOpen(true)}>📊 כל הנתונים של העונה ›</button>
-  <button className="cta" onClick={()=>location.reload()}>עונה חדשה</button></div>;};
+  const board=finalBoard(),place=board.findIndex(x=>x.me)+1,rk=RANKS[st-1],f=finalRec||{};
+  const pod=board.slice(0,3),order=pod.length===3?[pod[1],pod[0],pod[2]]:pod.length===2?[pod[1],pod[0]]:pod,podH={1:100,2:72,3:52};
+  const bestDay=history.reduce((b,h)=>h.profit>b.profit?h:b,history[0]),sold=history.reduce((s,h)=>s+h.sold,0);
+  const intelSpent=history.reduce((s,h)=>s+((h.cost&&h.cost.intel)||0),0);
+  const Rec=({ic,label,v,prev,isNew,fmtV=fmt,delay})=><div className={"fx-rec"+(isNew?' new':'')} style={{animationDelay:delay+'s'}}>
+   {isNew&&<span className="fx-ribbon">🏅 שיא חדש!</span>}<small>{ic} {label}</small><b className="num">{fmtV(v)}</b>
+   <i>{prev==null?'המשחק הראשון שלך':isNew?`השיא הקודם: ${fmtV(prev)}`:`השיא שלך: ${fmtV(prev)}`}</i></div>;
+  return <div className="report fin">
+   <div className="rp-hero fin-hero">
+    {(place===1||st>=4)&&<div className="confetti" aria-hidden="true">{Array.from({length:40}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',background:['#FFD23F','#4ADE80','#FF8FB1','#5CC8F0'][i%4],animationDelay:(0.6+(i%10)*0.12)+'s'}}/>)}</div>}
+    <div className="rp-day">🏁 סוף המשחק · {DIFF[diff].em} {DIFF[diff].n}{nComp?` · ${nComp} מתחרים`:' · לבד ברחוב'}</div>
+    <div className="fin-rank"><span>{rk[1]}</span><b>{rk[0]}</b></div>
+    <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:0.5+i*0.18+'s'}}>★</span>)}</div>
+    <div className={"rp-big num "+(tot>=0?'g':'r')}>{tot<0?'−':''}₪<CountTo v={Math.abs(Math.round(tot))}/></div>
+    <div className="rp-sub">רווח כולל ב-{history.length} ימים · מוניטין {rep}</div>
+    <div className="rp-sub">{st<5?`${st} מתוך 5 כוכבים · עוד ${fmt(th[st-1]-tot)} לכוכב הבא`:'5 כוכבים — משחק מושלם!'}</div>
+   </div>
+
+   {board.length>1&&<section className="blk fin-pod-wrap"><div className="blk-h"><h3>🏆 הדירוג ברחוב</h3><span className="tag">{place===1?'ניצחת! 🎉':`מקום ${place} מתוך ${board.length}`}</span></div>
+    <div className="fin-pod">{order.map(x=>{const p=board.indexOf(x)+1;return <div key={x.n} className={"pod-col p"+p+(x.me?' me':'')}>
+     <div className="pod-who" style={{animationDelay:1.6+(3-p)*0.35+'s'}}><span>{x.em}</span><b>{x.n}</b><i className="num">{fmt(x.profit)}</i></div>
+     <div className="pod-bar" style={{height:podH[p],animationDelay:1.2+(3-p)*0.35+'s'}}><b>{p}</b></div></div>;})}</div>
+    {board.length>3&&<div className="pod-rest">{board.slice(3).map((x,i)=><span key={x.n} className={x.me?'me':''}>{i+4}. {x.em} {x.n} · <b className="num">{fmt(x.profit)}</b></span>)}</div>}
+    <div className="hint">הרווחים של המתחרים הם הערכה</div></section>}
+
+   <section className="blk"><div className="blk-h"><h3>🏅 השיאים שלך</h3><span className="tag">{DIFF[diff].n} · {nComp?`${nComp} מתחרים`:'לבד'}</span></div>
+    <div className="fx-recs">
+     {Rec({ic:'💰',label:'רווח במשחק',v:tot,prev:f.prevTot,isNew:f.newTot,delay:2.4})}
+     {Rec({ic:'📅',label:'היום הכי טוב',v:bestDay.profit,prev:f.prevDay,isNew:f.newDay,delay:2.6})}
+     {Rec({ic:'🥤',label:'כוסות שנמכרו',v:sold,prev:f.prevSold,isNew:f.newSold,fmtV:x=>String(x),delay:2.8})}
+     {Rec({ic:'⭐',label:'מוניטין בסוף',v:rep,prev:f.prevRep,isNew:f.newRep,fmtV:x=>String(x),delay:3.0})}
+    </div>
+    <div className="fin-facts"><span>🔍 השקעת {fmt(intelSpent)} במודיעין</span><span>📅 היום הכי טוב: יום {bestDay.day}</span></div>
+   </section>
+
+   {f.games&&f.games.length>1&&<section className="blk"><div className="blk-h"><h3>📜 המשחקים שלך</h3><span className="tag">{f.games.length} משחקים</span></div>
+    <div className="dtbl"><table><thead><tr><th>#</th><th>תאריך</th><th>הגדרות</th><th>רווח</th><th>מקום</th><th>★</th></tr></thead>
+     <tbody>{[...f.games].sort((x,y)=>y.tot-x.tot).slice(0,8).map((g,i)=><tr key={g.at} className={g.at===f.at?'me':''}><td>{i===0?'🥇':i+1}</td><td className="num">{new Date(g.at).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})}</td><td className="nw">{DIFF[g.diff]?.em} {g.n?g.n+'🧍':'לבד'}</td><td className={"num "+(g.tot>=0?'g':'r')}>{fmt(g.tot)}</td><td className="num">{g.n?g.place+'/'+(g.n+1):'—'}</td><td className="num">{g.st}</td></tr>)}</tbody></table></div>
+   </section>}
+
+   <button className="btn ghost" onClick={()=>setDashOpen(true)}>📊 כל הנתונים של המשחק ›</button>
+   <button className="cta" onClick={()=>location.reload()}>🔁 משחק חדש</button></div>;};
+
+ const [finalRec,setFinalRec]=useState(null);
+ useEffect(()=>{if(phase!=='over'||finalRec)return;let games=[];try{games=JSON.parse(localStorage.getItem('lm-games')||'[]');}catch(_){}
+  const H=history,tot=Math.round(H.reduce((s,h)=>s+h.profit,0)),PAR=DIFF[diff].par[nComp],th=[0,PAR*0.4,PAR*0.75,PAR*1.1],st=tot<0?1:tot<th[1]?2:tot<th[2]?3:tot<th[3]?4:5;
+  const day1=Math.round(Math.max(...H.map(h=>h.profit))),sold=H.reduce((s,h)=>s+h.sold,0),place=finalBoard().findIndex(x=>x.me)+1;
+  const same=games.filter(g=>g.diff===diff&&g.n===nComp),mx=k=>same.length?Math.max(...same.map(g=>g[k])):null;
+  const pv={prevTot:mx('tot'),prevDay:mx('day'),prevSold:mx('sold'),prevRep:mx('rep')};
+  const g={at:Date.now(),diff,n:nComp,tot,day:day1,sold,rep,place,st};games=[...games,g].slice(-50);try{localStorage.setItem('lm-games',JSON.stringify(games));}catch(_){}
+  const nw=(v,p)=>p!=null&&v>p;
+  setFinalRec({...pv,newTot:nw(tot,pv.prevTot),newDay:nw(day1,pv.prevDay),newSold:nw(sold,pv.prevSold),newRep:nw(rep,pv.prevRep),games,at:g.at});
+  setTimeout(()=>sfx('fanfare'),500);if(nw(tot,pv.prevTot)||place===1)setTimeout(()=>sfx('sparkle'),2500);},[phase]);
 
  /* ── Tutorial: a few spotlights on the first evening, then one tip the first time each moment comes ── */
  const TUT={
@@ -1834,7 +1908,7 @@ function Game(){
    <section className="blk"><div className="blk-h"><h3>👥 לקוחות</h3></div>
     <Line series={[{v:H.map(h=>h.visitors),c:'#A5A8C8'},{v:H.map(h=>h.sold),c:'#FFD23F',w:3},{v:H.map(h=>h.cups),c:'#5CC8F0',dash:'4 3'}]} labels={days}/>
     <Legend items={[{c:'#A5A8C8',label:'עברו ליד'},{c:'#FFD23F',label:'קנו'},{c:'#5CC8F0',label:'הכנת'}]}/>
-    <div className="cl-h">מי קנה לאורך העונה</div>
+    <div className="cl-h">מי קנה לאורך המשחק</div>
     {types.map(t=><div key={t.k} className="aud-r"><span className="aud-n">{CT[t.k].em} {CT[t.k].nm}</span><span className="aud-b"><i style={{width:(t.vis?t.buy/t.vis*100:0)+'%'}} className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'}/></span><span className="num aud-x"><b>{t.buy}</b>/{t.vis}</span><span className="num dpct">{t.vis?Math.round(t.buy/t.vis*100):0}%</span></div>)}
     <div className="cl-h">⭐ מוניטין</div>
     <Line series={[{v:H.map(h=>h.rep),c:'#FFD23F'}]} labels={days}/>
@@ -1871,7 +1945,7 @@ function Game(){
 const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
  const lastTab=useRef(tab);const slideDir=navIdx(tab)>=navIdx(lastTab.current)?'from-l':'from-r';useEffect(()=>{lastTab.current=tab;},[tab]);
  const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','🛒','שוק'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
- const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום העונה ›':`לערב · לפני יום ${day+1} ›`):'';
+ const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום המשחק ›':`לערב · לפני יום ${day+1} ›`):'';
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
  const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
