@@ -65,7 +65,7 @@ begin
     s_sold := s_sold + (d->>'sold')::int;
   end loop;
   if abs(s_profit - p_score) > 1.5 or s_sold <> p_cups then raise exception 'totals do not match'; end if;
-  par := (case g.difficulty when 'easy' then array[1650,1350,1100,900] when 'medium' then array[1350,850,600,450] else array[1050,550,350,250] end)[g.competitors + 1];
+  par := (case g.difficulty when 'easy' then array[1980,1620,1320,1080] when 'medium' then array[1620,1020,720,540] else array[1260,660,420,300] end)[g.competitors + 1];
   if p_score > par * 2.5 then raise exception 'score too high'; end if;
   st := case when p_score < 0 then 1 when p_score < par * 0.4 then 2 when p_score < par * 0.75 then 3 when p_score < par * 1.1 then 4 else 5 end;
   if st <> p_stars then raise exception 'stars do not match'; end if;

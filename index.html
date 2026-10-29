@@ -734,6 +734,36 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .chip.on{border-color:var(--lemon);background:#2E2A12;color:var(--lemon)}
 .intro .btn.ghost{max-width:340px;width:100%}
 
+/* Setup: the start button takes the width, back stays small */
+.intro-btns .btn.ghost{width:auto;flex:0 0 auto;max-width:none}
+.intro-btns .cta{flex:1;max-width:none}
+/* Long sheets scroll instead of squeezing their rows */
+.sheet-b>*,.dash-b>*{flex-shrink:0}
+/* ── Street event scenes ── */
+.sky-event.good{background:linear-gradient(180deg,#2B5FA8,#6A8FE0 55%,#F2C66B)}
+.sky-event.bad{background:linear-gradient(180deg,#2E3448,#4A5470 60%,#7A7F95)}
+.sky-event .ev-stage{overflow:visible}
+.evm{position:absolute;left:-60px;font-size:46px;animation:march 2.4s linear both}
+.an-run .evm{animation-duration:1.6s}
+@keyframes march{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 80px))}}
+.an-parade .evm{animation-name:march,hop}
+@keyframes hop{50%{translate:0 -14px}}
+.evd{position:absolute;bottom:14px;left:50%;margin-left:-55px;font-size:110px;line-height:1;animation:taxiIn 1.1s cubic-bezier(.2,.8,.3,1.1) both}
+.evp{position:absolute;top:8px;font-size:34px;animation:popUp .45s var(--spring) both}
+.evs{position:absolute;left:50%;bottom:30px;margin-left:-55px;font-size:110px;line-height:1;animation:popUp .4s var(--spring) both,shk .12s linear .5s 10 alternate}
+@keyframes shk{from{rotate:-6deg}to{rotate:6deg}}
+.an-flicker{animation:skyFade 3s ease forwards,flick 1.2s steps(2) .3s 3}
+@keyframes flick{50%{filter:brightness(.35)}}
+.evb{position:absolute;left:50%;top:50%;font-size:36px;animation:burst 1.1s var(--ease-out) both}
+@keyframes burst{from{transform:translate(-50%,-50%) rotate(var(--a)) translateY(0) rotate(calc(-1*var(--a)));opacity:0}to{transform:translate(-50%,-50%) rotate(var(--a)) translateY(-120px) rotate(calc(-1*var(--a)));opacity:1}}
+.evr{position:absolute;top:-40px;font-size:30px;animation:evRain 1.6s ease-in both}
+@keyframes evRain{from{transform:translateY(0) rotate(0)}to{transform:translateY(240px) rotate(200deg)}}
+.ev1{position:absolute;left:50%;bottom:30px;margin-left:-55px;font-size:110px;line-height:1}
+.ev1.spin{animation:spinIn 1.1s cubic-bezier(.2,.8,.3,1) both}
+.ev1.stamp{animation:stampIn .4s cubic-bezier(.5,0,.75,0) .4s both}
+.ev1.bounce{animation:evBall 1.6s cubic-bezier(.3,0,.7,1) both}
+@keyframes evBall{0%{transform:translate(-140px,-160px)}30%{transform:translate(-60px,0)}55%{transform:translate(10px,-90px)}75%{transform:translate(60px,0)}88%{transform:translate(90px,-30px)}100%{transform:translate(100px,0)}}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -1097,9 +1127,9 @@ const CT={
 };
 const TYPES=Object.keys(CT);
 const WE={sunny:{n:"שמש",em:"☀️",fm:1.1},nice:{n:"נעים",em:"🌤️",fm:1.2},cloudy:{n:"עננים",em:"☁️",fm:0.8},lRain:{n:"גשם קל",em:"🌦️",fm:0.5},
- hRain:{n:"גשם חזק",em:"🌧️",fm:0.2},hot:{n:"חם",em:"🥵",fm:1.0},heat:{n:"שרב",em:"🔥",fm:0.6},cold:{n:"קר",em:"🥶",fm:0.3}};
-const tM=t=>t<15?0.25:t<18?0.4:t<21?0.65:t<25?0.9:t<29?1.2:t<32?1.1:t<35?0.85:0.6;
-const softEnv=(t,fm,ev)=>{const raw=tM(t)*fm*(ev||1);return Math.max(0.15,1+(raw-1)*0.7);};
+ hRain:{n:"גשם חזק",em:"🌧️",fm:0.2},hot:{n:"חם",em:"🥵",fm:1.05},heat:{n:"שרב",em:"🔥",fm:0.95},cold:{n:"קר",em:"🥶",fm:0.3}};
+const tM=t=>t<15?0.25:t<18?0.4:t<21?0.65:t<25?0.9:t<29?1.2:t<32?1.45:t<35?1.65:1.55;
+const softEnv=(t,fm,ev)=>Math.max(0.15,1+(tM(t)*fm-1)*0.9)*(ev||1);
 const iFr=(ic,t)=>{const tb=t>=33?[0,0,12,22,30,35,38]:t>=28?[0,5,15,24,30,32,33]:t>=20?[0,15,22,27,28,28,28]:[0,25,27,24,18,12,8];return tb[Math.min(ic,5)];};
 const tSc=(l,h,ic,wa,ct)=>{const tp=TP[l]*(1-crP(l>0?h/l:99))+ITP[ic]+WTP[wa];const sw=SW[h],sour=Math.max(0,SR[l]-0.5*sw),[lo,hi]=ct.swI;
  const sweet=sw<lo?-(lo-sw)*0.8*ct.swP:sw>hi?-(sw-hi)*ct.swP:6;return Math.max(0,Math.min(60,tp-Math.max(0,sour-ct.sTh)*ct.sP+sweet));};
@@ -1107,8 +1137,13 @@ const fSc=(ic,h,t)=>Math.min(40,Math.max(0,iFr(ic,t)+HFR[h]));
 const freshW=t=>0.5+1.1*Math.min(1,Math.max(0,(t-16)/18));
 const cSc=(l,h,ic,t,ct)=>{const wa=Math.max(0,CUP-l-h-ic),ts=tSc(l,h,ic,wa,ct),fr=fSc(ic,h,t),fw=ct.fW*freshW(t);return{sc:Math.round((ts*ct.tW+fr*fw)/(60*ct.tW+40*fw)*100),ts,fr};};
 const heatF=t=>0.7+0.55*Math.min(1,Math.max(0,(t-14)/20));
-const pMt=(ct,t)=>ct.pM*heatF(t);
+let PM_EV=1;
+const pMt=(ct,t)=>ct.pM*heatF(t)*PM_EV;
 const buyProb=(sc,pr,rep,ct,t)=>{const pM=pMt(ct,t);let pen=(pr/pM)*0.2;if(pr>pM)pen+=((pr-pM)/pM)*0.9;return Math.min(0.95,Math.max(0.03,(sc/100)*0.6+(rep/100)*0.15+0.35-pen));};
+const rawQ=(r,T,mix)=>TYPES.reduce((s,k)=>s+mix[k]*cSc(r.l,r.h,r.i,T,CT[k]).sc,0);
+const bestQ=(T,mix)=>{let b=1;for(let l=1;l<=CUP;l++)for(let h=0;l+h<=CUP;h++)for(let i=0;l+h+i<=CUP;i++)b=Math.max(b,rawQ({l,h,i},T,mix));return b;};
+const relQ=(r,T,mix)=>Math.min(100,Math.round(rawQ(r,T,mix)/bestQ(T,mix)*100));
+const VIP_Q=85;
 const standAttr=(r,pr,rep,t)=>{const q=TYPES.reduce((s,k)=>s+CT[k].pct*cSc(r.l,r.h,r.i,t,CT[k]).sc,0),pM=TYPES.reduce((s,k)=>s+CT[k].pct*pMt(CT[k],t),0);
  return(0.5+q/100)*Math.exp(-1.2*(pr/pM-1))*(0.6+rep/100*0.8);};
 const rng=s=>{let x=((s%2147483647)+2147483647)%2147483647;if(x===0)x=1;x=(x*16807)%2147483647;x=(x*16807)%2147483647;return()=>{x=(x*16807)%2147483647;return(x-1)/2147483646;};};
@@ -1122,7 +1157,7 @@ const MKTG=[{id:"flyer",em:"📄",n:"פליירים",c:5,dm:1.10,d:"+10% מבק�
 const BLACK=[{id:"ads",em:"📢",n:"קמפיין נגד המתחרה",c:8,d:"גונב 18% מהלקוחות שלו",risk:0},{id:"rumor",em:"🗣️",n:"הפצת שמועות",c:4,d:"−5 מוניטין למתחרה",risk:30},{id:"signs",em:"🚫",n:"הסרת השלטים שלו",c:6,d:"פחות חשיפה למתחרה",risk:40}];
 const FORECAST=[{lv:1,em:"👂",n:"שמועות מהשכונה",c:2,ac:0.65,d:"מזג אוויר וטמפרטורה"},{lv:2,em:"📡",n:"תחזית מקצועית",c:5,ac:0.8,d:"מזג אוויר + האם יהיה אירוע"},{lv:3,em:"🛰️",n:"לווין",c:10,ac:0.95,d:"מזג אוויר + פרטי האירוע"}];
 const RESEARCH_C=4,SPY_C=3;
-const DIFF={easy:{n:'קלה',em:'🌱',d:'יותר לקוחות, מתחרה חלש',dm:1.3,npc:0.45,par:[1650,1350,1100,900]},medium:{n:'בינונית',em:'⚖️',d:'מאוזן',dm:1,npc:0.65,par:[1350,850,600,450]},hard:{n:'קשה',em:'🔥',d:'פחות לקוחות, מתחרה חזק',dm:0.8,npc:0.85,par:[1050,550,350,250]}};
+const DIFF={easy:{n:'קלה',em:'🌱',d:'יותר לקוחות, מתחרה חלש',dm:1.3,npc:0.45,par:[1980,1620,1320,1080]},medium:{n:'בינונית',em:'⚖️',d:'מאוזן',dm:1,npc:0.65,par:[1620,1020,720,540]},hard:{n:'קשה',em:'🔥',d:'פחות לקוחות, מתחרה חזק',dm:0.8,npc:0.85,par:[1260,660,420,300]}};
 const PRESETS=[{id:'classic',n:'קלאסי',r:{l:3,h:1,i:1},fit:'כולם'},{id:'kids',n:'מתוק לילדים',r:{l:2,h:2,i:1},fit:'👦 ילדים'},{id:'sport',n:'רענן לספורטאים',r:{l:3,h:0,i:3},fit:'🏃 ספורטאים'},
  {id:'chef',n:'עשיר לשפים',r:{l:4,h:1,i:1},fit:'🧑‍🍳 שפים'},{id:'hot',n:'קפוא ליום חם',r:{l:3,h:1,i:2},fit:'☀️ ימים חמים'}];
 const sameR=(a,b)=>a.l===b.l&&a.h===b.h&&a.i===b.i;
@@ -1132,7 +1167,29 @@ const Banner=({kind,ic,title,sub,onBack})=><div className={"banner bn-"+kind}>
  <div className="bn-tx"><span className="bn-ic">{ic}</span><div><b>{title}</b><span>{sub}</span></div></div>
  {onBack&&<button className="bn-back" onClick={onBack}>‹ מרכז</button>}
 </div>;
-const EVENTS=[{n:"🎪 פסטיבל ברחוב",dm:1.8},{n:"🏃 מרתון בשכונה",dm:1.6},{n:"🚧 עבודות בכביש",dm:0.5},{n:"🎵 הופעה בפארק",dm:1.7},{n:"🌧️ הפסקת חשמל",dm:0.5}];
+// Street events: they hit every stand the same way (crowd, who comes, what they'll pay, fees, reputation)
+const EVENTS=[
+ {id:'fest',n:'🎪 פסטיבל ברחוב',dm:1.8,mix:{child:2.2},anim:'parade',fx:['🎪','🎈','🤹','🎠'],d:'המון משפחות ברחוב'},
+ {id:'marathon',n:'🏃 מרתון בשכונה',dm:1.6,mix:{athlete:3.5},anim:'run',fx:['🏃‍♀️','🏃','🏃‍♂️','🏅'],d:'המון ספורטאים צמאים'},
+ {id:'roadworks',n:'🚧 עבודות בכביש',dm:0.5,anim:'shake',fx:['🚧','👷','🚜'],d:'הרחוב חסום חלקית: חצי מהעוברים ושבים'},
+ {id:'concert',n:'🎵 הופעה בפארק',dm:1.7,mix:{adult:1.7},anim:'pop',fx:['🎵','🎸','🎤','🎶'],d:'הרבה מבוגרים בדרך להופעה'},
+ {id:'blackout',n:'⚡ הפסקת חשמל',dm:0.6,anim:'flicker',fx:['💡','⚡','🔦'],d:'החנויות סגורות ופחות אנשים יוצאים'},
+ {id:'trip',n:'🚌 טיול שנתי',dm:1.5,mix:{child:3},pm:0.85,anim:'drive',fx:['🚌'],d:'אוטובוסים של ילדים, עם מעט כסף בכיס'},
+ {id:'tourists',n:'📸 קבוצת תיירים',dm:1.4,mix:{adult:1.4,foodie:1.6},pm:1.3,anim:'drive',fx:['🚐','📸','🗺️'],d:'תיירים שמוכנים לשלם יותר'},
+ {id:'foodfest',n:'🍽️ פסטיבל אוכל',dm:1.3,mix:{foodie:3},pm:1.2,anim:'pop',fx:['🍽️','🧑‍🍳','🥘','🍰'],d:'המון שפים: רוצים כוס מעולה ומשלמים עליה'},
+ {id:'football',n:'⚽ משחק באצטדיון',dm:1.6,mix:{adult:1.4,athlete:1.4},anim:'bounce',fx:['⚽','📣','🏟️'],d:'אוהדים צמאים בדרך למשחק'},
+ {id:'market',n:'🛍️ יום שוק',dm:1.3,pm:0.9,anim:'pop',fx:['🛍️','🧺','🍅','🥖'],d:'הרבה קונים, כולם מחפשים מציאות'},
+ {id:'healthy',n:'📰 כתבה: לימונדה בריאה!',dm:1.15,rep:3,anim:'spin',fx:['📰','🍋','💪'],d:'+3 מוניטין לכל הדוכנים, ועוד קצת קונים'},
+ {id:'flu',n:'🤧 גל שפעת',dm:0.7,mix:{child:0.5},anim:'shake',fx:['🤧','🌡️','💊'],d:'הרבה נשארים בבית, בעיקר ילדים'},
+ {id:'graduation',n:'🎓 טקס סיום',dm:1.4,mix:{child:1.8,adult:1.2},anim:'pop',fx:['🎓','🎉','📜'],d:'משפחות חוגגות ברחוב'},
+ {id:'beach',n:'🏖️ כולם בים',dm:0.6,anim:'drive',fx:['🏖️'],d:'השכונה מתרוקנת'},
+ {id:'fire',n:'🚒 תרגיל כבאות',dm:0.7,anim:'drive',fx:['🚒'],d:'הרחוב סגור לכמה שעות'},
+ {id:'payday',n:'💸 יום משכורת',dm:1.1,pm:1.25,anim:'rain',fx:['💸','💰','🪙'],d:'לכולם יש כסף בכיס: מוכנים לשלם יותר'},
+ {id:'tax',n:'🧾 ביקורת מס ברחוב',cost:5,anim:'stamp',fx:['🧾'],d:'כל דוכן משלם אגרה של ₪5'},
+ {id:'movie',n:'🎬 צילומי סרט ברחוב',dm:1.3,mix:{adult:1.3},rep:2,anim:'pop',fx:['🎬','🎥','⭐'],d:'סקרנים ברחוב, ו-+2 מוניטין לכולם'},
+ {id:'bike',n:'🚴 יום אופניים עירוני',dm:1.3,mix:{athlete:2.5},anim:'run',fx:['🚴','🚴‍♀️','🚲'],d:'רוכבים צמאים ברחוב'},
+ {id:'scare',n:'🦠 שמועה על הרעלת מזון',dm:0.75,rep:-3,anim:'shake',fx:['🦠','😷'],d:'אנשים חוששים: −3 מוניטין לכל הדוכנים'}];
+const evGood=e=>(e.dm||1)>=1&&(e.rep||0)>=0&&!e.cost;
 const PERSONAS=[{id:'budget',n:'אבי הזול',em:'💸',tag:'קונה לימונים בסיטונאות ומוכר הכי זול ברחוב',pb:-1.6,r:{l:2,h:1,i:1}},{id:'premium',n:'שף מוריס',em:'👨‍🍳',tag:'עזב מסעדה ופתח דוכן גורמה: לימונדה עשירה ויקרה',pb:2.4,r:{l:4,h:1,i:1}},
  {id:'steady',n:'דוד יוסי',em:'🧓',tag:'מוכר לימונדה באותה פינה 20 שנה: קלאסי, בלי הפתעות',pb:0,r:{l:3,h:1,i:1}},{id:'trendy',n:'נועה הטרנדית',em:'😎',tag:'לימונדה קפואה עם הרבה קרח, הכל לאינסטגרם, קצת יקרה',pb:0.6,r:{l:3,h:1,i:2}},
  {id:'gambler',n:'מוטי המהמר',em:'🎲',tag:'משנה מחיר ומתכון כל יום, אף פעם לא יודעים מה יהיה',pb:0,r:null},{id:'veteran',n:'סבתא רחל',em:'👵',tag:'מכינה לפי המתכון של סבתא שלה: עשירה בלימון ואיכותית',pb:0.3,r:{l:4,h:1,i:2}}];
@@ -1258,7 +1315,7 @@ const GlassSvg=({l,h,i,temp=25,bare})=>{
 const buildWorld=seed=>{const r=rng(seed);const days=[];let p={l:0.5,h:0.45,i:0.1};
  for(let d=0;d<=DAYS+1;d++){const t=Math.round(13+r()*25);const w=t>=35?'heat':t>=30?(r()<0.5?'sunny':'hot'):t>=25?(r()<0.5?'sunny':'nice'):t>=21?['sunny','nice','cloudy'][Math.floor(r()*3)]:t>=18?(r()<0.5?'cloudy':'lRain'):['lRain','hRain','cold'][Math.floor(r()*3)];
   const dr=(v,b,mn,mx)=>Math.round(Math.max(mn,Math.min(mx,v+(r()-0.5)*0.3*b))*100)/100;p={l:dr(p.l,0.5,0.3,0.8),h:dr(p.h,0.45,0.3,0.6),i:dr(p.i,0.1,0.05,0.2)};
-  const ev=d>0&&r()<0.3?EVENTS[Math.floor(r()*EVENTS.length)]:null;const vip=d>=2&&r()<0.28,insp=d>=2&&!vip&&r()<0.12;days.push({t,w,p,ev,vip,insp});}
+  const ev=d>0&&r()<0.4?EVENTS[Math.floor(r()*EVENTS.length)]:null;const vip=d>=2&&r()<0.28,insp=d>=2&&!vip&&r()<0.12;days.push({t,w,p,ev,vip,insp});}
  return days;};
 
 const fmt=v=>(v<0?'−':'')+'₪'+Math.abs(Math.round(v));
@@ -1332,10 +1389,19 @@ const StandArt=({ups=[],fresh,sign=true})=>{const has=id=>ups.includes(id)||fres
  </div>;};
 
 // Sky transition between parts of the day
-const SHOW_MS={open:1900,install:2300,vip:2900,insp:2900,paper:2900,helper:2600};
+const SHOW_MS={event:3000,open:1900,install:2300,vip:2900,insp:2900,paper:2900,helper:2600};
 const SHOW_SND={open:'register',install:'sparkle',vip:'fanfare',insp:'stamp',paper:'fanfare',helper:'sparkle',dawn:'whoosh',dusk:'whoosh'};
-const SkyShow=({kind,wx,line1,line2,onDone,ups,item})=>{useEffect(()=>{const s=setTimeout(()=>sfx(SHOW_SND[kind]),kind==='insp'?1250:kind==='open'?900:300);const t=setTimeout(onDone,SHOW_MS[kind]||2300);return()=>{clearTimeout(t);clearTimeout(s);};},[]);
+const SkyShow=({kind,wx,line1,line2,onDone,ups,item,ev})=>{useEffect(()=>{const s=setTimeout(()=>sfx(kind==='event'?(evGood(ev)?'fanfare':'stamp'):SHOW_SND[kind]),kind==='insp'?1250:kind==='open'?900:300);const t=setTimeout(onDone,SHOW_MS[kind]||2300);return()=>{clearTimeout(t);clearTimeout(s);};},[]);
  const txt=<div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>;
+ if(kind==='event'){const f=ev.fx,an=ev.anim;return <div className={"sky sky-ev sky-event an-"+an+(evGood(ev)?' good':' bad')} onClick={onDone}>
+  <div className="ev-stage">
+   {(an==='parade'||an==='run')&&Array.from({length:7}).map((_,k)=><span key={k} className="evm" style={{animationDelay:k*0.28+'s',bottom:10+(k%2)*26}}>{f[k%f.length]}</span>)}
+   {an==='drive'&&<><span className="evd">{f[0]}</span>{f.slice(1).map((x,k)=><span key={k} className="evp" style={{animationDelay:1.1+k*0.25+'s',left:30+k*25+'%'}}>{x}</span>)}</>}
+   {(an==='shake'||an==='flicker')&&<><span className="evs">{f[0]}</span>{f.slice(1).map((x,k)=><span key={k} className="evp" style={{animationDelay:0.6+k*0.3+'s',left:18+k*55+'%'}}>{x}</span>)}</>}
+   {an==='pop'&&Array.from({length:10}).map((_,k)=><span key={k} className="evb" style={{'--a':k*36+'deg',animationDelay:0.2+(k%3)*0.12+'s'}}>{f[k%f.length]}</span>)}
+   {an==='rain'&&Array.from({length:14}).map((_,k)=><span key={k} className="evr" style={{left:(k*7.3)%95+'%',animationDelay:(k%5)*0.22+'s'}}>{f[k%f.length]}</span>)}
+   {(an==='spin'||an==='stamp'||an==='bounce')&&<><span className={"ev1 "+an}>{f[0]}</span>{f.slice(1).map((x,k)=><span key={k} className="evp" style={{animationDelay:1+k*0.25+'s',left:20+k*50+'%'}}>{x}</span>)}</>}
+  </div>{txt}</div>;}
  if(kind==='vip')return <div className="sky sky-ev sky-vip" onClick={onDone}>
   <div className="ev-stage"><div className="ev-road"/><div className="ev-taxi">🚕</div><div className="ev-who">🧐<i className="ev-hat">🎩</i></div><div className="ev-note">📝</div>
    {[0,1,2].map(k=><span key={k} className="ev-star" style={{animationDelay:1.3+k*0.15+'s',left:28+k*22+'%'}}>⭐</span>)}</div>{txt}</div>;
@@ -1390,11 +1456,12 @@ function Game(){
  const simFast=useRef(false);
 
  const W=world[day],tP=world[day-1].p;
+ PM_EV=(W.ev&&W.ev.pm)||1;
  const DOW=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'],dowOf=d=>DOW[(d-1)%7];
  const mixOf=(d,l)=>{const w=world[d],m={child:.25,adult:.4,athlete:.2,foodie:.15},why=[];
   if((d-1)%7>=5){m.child*=2.2;why.push(`${dowOf(d)} — הרבה ילדים בחוץ`);}
   if(l===2){m.foodie*=2;m.adult*=1.2;why.push('מרכז הרחוב — יותר שפים');}else if(l===0){m.child*=1.5;m.foodie*=0.5;why.push('פינת רחוב — יותר ילדים, פחות שפים');}
-  if(w.ev){if(w.ev.n.includes('מרתון')){m.athlete*=3.5;why.push('מרתון — המון ספורטאים');}if(w.ev.n.includes('פסטיבל')){m.child*=2.2;why.push('פסטיבל — המון משפחות');}if(w.ev.n.includes('הופעה')){m.adult*=1.7;why.push('הופעה — הרבה מבוגרים');}}
+  if(w.ev){if(w.ev.mix)Object.entries(w.ev.mix).forEach(([k,x])=>{m[k]*=x;});why.push(w.ev.n+' — '+w.ev.d);}
   if(w.t>=30){m.athlete*=1.4;why.push('חם — יותר ספורטאים צמאים');}
   const s=TYPES.reduce((x,k)=>x+m[k],0);TYPES.forEach(k=>m[k]=m[k]/s);return{m,why};};
  const mixToday=mixOf(day,loc),MIX=mixToday.m; // evening market uses yesterday's (tonight's) prices
@@ -1422,7 +1489,7 @@ function Game(){
  const myTot=history.reduce((s,h)=>s+h.profit,0),myLastPrice=history.length?history[history.length-1].price:6;
  const hitOn=(all,who,id)=>all.filter(o=>o.i!==who&&o.bh.some(x=>x.id===id&&!x.caught&&x.target===who));
  const rivalAttr=(b,all,T)=>standAttr(b.rec,b.pr,b.st.rep,T)*(acts.includes('signs')?0.8:1)*Math.pow(0.8,hitOn(all,b.i,'signs').length);
- const rivalBoost=(b,T)=>b.mk.reduce((m,id)=>m*(MKTG.find(x=>x.id===id)?.dm||1),1)*(b.ups.includes('sign')?1.15:1)*(b.ups.includes('shade')&&T>=28?1.2:1)*(0.7+b.st.rep/100*0.6);
+ const rivalBoost=(b,T)=>b.mk.reduce((m,id)=>m*(MKTG.find(x=>x.id===id)?.dm||1),1)*(b.ups.includes('sign')?1.15:1)*(b.ups.includes('shade')&&T>=28?1.2:1)*(0.7+b.st.rep/100*0.6)*(b.st.boost?1.3:1);
  const myAttr=(r,pr,T,all)=>standAttr(r,pr,rep,T)*Math.pow(0.8,hitOn(all,'me','signs').length);
  const rivalDemand=(b,all,T,fm,evm)=>{const street=60*softEnv(T,fm,evm)*LOC[loc].dm*DIFF[diff].dm,npc=DIFF[diff].npc;
   const den=Math.max(0.01,myAttr(recipe,price,T,all)+npc*all.reduce((s,o)=>s+rivalAttr(o,all,T),0));
@@ -1431,7 +1498,7 @@ function Game(){
   const br=TYPES.reduce((s,k)=>s+MIX[k]*buyProb(cSc(b.rec.l,b.rec.h,b.rec.i,T,CT[k]).sc,b.pr,b.st.rep,CT[k],T),0);
   return{vis:Math.round(vis),br,sold:Math.round(vis*br)};};
  const plans=useMemo(()=>{const S=SMART[diff],w=world[day],T=w.t,P=world[day-1].p;
-  const all=comps.map((p,i)=>{const st=rvS(i),ai=AI[p.id],rr=rng(seed*13+day*101+i*7),cost={rent:LOC[loc].rent},news=[];let cash=st.cash-LOC[loc].rent;
+  const all=comps.map((p,i)=>{const st=rvS(i),ai=AI[p.id],rr=rng(seed*13+day*101+i*7),fee=((w.ev&&w.ev.cost)||0)+(w.insp?8:0),cost={rent:LOC[loc].rent,fine:fee},news=[];let cash=st.cash-LOC[loc].rent-fee;
    const spend=(k,c)=>{if(c>cash)return false;cash-=c;cost[k]=(cost[k]||0)+c;return true;};
    const ups=[...st.ups],nx=ai.up.map(id=>ALL_UPS.find(u=>u.id===id)).find(u=>u&&!ups.includes(u.id)&&(!u.ad||u.ad<=day));
    if(nx&&cash>=nx.c+35&&rr()<0.45*S&&spend('ups',nx.c)){ups.push(nx.id);news.push(nx.id);}
@@ -1474,7 +1541,8 @@ function Game(){
   if(sw<c.swI[0])return['רוצים מתוק יותר','warn'];if(T>=28&&fr<20)return['רוצים יותר קרח','warn'];if(ratio>1)return['קצת יקר','warn'];if(r.l<=2)return['טעם חלש','warn'];return['אוהבים ✓','good'];};
  const buyersFor=(r,pr,T,fm,evm)=>perType(r,pr,T,fm,evm).reduce((s,x)=>s+x.buy,0);
  const aud=perType(recipe,price),buyers=aud.reduce((s,x)=>s+x.buy,0),visitors=visitorsFor(recipe,price);
- const quality=Math.round(TYPES.reduce((s,k)=>s+MIX[k]*cSc(recipe.l,recipe.h,recipe.i,temp,CT[k]).sc,0));
+ // in the evening tomorrow's weather isn't known: judge the cup by the forecast (or an average day)
+ const quality=relQ(recipe,phase==='evening'?(fcast?fcast.t:24):temp,MIX);
  const costCup=recipe.l*world[day-1].p.l+recipe.h*world[day-1].p.h+recipe.i*world[day-1].p.i;
 
  // Plain-language effects of the recipe
@@ -1514,7 +1582,7 @@ function Game(){
   else inbox.unshift({id:'ap'+day,ic:'🧑‍💼',t:'העוזר: המחיר שלך מצוין להיום',s:'אם תכין יותר כוסות, אולי אפשר להרוויח עוד'});}
  if(phase==='morning'){
   if(W.insp&&!inspPaid)inbox.unshift({id:'in'+day,ic:'🏛️',t:'פיקוח עירוני היום',s:'כדי לפתוח את הדוכן צריך לשלם קנס של ₪8',warn:true,act:{label:'שלם ₪8',fn:()=>{if(cash>=8){pay(8,'fine');setInspPaid(true);}}}});
-  if(W.vip)inbox.push({id:'vp'+day,ic:'🎩',t:'מבקר אוכל יגיע היום',s:`הוא אוהב כוס איכותית (65+). הכוס שלך: ${quality}. אם יתלהב — כתבה בעיתון ועוד לקוחות מחר`,warn:quality<65,go:()=>setTab('product'),cta:'למוצר'});
+  if(W.vip)inbox.push({id:'vp'+day,ic:'🎩',t:'מבקר אוכל יגיע היום',s:`הוא רוצה כוס כמעט מושלמת להיום: איכות ${VIP_Q}+ (100 = המתכון הכי טוב למזג האוויר ולקהל של היום). שלך: ${quality}. נסה מתכונים שונים במטבח ותראה איך האיכות משתנה. אם יתלהב: כתבה בעיתון ועוד לקוחות מחר`,warn:quality<VIP_Q,go:()=>setTab('product'),cta:'למוצר'});
   if(vipBoost)inbox.push({id:'vb'+day,ic:'📰',t:'כתבה בעיתון!',s:'המבקר המליץ עליך אתמול — ×1.3 מבקרים היום'});
  }
  const unread=inbox.filter(m=>!read[m.id]).length;
@@ -1524,19 +1592,21 @@ function Game(){
  const pay=(amt,cat='other')=>{setCash(c=>c-amt);setSpentToday(s=>s+amt);spentCat.current[cat]=(spentCat.current[cat]||0)+amt;};
  const confirmEvening=()=>{const cost=buy.l*tP.l+buy.h*tP.h+buy.i*tP.i;if(cost>0){pay(cost,'stock');}
   if(buy.l)setLemons(ls=>[...ls,{q:buy.l,d:day}]);setSugar(s=>s+buy.h);setIce(i=>i+buy.i);setBuy({l:0,h:0,i:0});
-  const evs=[vipBoost&&{kind:'paper',l1:'כתבה בעיתון!',l2:'המבקר המליץ עליך · ×1.3 מבקרים היום'},world[day].vip&&{kind:'vip',l1:'מבקר האוכל בעיר!',l2:'הוא אוהב כוס איכותית (65+)'},world[day].insp&&{kind:'insp',l1:'פיקוח עירוני!',l2:'צריך לשלם ₪8 כדי לפתוח היום'}].filter(Boolean);
+  const E=world[day].ev,evs=[E&&{kind:'event',ev:E,l1:E.n.replace(/^\S+\s/,''),l2:E.d},vipBoost&&{kind:'paper',l1:'כתבה בעיתון!',l2:'המבקר המליץ עליך · ×1.3 מבקרים היום'},world[day].vip&&{kind:'vip',l1:'מבקר האוכל בעיר!',l2:`הוא רוצה כוס כמעט מושלמת (איכות ${VIP_Q}+)`},world[day].insp&&{kind:'insp',l1:'פיקוח עירוני!',l2:'צריך לשלם ₪8 כדי לפתוח היום'}].filter(Boolean);
   const chain=evs.reduceRight((nx,s)=>({...s,next:nx}),null);
   setPhase('morning');setTab('news');setShow({kind:'dawn',wx:world[day].w,l1:`יום ${day}`,l2:`${WE[world[day].w].em} ${WE[world[day].w].n} ${world[day].t}°`,next:chain});};
  const openStand=(closed)=>{const r=rng(seed+day*977);const list=[];let sold=0,rev=0,repD=0,walk=0,miss=0;
   const byType=Object.fromEntries(TYPES.map(k=>[k,{vis:0,buy:0,miss:0}])),whys=Object.fromEntries(aud.map(x=>[x.k,x.why]));
   const ro=rng(seed+day*55),rumor=acts.includes('rumor')?(ro()<0.3?'caught':'ok'):null,signs=acts.includes('signs')?(ro()<0.4?'caught':'ok'):null;
   const v=closed?0:Math.round(visitorsFor(recipe,price)*(rumor==='ok'?1.06:1)),c0=closed?0:cups;
-  for(let i=0;i<v;i++){let roll=r(),k='adult',cum=0;for(const t of TYPES){cum+=MIX[t];if(roll<cum){k=t;break;}}
+  let vip=null;const vipAt=W.vip&&!closed?Math.floor(v/2):-1;
+  for(let i=0;i<v;i++){if(i===vipAt){if(sold<c0){sold++;rev+=price;vip=quality>=VIP_Q;repD+=vip?8:-6;list.push({id:9999,type:'foodie',em:'🎩',buys:true,rx:vip?'🌟':'😤',isVip:true,sp:''});}
+    else{vip=false;repD-=6;list.push({id:9999,type:'foodie',em:'🎩',buys:false,rx:'💨',isVip:true,sp:'נגמרו הכוסות'});}}
+   let roll=r(),k='adult',cum=0;for(const t of TYPES){cum+=MIX[t];if(roll<cum){k=t;break;}}
    const c=CT[k],s=cSc(recipe.l,recipe.h,recipe.i,temp,c),wants=r()<buyProb(s.sc,price,rep,c,temp),buys=wants&&sold<c0;byType[k].vis++;
    let rx='🚶';if(buys){sold++;rev+=price;byType[k].buy++;rx=s.ts>35?'😊':s.ts>20?'🙂':s.ts>10?'😐':'😕';repD+=s.ts>35?c.rI[0]:s.ts>20?1:s.ts>10?0:-1;}else if(wants){rx='💨';miss++;byType[k].miss++;}else walk++;
    list.push({id:i,type:k,em:c.em,buys,rx,isVip:false,sp:''});}
   repD=Math.max(-10,Math.min(10,repD))-Math.min(6,miss*2)+(ups.includes('cups')?1:0);
-  let vip=null;if(W.vip&&!closed){const happy=quality>=65;vip=happy;repD+=happy?8:-6;list.splice(Math.floor(list.length/2),0,{id:9999,type:'foodie',em:'🎩',buys:true,rx:happy?'🌟':'😤',isVip:true,sp:''});}
   let fine=0;if(rumor==='caught'){repD-=8;fine+=10;}if(signs==='caught'){repD-=15;fine+=15;}
   const usedL=c0*recipe.l-(ups.includes('juicer')?Math.floor(c0/10):0);
   setSim({list,shown:[],sold:0,rev:0,walk:0,done:closed,result:{sold,rev,repD,walk,miss,visitors:v,usedL,cups:c0,byType,whys,vip,rumor,signs,fine,closed:!!closed}});
@@ -1609,7 +1679,7 @@ function Game(){
   let rem=Math.min(R.usedL,lm);const nl=[];for(const b of lemons){if(rem<=0){nl.push(b);continue;}if(b.q<=rem)rem-=b.q;else{nl.push({...b,q:b.q-rem});rem=0;}}
   const kept=nl.filter(b=>day+1-b.d<3),spoiled=nl.reduce((s,b)=>s+b.q,0)-kept.reduce((s,b)=>s+b.q,0);
   setLemons(kept);setSugar(s=>Math.max(0,s-R.cups*recipe.h));setIce(i=>ups.includes('cooler')?Math.floor(Math.max(0,i-R.cups*recipe.i)/2):0);
-  const dayCash=(R.closed?0:actCost+LOC[loc].rent)+(helper?HELPER_C:0)+R.fine,interest=loan*LOAN_INT;
+  const dayCash=(R.closed?0:actCost+LOC[loc].rent)+(helper?HELPER_C:0)+R.fine+((W.ev&&W.ev.cost)||0),interest=loan*LOAN_INT;
   setCash(c=>c+R.rev-dayCash-interest);if(loan)setLoan(l=>l*(1+LOAN_INT));
   const profit=R.rev-spentToday-dayCash-interest;
   const tips=[];
@@ -1618,14 +1688,15 @@ function Game(){
   const rres=plans.map(b=>{const d=!R.closed&&b.cups>0?rivalDemand(b,plans,temp,wInfo.fm,W.ev?.dm):{vis:0,br:0,sold:0};
    const sold=Math.min(d.sold,b.cups),miss=Math.max(0,d.sold-b.cups),fines=b.bh.filter(x=>x.caught).reduce((s,x)=>s+(x.id==='rumor'?10:x.id==='signs'?15:0),0);
    const rev=sold*b.pr,spent=Object.values(b.cost).reduce((s,x)=>s+x,0)+fines,profit=Math.round((rev-spent)*10)/10,rr=rng(seed*17+day*31+b.i);
-   let rd=Math.max(-6,Math.min(6,Math.round(sold*(d.br-0.45)*0.4)))-Math.min(6,miss)+(b.ups.includes('cups')?1:0)+(b.mk.includes('taste')&&b.rec.l>=3?3:0)+(b.mk.includes('social')&&rr()<0.5?2:0)
+   const vipT=W.vip&&sold>0?relQ(b.rec,temp,MIX)>=VIP_Q:null;
+   let rd=((W.ev&&W.ev.rep)||0)+(vipT===true?8:vipT===false?-6:0)+Math.max(-6,Math.min(6,Math.round(sold*(d.br-0.45)*0.4)))-Math.min(6,miss)+(b.ups.includes('cups')?1:0)+(b.mk.includes('taste')&&b.rec.l>=3?3:0)+(b.mk.includes('social')&&rr()<0.5?2:0)
     -5*hitOn(plans,b.i,'rumor').length-(myRumorOn===b.i?5:0)-b.bh.filter(x=>x.caught).reduce((s,x)=>s+(x.id==='rumor'?8:x.id==='signs'?15:0),0);
    const nrep=Math.max(0,Math.min(100,Math.round(b.st.rep+rd+(50-b.st.rep-rd)*0.06)));
-   return{b,sold,vis:d.vis,miss,rev,profit,fines,nrep,cash:Math.round((b.cash+rev-fines)*10)/10};});
-  setRv(rres.map(x=>({cash:x.cash,rep:x.nrep,ups:x.b.ups,tot:x.b.st.tot+x.profit})));
+   return{b,sold,vis:d.vis,miss,rev,profit,fines,nrep,vipT,cash:Math.round((b.cash+rev-fines)*10)/10};});
+  setRv(rres.map(x=>({cash:x.cash,rep:x.nrep,ups:x.b.ups,tot:x.b.st.tot+x.profit,boost:x.vipT===true})));
   const onMe=id=>plans.filter(b=>b.bh.some(x=>x.id===id&&x.target==='me'));
   const rumorsOnMe=onMe('rumor').filter(b=>!b.bh.find(x=>x.id==='rumor').caught).length;
-  const newRep=Math.max(0,Math.min(100,rep+R.repD-5*rumorsOnMe+Math.round((50-rep-R.repD)*0.06)));
+  const newRep=Math.max(0,Math.min(100,rep+R.repD-5*rumorsOnMe+((W.ev&&W.ev.rep)||0)+Math.round((50-rep-R.repD)*0.06)));
   onMe('ads').forEach(b=>tips.push({k:'bad',t:`📢 ${b.em} ${b.n} הריץ קמפיין נגדך: איבדת כ-18% מהלקוחות`}));
   onMe('rumor').forEach(b=>{const c=b.bh.find(x=>x.id==='rumor').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מפיץ עליך שמועות: −8 מוניטין לו וקנס ₪10`}:{k:'bad',t:'🗣️ מישהו הפיץ עליך שמועות: −5 מוניטין'});});
   onMe('signs').forEach(b=>{const c=b.bh.find(x=>x.id==='signs').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מוריד לך שלטים: −15 מוניטין לו וקנס ₪15`}:{k:'bad',t:'🚫 מישהו הוריד לך את השלטים: פחות אנשים ראו את הדוכן'});});
@@ -1641,10 +1712,10 @@ function Game(){
   if(!tips.length)tips.push({k:'good',t:'יום מאוזן — המשך כך'});
   setVipBoost(R.vip===true);
   const rpt={day,profit,rev:R.rev,exp:spentToday+dayCash+interest,sold:R.sold,cups:R.cups,visitors:R.visitors,walk:R.walk,miss:R.miss,repD:newRep-rep,rep:newRep,tips,byType:R.byType,whys:R.whys,comps:rres.map(x=>{const b=x.b;return{em:b.em,n:b.n,pr:b.pr,rec:spy?b.rec:null,sold:x.sold,profit:x.profit,rep:x.nrep,
-    seen:[...b.mk,...b.news.map(u=>'+'+u),...(b.helper?['helper']:[]),...b.bh.filter(z=>z.id==='ads'||z.caught).map(z=>'!'+z.id)],
+    seen:[...(x.vipT===true?['vip+']:x.vipT===false?['vip-']:[]),...b.mk,...b.news.map(u=>'+'+u),...(b.helper?['helper']:[]),...b.bh.filter(z=>z.id==='ads'||z.caught).map(z=>'!'+z.id)],
     hidden:spy?{fc:b.fc?b.fc.lv:0,rs:b.rs,spy:b.spy,bh:b.bh.filter(z=>z.id!=='ads'&&!z.caught).map(z=>z.id+':'+(z.target==='me'?'me':plans[z.target]?.n))}:null};}),
    w:W.w,t:temp,fc:fcast?{w:fcast.w,t:fcast.t}:null,recipe:{...recipe},price,quality,tP:{...tP},acts:[...acts],ev:W.ev?W.ev.n:null,vipDay:!!W.vip,inspDay:!!W.insp,closed:!!R.closed,
-   cost:{...spentCat.current,mkt:R.closed?0:actCost,rent:R.closed?0:LOC[loc].rent,helper:helper?HELPER_C:0,fine:(spentCat.current.fine||0)+R.fine,interest:Math.round(interest*10)/10}};
+   cost:{...spentCat.current,mkt:R.closed?0:actCost,rent:R.closed?0:LOC[loc].rent,helper:helper?HELPER_C:0,fine:(spentCat.current.fine||0)+R.fine+((W.ev&&W.ev.cost)||0),interest:Math.round(interest*10)/10}};
   spentCat.current={};
   setRep(newRep);setReport(rpt);setHistory(h=>[...h,rpt]);setSpentToday(0);setPhase('report');};
  const nextEvening=()=>{if(day>=DAYS){setPhase('over');return;}
@@ -1677,7 +1748,7 @@ function Game(){
   {k:'product',ic:'👥',t:'מי מגיע היום',v:TYPES.map(k=>`${CT[k].em} ${Math.round(MIX[k]*100)}%`).join(' · '),st:'ok',note:mixToday.why.length?mixToday.why.join(' · '):'יום רגיל'},
   {k:'intel',ic:'📋',t:'סקר שוק',v:research?`~${buyers} יקנו מתוך ~${visitors} מבקרים`:`לא נקנה · ₪${RESEARCH_C} כדי לדעת מי יקנה ולמה`,st:research?'ok':'opt'},
   {k:'product',ic:'🥤',t:'מתכון',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · איכות ${quality}`,st:badFx.some(e=>e.v[1]==='bad')?'warn':'ok',note:badFx.length?badFx.map(e=>e.v[0]).join(' · '):null},
-  ...(W.vip?[{k:'product',ic:'🎩',t:'מבקר אוכל היום',v:`רוצה איכות 65+ · שלך: ${quality}`,st:quality>=65?'ok':'warn',note:quality<65?'שפר את המתכון כדי שיתלהב':null}]:[]),
+  ...(W.vip?[{k:'product',ic:'🎩',t:'מבקר אוכל היום',v:`רוצה איכות ${VIP_Q}+ · שלך: ${quality}`,st:quality>=VIP_Q?'ok':'warn',note:quality<VIP_Q?'נסה מתכונים במטבח: 100 = הכוס הכי טובה להיום':null}]:[]),
   {k:'product',ic:'💰',t:'מחיר',v:`₪${price} לכוס · עלות ${fmt2(costCup)}`,st:research&&bestPrice!==price?'warn':'ok',note:research&&bestPrice!==price?`העוזר: במחיר ₪${bestPrice} תכניס יותר`:null,act:research&&bestPrice!==price?{label:`קבע ₪${bestPrice}`,fn:()=>setPrice(bestPrice)}:null},
   {k:'product',ic:'🔢',t:'כמה להכין',v:`${cups} כוסות (אפשר עד ${maxCups})`,st:cups===0?'bad':research&&buyers>cups*1.15?'warn':'ok',note:cups===0?'אין כוסות — הדוכן ייסגר':research&&buyers>cups*1.15?`צפויים ~${buyers} קונים ויש רק ${cups} כוסות — ${cups<maxCups?'אפשר להכין יותר':`כדי להכין יותר צריך עוד ${limiter?.em} ${limiter?.n}`}`:null},
   {k:'mkt',ic:'📣',t:'שיווק להיום',v:mktNames.length?mktNames.join(', '):'לא נבחר',st:mktNames.length?'ok':'opt'},
@@ -1696,7 +1767,7 @@ function Game(){
 
  const News=()=>{const ok=tasks.filter(t=>t.st==='ok'||t.st==='opt').length;return <div className="pane">
   <div className="hub-head">
-   <div><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הכנות למחר. עבור על הרשימה, ואז "המשך ללילה".':'הכנות להיום. עבור על הרשימה, ואז "פתח את הדוכן".'}</p></div>
+   <div><h2>{isEve?`ערב · לפני יום ${day}`:`בוקר · יום ${day}`}</h2><p>{isEve?'הכנות למחר. עבור על הרשימה, ואז "לישון" ועוברים לבוקר.':'הכנות להיום. עבור על הרשימה, ואז "פתח את הדוכן".'}</p></div>
    <div className={"hub-ring"+(attention.length?' warn':'')} style={{'--p':Math.round(ok/tasks.length*100)+'%'}}><b className="num">{ok}/{tasks.length}</b><small>{attention.length?`${attention.length} לטיפול`:'הכל מוכן'}</small></div>
   </div>
   {isEve?(fcast?<button className="wcard" onClick={()=>setTab('intel')}><span className="wc-e">{WE[fcast.w].em}</span><span className="wc-t"><small>🔮 התחזית שקנית למחר</small><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span></span></button>
@@ -1844,7 +1915,7 @@ function Game(){
     {loan>0?<button className="btn sm" disabled={cash<loan} onClick={()=>{setCash(c=>c-loan);setLoan(0);}}>החזר · {fmt(loan)}</button>:<button className="btn sm ghost" onClick={e=>{setLoan(20);setCash(c=>c+20);flyCoin(e,'+₪20',true);}}>קח ₪20</button>}</div></section>
  </div>;
 
- const seenTxt=c=>c.seen.map(k=>k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
+ const seenTxt=c=>c.seen.map(k=>k==='vip+'?'🎩 המבקר התלהב ממנו':k==='vip-'?'🎩 המבקר התאכזב ממנו':k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
  const hidTxt=h=>[h.fc?['','👂','📡','🛰️'][h.fc]+' תחזית':null,h.rs?'📋 סקר שוק':null,h.spy?'🔭 ריגל':null,...h.bh.map(x=>{const[id,t]=x.split(':');return MK_EM[id]+' '+(id==='rumor'?'שמועות':'הסרת שלטים')+' נגד '+(t==='me'?'אתה':t);})].filter(Boolean).join(' · ');
  const Report=()=>{const r=report;return <div className="report">
   <div className="rp-hero">
@@ -1977,7 +2048,7 @@ function Game(){
    {sel:'fc',tab:'intel',t:'🔮 עכשיו, בערב',s:'התחזית נקנית בערב, לפני שקונים מצרכים. תחזית זולה פחות מדויקת, יקרה מדויקת יותר. בלי תחזית קונים בעיוורון.'},
    {sel:'stock',tab:'stock',t:'🛒 שוק',s:'קונים לימונים, סוכר וקרח לקראת מחר. בלי מצרכים אין לימונדה.'},
    {sel:'product',tab:'product',t:'🥤 מוצר',s:'קובעים מתכון, מחיר וכמה כוסות להכין מחר.'},
-   {sel:'cta',tab:'news',t:'🌙 המשך ללילה',s:'כשסיימת, ממשיכים. בבוקר תראה את מזג האוויר האמיתי ותפתח את הדוכן.'}],
+   {sel:'cta',tab:'news',t:'🌙 לישון',s:'כשסיימת, הולכים לישון ועוברים לבוקר. בבוקר תראה את מזג האוויר האמיתי ותפתח את הדוכן.'}],
   morning:[{sel:'intel',tab:'news',t:'☀️ בוקר: עוד מודיעין',s:'עכשיו אפשר לקנות סקר שוק: כמה יקנו ולמה, לפי סוג לקוח'+(nComp>0?', וריגול על המחירים והמתכונים של המתחרים':'')+'. כדאי לשקול לפני שפותחים את הדוכן.'}],
   report:[{sel:'dash',t:'📊 הנתונים שלך',s:'כל הגרפים, ההשוואה למתחרים וההיסטוריה של ההחלטות נמצאים כאן, בכל רגע.'}]};
  const tutDone=k=>{try{return(JSON.parse(localStorage.getItem('lm-tut')||'[]')).includes(k);}catch(_){return false;}};
@@ -2106,7 +2177,7 @@ function Game(){
 const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
  const lastTab=useRef(tab);const slideDir=navIdx(tab)>=navIdx(lastTab.current)?'from-l':'from-r';useEffect(()=>{lastTab.current=tab;},[tab]);
  const NAV=[['news','🏠','מרכז'],['product','🥤','מוצר'],['stock','🛒','שוק'],['mkt','📣','שיווק'],['intel','🔍','מודיעין'],['biz','🏪','עסק']];
- const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':'המשך ללילה ›'):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום המשחק ›':`לערב · לפני יום ${day+1} ›`):'';
+ const ctaLabel=phase==='evening'?(shopCost>cash?'אין מספיק כסף':`🌙 לישון · לבוקר של יום ${day} ›`):phase==='morning'?(cups>0?`🍋 פתח את הדוכן · ${cups} כוסות`:'סגור את הדוכן היום'):phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ דלג לסוף'):phase==='report'?(day>=DAYS?'סיום המשחק ›':`לערב · לפני יום ${day+1} ›`):'';
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
  const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
@@ -2167,7 +2238,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   {setOpen&&Settings()}
   {dashOpen&&Dash()}
   {Coach()}
-  {show&&<SkyShow key={show.kind+show.l1} kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} onDone={()=>setShow(s=>s&&s.next||null)}/>}
+  {show&&<SkyShow key={show.kind+show.l1} kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} ev={show.ev} onDone={()=>setShow(s=>s&&s.next||null)}/>}
  </div>;
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<Game/>);
