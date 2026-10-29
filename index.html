@@ -1141,17 +1141,16 @@ const sbSession=async nick=>{let s=sbLoad();
  const r=await fetch(SB_URL+'/auth/v1/signup',{method:'POST',headers:sbH(),body:JSON.stringify({data:{display_name:nick}})});
  const j=await r.json().catch(()=>({}));if(!r.ok||!j.access_token)throw new Error(j.error_code==='anonymous_provider_disabled'||/anonymous/i.test(j.msg||j.message||'')?'off':'net');
  s={uid:j.user.id,tok:j.access_token,refresh:j.refresh_token,exp:Date.now()/1000+j.expires_in,nick};sbSave(s);return s;};
-const sbSubmit=async(nick,g)=>{const s=await sbSession(nick);
- if(s.nick!==nick){await fetch(SB_URL+'/rest/v1/profiles?id=eq.'+s.uid,{method:'PATCH',headers:sbH(s.tok),body:JSON.stringify({username:nick})});sbSave({...s,nick});}
- const r=await fetch(SB_URL+'/rest/v1/game_results',{method:'POST',headers:{...sbH(s.tok),Prefer:'return=minimal'},body:JSON.stringify({user_id:s.uid,score:g.tot,difficulty:g.diff,competitors:g.n,stars:g.st,reputation_final:g.rep,cups_sold:g.sold})});
- if(!r.ok)throw new Error('net');return s.uid;};
-const sbTop=async(diff,n)=>{const q='difficulty=eq.'+diff+'&competitors=eq.'+n+'&created_at=gte.'+SB_SINCE;
+const sbRpc=async(fn,body,tok)=>{const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:sbH(tok),body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'net');return j;};
+const sbStart=async(diff,n)=>{const s=await sbSession((sbLoad()||{}).nick||'שחקן');return sbRpc('lm_start_game',{p_difficulty:diff,p_competitors:n},s.tok);};
+const sbSubmit=async(gid,nick,g,days)=>{const s=await sbSession(nick);const j=await sbRpc('lm_submit',{p_game:gid,p_nick:nick,p_score:g.tot,p_stars:g.st,p_rep:g.rep,p_cups:g.sold,p_days:days},s.tok);sbSave({...sbLoad(),nick});return{...j,uid:s.uid};};
+const sbTop=async(diff,n)=>{const q='difficulty=eq.'+diff+'&competitors=eq.'+n+'&game_id=not.is.null';
  const r=await fetch(SB_URL+'/rest/v1/game_results?select=score,stars,cups_sold,created_at,user_id,profiles(username)&'+q+'&order=score.desc&limit=10',{headers:sbH()});
  if(!r.ok)throw new Error('net');const rows=await r.json();
  const c=await fetch(SB_URL+'/rest/v1/game_results?select=id&'+q,{method:'HEAD',headers:{...sbH(),Prefer:'count=exact',Range:'0-0'}});
- const total=+((c.headers.get('content-range')||'/0').split('/')[1])||rows.length;return{rows,total,q};};
-const sbRank=async(q,score)=>{const c=await fetch(SB_URL+'/rest/v1/game_results?select=id&'+q+'&score=gt.'+score,{method:'HEAD',headers:{...sbH(),Prefer:'count=exact',Range:'0-0'}});
- return 1+(+((c.headers.get('content-range')||'/0').split('/')[1])||0);};
+ const total=+((c.headers.get('content-range')||'/0').split('/')[1])||rows.length;return{rows,total};};
+const SB_ERR={'too fast':'המשחק הסתיים מהר מדי בשביל להיות אמיתי','already submitted':'התוצאה של המשחק הזה כבר נשלחה','too old':'המשחק התחיל לפני יותר מיומיים','bad nickname':'הכינוי לא תקין','score too high':'התוצאה גבוהה מדי ביחס למה שאפשר במשחק',
+ 'totals do not match':'הנתונים של הימים לא מסתדרים עם הסיכום','impossible day':'אחד הימים במשחק לא אפשרי','stars do not match':'הכוכבים לא מתאימים לרווח','unknown game':'המשחק לא נרשם בשרת'};
 const BAD_NICK=['זונה','זין','מניאק','שרמוט','בן זונה','fuck','shit','bitch','dick','porn','sex','nazi','hitler'];
 const nickOk=n=>n.length>=2&&n.length<=16&&/^[\p{L}\p{N} _.\-]+$/u.test(n)&&!BAD_NICK.some(b=>n.toLowerCase().includes(b));
 
@@ -1352,7 +1351,7 @@ const SkyShow=({kind,wx,line1,line2,onDone,ups,item})=>{useEffect(()=>{const s=s
 
 /* ───────── The game ───────── */
 function Game(){
- const [seed]=useState(()=>Date.now()%100000);
+ const [seed,setSeed]=useState(()=>Date.now()%100000),[gameId,setGameId]=useState(null),[starting,setStarting]=useState(false);
  const world=useMemo(()=>buildWorld(seed),[seed]);
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
@@ -1578,7 +1577,7 @@ function Game(){
   </div>:setPage==='privacy'?<div className="sheet-b legal">
    <h4>מה אנחנו אוספים</h4><p>המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה. המידע היחיד שיוצא מהמכשיר הוא תוצאה שבחרת לשלוח לטבלת השיאים (ראו למטה).</p>
    <h4>מה נשמר במכשיר</h4><p>רק ההגדרות שלך (סאונד ונגישות) נשמרות בדפדפן במכשיר שלך, כדי שלא תצטרך לבחור אותן שוב. הן לא נשלחות לשום מקום. אפשר למחוק אותן בכפתור למטה.</p>
-   <h4>טבלת שיאי הקהילה</h4><p>רק אם תבחר לשלוח תוצאה בסוף משחק: נשלחים הכינוי שבחרת והתוצאה (רווח, כוכבים, כוסות, מוניטין, רמת קושי ומספר מתחרים) לשרת של Supabase, והם מוצגים לכל השחקנים. לא נשלחים שם, אימייל או כל פרט אישי אחר. אל תשתמש בשם האמיתי שלך ככינוי. כדי למחוק תוצאות, כתוב לנו: alwaysbusinessday@gmail.com.</p>
+   <h4>טבלת שיאי הקהילה</h4><p>כשמתחילים משחק, נרשם בשרת מזהה משחק אנונימי (רמת קושי ומספר מתחרים, בלי שום פרט אישי), כדי שאפשר יהיה לוודא שתוצאות בטבלה אמיתיות. רק אם תבחר לשלוח תוצאה בסוף משחק: נשלחים הכינוי שבחרת, התוצאה (רווח, כוכבים, כוסות ומוניטין) וסיכום של כל יום (מחיר, כוסות, הכנסות ורווח) לבדיקה לשרת של Supabase, והם מוצגים לכל השחקנים. לא נשלחים שם, אימייל או כל פרט אישי אחר. אל תשתמש בשם האמיתי שלך ככינוי. כדי למחוק תוצאות, כתוב לנו: alwaysbusinessday@gmail.com.</p>
    <h4>התקדמות במשחק</h4><p>התקדמות המשחק לא נשמרת כרגע. רענון הדף מתחיל משחק חדש.</p>
    <h4>שירותים חיצוניים</h4><p>כדי לטעון את המשחק הדפדפן מוריד גופנים מ-Google Fonts וקוד מ-cdnjs (Cloudflare), והאתר מאוחסן ב-Vercel. כמו בכל אתר, שירותים אלה רואים פרטים טכניים כמו כתובת IP. המשחק לא משתמש בעוגיות פרסום או במעקב.</p>
    <button className="btn ghost" onClick={()=>{try{localStorage.removeItem('lm-cfg');}catch(_){}setCfgS({...CFG0});}}>🗑️ מחק את ההגדרות השמורות</button>
@@ -1923,8 +1922,9 @@ function Game(){
  const [cb,setCb]=useState({diff:'medium',n:2,data:null,err:null,loading:false}),[sent,setSent]=useState(null),[nick,setNick]=useState(()=>(sbLoad()||{}).nick||''),[cbOpen,setCbOpen]=useState(false);
  const loadBoard=async(d,n)=>{setCb(c=>({...c,diff:d,n,loading:true,err:null}));try{const data=await sbTop(d,n);setCb(c=>({...c,data,loading:false}));return data;}catch(e){setCb(c=>({...c,loading:false,err:'net'}));}};
  const sendScore=async()=>{const g=(finalRec&&finalRec.games||[]).find(x=>x.at===finalRec.at);if(!g||!nickOk(nick.trim()))return;
-  setSent({state:'sending'});try{const uid=await sbSubmit(nick.trim(),g);const data=await loadBoard(diff,nComp);const rank=data?await sbRank(data.q,g.tot):null;setSent({state:'ok',uid,rank,total:data?.total});sfx('sparkle');}
-  catch(e){setSent({state:e.message==='off'?'off':'err'});}};
+  const days=history.map(h=>({profit:Math.round(h.profit*100)/100,rev:h.rev,sold:h.sold,cups:h.cups,price:h.price}));
+  setSent({state:'sending'});try{const j=await sbSubmit(gameId,nick.trim(),g,days);await loadBoard(diff,nComp);setSent({state:'ok',uid:j.uid,rank:j.rank,total:j.total});sfx('sparkle');}
+  catch(e){setSent({state:e.message==='off'?'off':'err',why:SB_ERR[e.message]});}};
  const Board=({mine})=>{const d=cb.data;return <>
   {cb.loading&&<div className="hint">טוען…</div>}
   {cb.err&&<div className="note">אין חיבור לטבלת השיאים כרגע. נסה שוב מאוחר יותר.</div>}
@@ -1939,12 +1939,12 @@ function Game(){
    {Board({mine:(sbLoad()||{}).uid})}<div className="hint">משווים רק משחקים עם אותה רמת קושי ואותו מספר מתחרים</div></div></div></div>;
 
  const CommunityPanel=()=><section className="blk"><div className="blk-h"><h3>🌍 שיאי הקהילה</h3><span className="tag">{DIFF[diff].n} · {nComp?nComp+' מתחרים':'לבד'}</span></div>
-  {!sent||sent.state==='err'?<>
+  {!gameId?<div className="note">המשחק הזה התחיל בלי חיבור לאינטרנט, ולכן אי אפשר לאמת אותו ולהכניס אותו לטבלה. במשחק הבא, עם חיבור, זה יעבוד.</div>:!sent||sent.state==='err'?<>
    <p className="cb-p">רוצה להופיע בטבלה? בחר כינוי. יפורסמו רק הכינוי והתוצאה, בלי שם אמיתי ובלי הרשמה.</p>
    <div className="cb-row"><input className="cb-in" value={nick} maxLength={16} placeholder="כינוי (2–16 תווים)" onChange={e=>setNick(e.target.value)} aria-label="כינוי"/>
     <button className="btn sm" disabled={!nickOk(nick.trim())} onClick={sendScore}>📤 שלח</button></div>
    {nick.trim()&&!nickOk(nick.trim())&&<div className="hint">כינוי של 2–16 אותיות או מספרים, בלי מילים פוגעניות</div>}
-   {sent&&sent.state==='err'&&<div className="note">השליחה נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.</div>}
+   {sent&&sent.state==='err'&&<div className="note">{sent.why?'השרת דחה את התוצאה: '+sent.why:'השליחה נכשלה. בדוק את החיבור לאינטרנט ונסה שוב.'}</div>}
   </>:sent.state==='sending'?<div className="hint">שולח…</div>
   :sent.state==='off'?<div className="note">טבלת השיאים עוד לא פתוחה. התוצאה נשמרה אצלך במכשיר.</div>
   :<><div className="cb-rank">אתה במקום <b className="num">{sent.rank}</b> מתוך <b className="num">{sent.total}</b> שחקנים בהגדרות האלה</div>{Board({mine:sent.uid})}</>}
@@ -2102,7 +2102,10 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
  const cta=()=>{if(phase==='sim'){if(sim?.done)finishDay();else{simFast.current=true;setSim(s=>({...s}));}return;}onContinue();};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
  const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
- const start=()=>{setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});};
+ const start=async()=>{setStarting(true);
+  // register the game on the server (it picks the seed); offline it still plays, just without the community board
+  try{const j=await Promise.race([sbStart(diff,nComp),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),4000))]);if(j&&j.id){setSeed(j.seed);setGameId(j.id);}}catch(_){setGameId(null);}
+  setStarting(false);setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});};
  if(phase==='title'||phase==='setup')return <div className="app bg-night intro">
   <WxLayer kind="night"/>
   <div className="intro-gear">{Gear()}</div>
@@ -2123,7 +2126,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
    <div className="locs four">{[0,1,2,3].map(n=><button key={n} className={"loc"+(nComp===n?' on':'')} onClick={()=>setNComp(n)}><span>{n===0?'🌳':['','🧍','🧍🧍','🧍🧍🧍'][n]}</span><b>{n===0?'לבד':n}</b><small>{n===0?'כל הלקוחות שלך':n===1?'מתחרה':'מתחרים'}</small></button>)}</div>
    {nComp>0&&<div className="rivals">{comps.map(c=><div key={c.id} className="rival"><span className="it-e">{c.em}</span><div className="it-t"><b>{c.n}</b><span>{c.tag}</span></div></div>)}</div>}
    <div className="note">💡 בפעם הראשונה? קלה ובלי מתחרים.</div>
-   <div className="intro-btns"><button className="btn ghost" onClick={()=>setPhase('title')}>‹ חזרה</button><button className="cta" onClick={start}>התחל משחק ›</button></div>
+   <div className="intro-btns"><button className="btn ghost" onClick={()=>setPhase('title')}>‹ חזרה</button><button className="cta" disabled={starting} onClick={start}>{starting?'מכין את הרחוב…':'התחל משחק ›'}</button></div>
   </div>}
  </div>;
  return <div className={"app sky-"+skyKind+" bg-"+wxKind}>
