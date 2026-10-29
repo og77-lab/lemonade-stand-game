@@ -668,6 +668,17 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .dlog{display:grid;grid-template-columns:48px 1fr;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .dlog span{color:var(--dim)}
 
+/* ── Tutorial spotlights ── */
+.coach{position:fixed;inset:0;z-index:90;pointer-events:none}
+.coach-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(5,6,15,.72),0 0 0 3px var(--lemon),0 0 24px 6px rgba(255,210,63,.5);transition:all .35s var(--ease-out);animation:pulseRing 1.4s ease-in-out infinite}
+@keyframes pulseRing{50%{box-shadow:0 0 0 9999px rgba(5,6,15,.72),0 0 0 5px var(--lemon),0 0 30px 10px rgba(255,210,63,.6)}}
+.coach-dim{position:fixed;inset:0;background:rgba(5,6,15,.72)}
+.coach-tip{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;pointer-events:auto;background:var(--panel);border:2px solid var(--lemon);border-radius:16px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.5);animation:pop .3s var(--spring)}
+.coach-tip b{font-family:var(--f-display);font-size:18px;font-weight:600;color:var(--lemon)}
+.coach-tip p{margin:6px 0 12px;font-size:14px;line-height:1.55}
+.coach-b{display:flex;align-items:center;gap:8px}
+.coach-n{flex:1;font-size:12px;color:var(--dim)}
+
     /* ── Street scene (simulation) ── */
     .st-scene { position: relative; height: 320px; border-radius: 26px; overflow: hidden; isolation: isolate; font-family: 'Rubik', sans-serif;
       background: linear-gradient(180deg, #4FC3F7 0%, #A5DEF8 55%, #E3F5FD 100%);
@@ -1421,6 +1432,8 @@ function Game(){
    <div className="set-grp">{Toggle({on:cfg.motion==='reduce',set:v=>setCfg({motion:v?'reduce':'auto'}),label:'🐢 פחות תנועה',sub:'מבטל אנימציות וחפצים מעופפים'})}
     {Toggle({on:cfg.big,set:v=>setCfg({big:v}),label:'🔠 טקסט גדול',sub:'מגדיל את כל המסך ב-15%'})}
     {Toggle({on:cfg.hc,set:v=>setCfg({hc:v}),label:'🌓 ניגודיות גבוהה',sub:'טקסט בהיר יותר וגבולות ברורים'})}</div>
+   <div className="cl-h">🎓 הדרכה</div>
+   <div className="set-grp"><button className="set-row" onClick={()=>{try{localStorage.removeItem('lm-tut');}catch(_){}setSetOpen(false);if(phase==='evening'||phase==='morning')setTut({k:'intro',i:0});}}><span className="set-t"><b>🔁 הצג הדרכה שוב</b><small>{phase==='evening'||phase==='morning'?'מתחיל עכשיו':'יופיע במשחק הבא'}</small></span><span className="set-go">‹</span></button></div>
    <div className="cl-h">ℹ️ מידע</div>
    <div className="set-grp">{[['terms','📜','תנאי שימוש'],['privacy','🔒','פרטיות'],['a11y','♿','הצהרת נגישות']].map(([k,em,n])=><button key={k} className="set-row" onClick={()=>setSetPage(k)}><span className="set-t"><b>{em} {n}</b></span><span className="set-go">‹</span></button>)}</div>
    {phase!=='title'&&phase!=='setup'&&<button className="btn ghost set-quit" onClick={()=>{setConfirm({t:'לצאת למסך הפתיחה?',s:'המשחק הנוכחי לא יישמר.',yes:'כן, לצאת',no:'להמשיך לשחק',onYes:()=>location.reload(),onNo:()=>{}});setSetOpen(false);}}>🏠 יציאה למסך הפתיחה</button>}
@@ -1636,7 +1649,7 @@ function Game(){
  const Intel=()=> <div className="pane">
   <Banner kind="spy" ic="🕵️" title="חדר המודיעין" sub="מידע עולה כסף — אבל חוסך טעויות" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
-  <section className="blk"><div className="blk-h"><h3>🔮 תחזית מזג אוויר ליום {day}</h3><span className="tag">{isEve?'נקנית בערב':'נקנתה אתמול בערב'}</span></div>
+  <section className="blk" data-tut="fc"><div className="blk-h"><h3>🔮 תחזית מזג אוויר ליום {day}</h3><span className="tag">{isEve?'נקנית בערב':'נקנתה אתמול בערב'}</span></div>
    {fcast?<div className={"fc-card"+(fresh('fc'+day)?' reveal':'')}><span className="fc-ball" aria-hidden="true">🔮</span><span className="fc-e">{WE[fcast.w].em}</span><div><b>{WE[fcast.w].n} · {fcast.t}°</b><span>דיוק ~{Math.round(fcast.ac*100)}%{fcast.ev?` · ${fcast.ev}`:''}</span>{!isEve&&<span className="fc-v">בפועל: {wInfo.n} {temp}° — {fcast.t===temp?'צדקה ✓':`טעות של ${Math.abs(fcast.t-temp)}°`}</span>}</div></div>
     :!isEve?<div className="note">לא קנית תחזית אתמול בערב. היום: {wInfo.em} {wInfo.n} {temp}°</div>
     :<div className="shop">{FORECAST.map(f=><div key={f.lv} className="item"><span className="it-e">{f.em}</span><div className="it-t"><b>{f.n} <em className="acc">דיוק ~{Math.round(f.ac*100)}%</em></b><span>{f.d}</span></div>
@@ -1713,6 +1726,37 @@ function Game(){
    <div className="chart">{history.map(h=><div key={h.day} className="ch-col"><span className={"ch-bar "+(h.profit>=0?'g':'r')} style={{height:Math.max(4,Math.abs(h.profit)/mx*100)+'%'}}/><small className="num">{fmt(h.profit)}</small><i>{h.day}</i></div>)}</div></div>
   <button className="btn ghost" onClick={()=>setDashOpen(true)}>📊 כל הנתונים של העונה ›</button>
   <button className="cta" onClick={()=>location.reload()}>עונה חדשה</button></div>;};
+
+ /* ── Tutorial: a few spotlights on the first evening, then one tip the first time each moment comes ── */
+ const TUT={
+  intro:[{sel:'news',tab:'news',t:'🏠 מרכז הבקרה',s:'רשימת המשימות של היום. כשהכל ירוק, אתה מוכן. לחיצה על משימה לוקחת אותך למקום הנכון.'},
+   {sel:'intel',tab:'intel',t:'🔍 מודיעין: הלב של המשחק',s:'כאן קונים ידע: תחזית מזג אוויר, סקר שוק'+(nComp>0?' וריגול אחרי המתחרים':'')+'. ככל שהמידע איכותי יותר, ההחלטות שלך מחושבות יותר. אבל כל מידע עולה כסף, ולבחור מה שווה לקנות זה חלק מהאתגר.'},
+   {sel:'fc',tab:'intel',t:'🔮 עכשיו, בערב',s:'התחזית נקנית בערב, לפני שקונים מצרכים. תחזית זולה פחות מדויקת, יקרה מדויקת יותר. בלי תחזית קונים בעיוורון.'},
+   {sel:'stock',tab:'stock',t:'🛒 שוק',s:'קונים לימונים, סוכר וקרח לקראת מחר. בלי מצרכים אין לימונדה.'},
+   {sel:'product',tab:'product',t:'🥤 מוצר',s:'קובעים מתכון, מחיר וכמה כוסות להכין מחר.'},
+   {sel:'cta',tab:'news',t:'🌙 המשך ללילה',s:'כשסיימת, ממשיכים. בבוקר תראה את מזג האוויר האמיתי ותפתח את הדוכן.'}],
+  morning:[{sel:'intel',tab:'news',t:'☀️ בוקר: עוד מודיעין',s:'עכשיו אפשר לקנות סקר שוק: כמה יקנו ולמה, לפי סוג לקוח'+(nComp>0?', וריגול על המחירים והמתכונים של המתחרים':'')+'. כדאי לשקול לפני שפותחים את הדוכן.'}],
+  report:[{sel:'dash',t:'📊 הנתונים שלך',s:'כל הגרפים, ההשוואה למתחרים וההיסטוריה של ההחלטות נמצאים כאן, בכל רגע.'}]};
+ const tutDone=k=>{try{return(JSON.parse(localStorage.getItem('lm-tut')||'[]')).includes(k);}catch(_){return false;}};
+ const tutMark=k=>{try{const d=JSON.parse(localStorage.getItem('lm-tut')||'[]');if(!d.includes(k))localStorage.setItem('lm-tut',JSON.stringify([...d,k]));}catch(_){}};
+ const [tut,setTut]=useState(null),[tutRect,setTutRect]=useState(null);
+ const tutStart=k=>{if(!tutDone(k))setTut({k,i:0});};
+ useEffect(()=>{if(phase==='evening'&&day===1)tutStart('intro');else if(phase==='morning')tutStart('morning');else if(phase==='report')tutStart('report');},[phase]);
+ const tutStep=tut&&TUT[tut.k][tut.i];
+ useEffect(()=>{if(!tutStep)return;if(tutStep.tab)setTab(tutStep.tab);
+  const place=()=>{const el=document.querySelector('[data-tut="'+tutStep.sel+'"]');setTutRect(el?el.getBoundingClientRect():null);};
+  // bring it into view once the tab has rendered, then measure again after the tab's slide-in settles
+  const t=setTimeout(()=>{const el=document.querySelector('[data-tut="'+tutStep.sel+'"]');if(el&&el.closest('.main'))el.scrollIntoView({block:'start',behavior:'instant'});place();},60),t2=setTimeout(place,420);
+  addEventListener('resize',place);return()=>{clearTimeout(t);clearTimeout(t2);removeEventListener('resize',place);};},[tut&&tut.k,tut&&tut.i]);
+ const tutNext=()=>{sfx('tap');if(tut.i+1<TUT[tut.k].length)setTut({...tut,i:tut.i+1});else{tutMark(tut.k);setTut(null);}};
+ const tutSkip=()=>{['intro','morning','report'].forEach(tutMark);setTut(null);};
+ const Coach=()=>{if(!tutStep||show||setOpen||dashOpen||confirm)return null;const r=tutRect,below=r&&r.top<innerHeight/2,last=tut.i+1>=TUT[tut.k].length;
+  return <div className="coach" key={tut.k+tut.i}>
+   {r?<div className="coach-hole" style={{left:r.left-6,top:r.top-6,width:r.width+12,height:r.height+12}}/>:<div className="coach-dim"/>}
+   <div className="coach-tip" role="dialog" aria-label={tutStep.t} style={below?{top:Math.min(innerHeight-220,r.bottom+14)}:{bottom:r?Math.max(12,innerHeight-r.top+14):'40%'}}>
+    <b>{tutStep.t}</b><p>{tutStep.s}</p>
+    <div className="coach-b"><span className="coach-n">{TUT[tut.k].length>1?`${tut.i+1}/${TUT[tut.k].length}`:''}</span><button className="chip" onClick={tutSkip}>דלג על ההדרכה</button><button className="btn sm" onClick={tutNext}>{last?'הבנתי ✓':'הבא ›'}</button></div>
+   </div></div>;};
 
  /* ── Dashboard: the whole season in numbers ── */
  const [dashOpen,setDashOpen]=useState(false);
@@ -1850,7 +1894,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   <header className="top">
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{DAYS}</i></b></div>
-    <div className="t-side">{Gear()}<button className="gear" aria-label="הנתונים שלי" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button><div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div></div>
+    <div className="t-side">{Gear()}<button data-tut="dash" className="gear" aria-label="הנתונים שלי" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button><div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div></div>
    </div>
    <div className="res">
     <span data-hud="l">🍋 <b className="num"><Roll v={lm}/></b>{phase==='evening'&&buy.l>0&&<i>←{lm+buy.l}</i>}</span>
@@ -1868,12 +1912,13 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   {phase!=='over'&&<div className="cta-bar">
    {phase==='morning'&&<div className="cta-info">{research?<>~{buyers} יקנו מתוך ~{visitors} · ~{fmt(Math.min(buyers,cups)*price)}</>:<>{cups} כוסות × ₪{price}{committed>0?` · הוצאות היום ${fmt(committed)}`:''}</>}</div>}
    {phase==='evening'&&<div className="cta-info">{shopCost>0?<>קניות {fmt2(shopCost)} · נשאר {fmt(cash-shopCost)}</>:'עוד לא קנית כלום הערב'}</div>}
-   <button className={"cta"+(phase==='sim'&&!sim?.done?' ghost':'')} disabled={phase==='evening'&&shopCost>cash} onClick={cta}>{ctaLabel}</button>
+   <button data-tut="cta" className={"cta"+(phase==='sim'&&!sim?.done?' ghost':'')} disabled={phase==='evening'&&shopCost>cash} onClick={cta}>{ctaLabel}</button>
   </div>}
-  {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
+  {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} data-tut={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
   {confirm&&<div className="dlg-bg"><div className="dlg"><b>{confirm.t}</b><p>{confirm.s}</p><div className="dlg-b"><button className="btn ghost" onClick={()=>{const f=confirm.onNo;setConfirm(null);f&&f();}}>{confirm.no}</button><button className="btn" onClick={()=>{const f=confirm.onYes;setConfirm(null);f();}}>{confirm.yes}</button></div></div></div>}
   {setOpen&&Settings()}
   {dashOpen&&Dash()}
+  {Coach()}
   {show&&<SkyShow key={show.kind+show.l1} kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} onDone={()=>setShow(s=>s&&s.next||null)}/>}
  </div>;
 }
