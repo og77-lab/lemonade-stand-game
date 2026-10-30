@@ -58,11 +58,14 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .t-cash small{font-size:11px;color:rgba(255,255,255,.7)}
 .t-cash b{font-size:22px;color:var(--lemon);line-height:1.1}
 .t-cash span{font-size:11px;color:var(--warn)}
-.res{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.res span{background:rgba(0,0,0,.25);border-radius:10px;padding:4px 9px;font-size:13px;display:flex;align-items:center;gap:4px}
+/* Stock row stays one line: tighter on phones, and it scrolls sideways rather than wrapping if it still doesn't fit */
+.res{display:flex;gap:6px;margin-top:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.res::-webkit-scrollbar{display:none}
+.res span{background:rgba(0,0,0,.25);border-radius:10px;padding:4px 9px;font-size:13px;display:flex;align-items:center;gap:4px;flex:0 0 auto;white-space:nowrap}
 .res b{font-size:15px}
 .res i{font-style:normal;color:var(--good);font-family:var(--f-display);font-weight:600}
 .res .r{color:var(--bad)}
+@media (max-width:430px){.res{gap:4px}.res span{padding:4px 6px;font-size:12px;gap:3px}.res b{font-size:14px}}
 
 .main{flex:1;min-height:0;overflow-y:auto;padding:12px max(16px,env(safe-area-inset-left,0px)) 12px;animation:paneIn .3s var(--ease-out);scrollbar-width:none}
 .main::-webkit-scrollbar{display:none}
