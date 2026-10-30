@@ -1,8 +1,8 @@
 // Service worker: makes the game installable and playable offline.
-// Pages are network-first (a new deploy shows up right away); scripts, fonts, icons and music are cache-first.
+// Pages and the game engine are network-first (a new deploy shows up right away); libraries, fonts, icons and music are cache-first.
 // Supabase (community records) is never cached.
-const CACHE = 'lemonade-v1';
-const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
+const CACHE = 'lemonade-v2';
+const CORE = ['./', 'index.html', 'engine.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js'];
@@ -27,7 +27,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || req.headers.has('range')) return;
   const same = url.origin === self.location.origin;
   if (!same && !STATIC_HOSTS.includes(url.hostname)) return;
-  if (req.mode === 'navigate' || (same && url.pathname.endsWith('.html'))) {
+  if (req.mode === 'navigate' || (same && /\.(html|js)$/.test(url.pathname))) {
     e.respondWith(fetch(req).then(res => put(req, res)).catch(() => caches.match(req).then(r => r || caches.match('./'))));
     return;
   }
