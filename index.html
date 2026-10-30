@@ -947,6 +947,23 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .hd-grid div{background:var(--panel-2);border-radius:10px;padding:8px 2px;display:flex;flex-direction:column}
 .hd-grid b{font-size:17px}.hd-grid small{font-size:11px;color:var(--dim)}
 .hd-costs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.hd-costs span{background:var(--panel-2);border-radius:999px;padding:4px 10px;font-size:12px}
+
+/* Neighborhood: the live street table and the day's moments */
+.hd-live .hd-lrow{display:grid;grid-template-columns:20px 26px minmax(0,1fr) auto auto 16px;gap:6px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line);font-size:13px;animation:hdIn .4s var(--ease-out) both}
+.hd-live .hd-lrow:last-child{border-bottom:none}
+.hd-lrow.me{background:#2E2A12;border-radius:8px}
+.hd-lrow.up{animation:hdUp 1.2s var(--ease-out)}.hd-lrow.dn{animation:hdDn 1.2s var(--ease-out)}
+.hd-lem{font-size:20px}.hd-ln{display:flex;flex-direction:column;min-width:0}.hd-ln b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-ln small{font-size:11px;color:var(--dim)}
+.hd-lst{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}.hd-lst i{font-style:normal;font-size:11px;background:var(--panel-2);border-radius:999px;padding:2px 6px;white-space:nowrap}
+.hd-lst i.bad{background:#3D1E28;color:#FFD0D8}.hd-lst i.warn{background:#3A3012;color:#FFE58A}
+.hd-lv{display:flex;flex-direction:column;align-items:flex-end}.hd-lv b{color:var(--lemon);font-size:15px}.hd-lv small{font-size:11px;color:var(--dim)}
+.hd-mv{font-size:13px;animation:pop .5s var(--spring) both}.hd-mv.up{color:var(--good)}.hd-mv.dn{color:var(--bad)}
+.hd-mom{display:flex;gap:8px;align-items:baseline;font-size:13.5px;padding:6px 2px;border-bottom:1px solid var(--line);animation:hdIn .45s var(--ease-out) both}
+.hd-mom:last-child{border-bottom:none}.hd-mom span{color:var(--dim);font-size:12px;flex-shrink:0}
+.hd-winners{display:flex;flex-direction:column;gap:4px}
+@keyframes hdIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes hdUp{0%{background:rgba(74,222,128,.28)}100%{background:transparent}}
+@keyframes hdDn{0%{background:rgba(251,113,133,.22)}100%{background:transparent}}
 </style>
 </head>
 <body>
@@ -1516,7 +1533,10 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  const comps=rows.filter(o=>o.id!==me).map(o=>{const m=names[o.id]||{},s=op&&op.stands.find(z=>z.id===o.id)||{mk:[]};
   return{em:m.em,n:m.nick,pr:o.price,sold:o.sold,profit:o.profit,rep:o.rep,hidden:null,
    seen:[...(o.auto==='autopilot'?['auto']:[]),...(o.sick?['sick']:[]),...(o.vip===true?['vip+']:o.vip===false?['vip-']:[]),...s.mk,...(s.helper?['helper']:[]),...o.caught.map(c=>'caught:'+c.trick)]};});
- return{day:d,profit:x.profit,rev:r.rev,exp:sum(x.spent)+sum(r.costs),sold:r.sold,cups:r.cups,visitors:r.visitors,walk:r.walk,miss:r.miss,repD:r.repD,rep:r.rep,tips,byType:r.byType,whys:null,comps,
+ // place in the season table after this day, and before it
+ const placeOn=k=>{const rs=((st.results||{})[k]||[]).slice().sort((a,b)=>b.score-a.score);const i=rs.findIndex(o=>o.id===me);return i<0?null:i+1;};
+ return{day:d,place:placeOn(d),prevPlace:d>1?placeOn(d-1):null,n:rows.length,
+  profit:x.profit,rev:r.rev,exp:sum(x.spent)+sum(r.costs),sold:r.sold,cups:r.cups,visitors:r.visitors,walk:r.walk,miss:r.miss,repD:r.repD,rep:r.rep,tips,byType:r.byType,whys:null,comps,
   recipe:x.plan.recipe,price:x.plan.price,w:op&&op.weather.w,t:op&&op.weather.t,score:st.me.state.tot};};
 
 // The neighborhoods screen: my neighborhoods, open a new one, join with a code. Inside a neighborhood the regular game screens take over.
@@ -1821,7 +1841,9 @@ function Game(){
 
  /* ── Neighborhood mode: the server's day shown in these same screens ── */
  const [,hoodClock]=useState(0),[hoodMsg,setHoodMsg]=useState(null),[hoodAlerts,setHoodAlerts]=useState([]),[hoodCounts,setHoodCounts]=useState({});
- const hoodKey=useRef(''),hoodAfter=useRef(-1);
+ const hoodKey=useRef(''),hoodAfter=useRef(-1),hoodMoves=useRef({}),[hoodMoments,setHoodMoments]=useState(null);
+ // the live table: every stand by its takings so far (prices are public from 08:00, sales are counted as they happen)
+ const hoodLiveOrder=c=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];return op.stands.map(s=>({id:s.id,v:((c[s.id]||{}).sold||0)*s.price})).sort((a,b)=>b.v-a.v).map(x=>x.id);};
  const hst=hood&&hood.st,hNow=hood?Date.now()+hood.skew:0;
  const hoodLoad=async(id=hood&&hood.id)=>{const st=await hoodRpc('lm_hood_state',{p_hood:id});
   // the server runs the days every few minutes; a player who arrives first nudges it
@@ -1877,26 +1899,65 @@ function Game(){
   const pull=async()=>{try{const ev=await hoodRpc('lm_feed',{p_hood:hood.id,p_day:hst.today,p_after:hoodAfter.current});if(!alive||!ev.length)return;hoodAfter.current=ev[ev.length-1].m;
    const mine=ev.filter(e=>e.stand===me&&(e.type==='sale'||e.type==='vip')).map((e,k)=>e.type==='vip'?{id:'v'+e.m,type:'foodie',em:'🎩',buys:!!e.bought,rx:e.ok?'🌟':e.bought?'😤':'💨',isVip:true,sp:''}
     :{id:'c'+e.m+'-'+k+'-'+hoodAfter.current,type:e.cust,em:CT[e.cust].em,buys:true,rx:e.rx,isVip:false,sp:''});
-   setHoodCounts(c=>{const n={...c};ev.forEach(e=>{if(!e.stand)return;const b=n[e.stand]={...(n[e.stand]||{sold:0})};if(e.type==='sale'||(e.type==='vip'&&e.bought))b.sold++;if(e.type==='soldout')b.out=e.at;if(e.type==='sick')b.sick=e.at;if(e.type==='caught')b.caught=1;});return n;});
-   setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,t};}).filter(Boolean)].slice(-4));
+   setHoodCounts(c=>{const n={...c};ev.forEach(e=>{if(!e.stand)return;const b=n[e.stand]={...(n[e.stand]||{sold:0})};if(e.type==='sale'||(e.type==='vip'&&e.bought))b.sold++;if(e.type==='soldout')b.out=e.at;if(e.type==='sick')b.sick=e.at;
+     if(e.type==='caught')b.caught=(b.caught||0)+1;if(e.type==='caught'&&e.victim){const v=n[e.victim]={...(n[e.victim]||{sold:0})};v.saved=1;}if(e.type==='vip')b.vip=e.ok?'🌟':'😤';});
+    // who moved up or down the live table since the last update
+    const before=hoodLiveOrder(c),after=hoodLiveOrder(n);hoodMoves.current=!Object.keys(c).length?{}:Object.fromEntries(after.map((id,i)=>[id,before.indexOf(id)<0?0:before.indexOf(id)-i]));return n;});
+   setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,m:e.m,t,type:e.type};}).filter(Boolean)].slice(-12));
    const closed=ev.some(e=>e.type==='close');setSim(s=>s?{...s,list:[...s.list,...mine],live:!closed}:s);}catch(_){}};
   pull();const t=setInterval(pull,15000);return()=>{alive=false;clearInterval(t);};},[hood&&hood.id,phase,hst&&hst.today]);
+ // the day's moments for its report (once the stands close the whole day is out)
+ useEffect(()=>{if(!hood||phase!=='report'||!report||!hst)return;let alive=true;const names=hoodNames(hst),me=hst.me.id;
+  hoodRpc('lm_feed',{p_hood:hood.id,p_day:report.day,p_after:-1}).then(ev=>{if(!alive)return;
+   setHoodMoments({day:report.day,list:ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,t};}).filter(Boolean).slice(0,14)});}).catch(()=>{});
+  return()=>{alive=false;};},[hood&&hood.id,phase,report&&report.day]);
  const hoodBoard=()=>{const ds=Object.keys(hst.results||{}).map(Number),last=ds.length?Math.max(...ds):0;return{last,rows:last?hst.results[last].slice().sort((a,b)=>b.score-a.score):[]};};
  const HoodRows=({rows})=>{const names=hoodNames(hst);return rows.map((r,i)=><div key={r.id} className={"lb"+(r.id===hst.me.id?' me':'')}><span className="lb-r num">{['🥇','🥈','🥉'][i]||i+1}</span>
-  <span className="lb-n">{names[r.id]?.em} {names[r.id]?.nick}{names[r.id]?.bot?' 🤖':''}</span><span className="num lb-s">⭐ {r.rep}</span><b className={"num "+(r.score>=0?'g':'r')}>{fmt(r.score)}</b></div>);};
+  <span className="lb-n">{names[r.id]?.em} {names[r.id]?.nick}{names[r.id]?.bot?' 🤖':''}</span><span className="num lb-s">⭐ {r.rep}{r.price?` · ₪${r.price}`:''}</span><b className={"num "+(r.score>=0?'g':'r')}>{fmt(r.score)}</b></div>);};
  // the neighborhood in the control center: the table so far, who's ready for tomorrow, and the code to invite friends
  const HoodPanel=()=>{const {last,rows}=hoodBoard(),H=hst.hood;return <section className="blk">
   <div className="blk-h"><h3>🏘️ {H.name}</h3><span className="tag">קוד: <b dir="ltr">{H.code}</b></span></div>
-  {rows.length?<><HoodRows rows={rows}/><div className="hint">הטבלה אחרי יום {last} · רווח מתחילת המשחק</div></>
+  {rows.length?<><HoodRows rows={rows}/><div className="hint">הטבלה אחרי יום {last} · רווח מתחילת המשחק · ₪ = המחיר שלו ביום {last}</div></>
    :<div className="note">שלח לחברים את הקוד <b dir="ltr">{H.code}</b>. אפשר להצטרף עד שהדוכנים נפתחים ביום 1 ב-08:00.
     <button className="btn sm" style={{marginTop:8}} onClick={()=>{const t=`בוא לשכונה "${H.name}" בלימונדה בע״מ! הקוד: ${H.code}\n${location.href.split('#')[0]}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t);}}>📤 לשתף את הקוד</button></div>}
   <div className="cl-h" style={{marginTop:10}}>מי כבר מוכן למחר</div>
   {hst.members.map(m=><div key={m.id} className={"hd-mem"+(m.me?' mine':'')}><span>{m.em}</span><b>{m.nick}{m.me?' (אתה)':''}</b><small>{m.bot?'🤖 בוט':m.ready?'💡 הדוכן מוכן':'🌑 עוד לא החליט'}</small></div>)}
  </section>;};
- const HoodOver=()=>{const {rows}=hoodBoard(),place=rows.findIndex(r=>r.id===hst.me.id)+1,S=hst.me.state;return <div className="report">
-  <div className="rp-hero"><div className="rp-day">🏁 {hst.hood.name}: השכונה הסתיימה</div><div className="rp-big num g">מקום {place}<i>/{rows.length}</i></div><div className="rp-sub">רווח כולל {fmt(S.tot-S.loan)} · ⭐ {S.rep}</div></div>
-  <div className="rp-types"><div className="cl-h">הטבלה הסופית</div><HoodRows rows={rows}/></div>
-  <button className="btn ghost" onClick={leaveHood}>‹ השכונות שלי</button></div>;};
+ // the end of the season: title and stars by place, the podium rising, the season in numbers, and who won each day
+ const HoodOver=()=>{const {rows}=hoodBoard(),n=rows.length,place=rows.findIndex(r=>r.id===hst.me.id)+1,S=hst.me.state,tot=S.tot-S.loan,names=hoodNames(hst);
+  const st=place===1?5:place===2?4:place===3?3:place<=Math.ceil(n/2)?2:1;
+  const rk=[['🍋','מוכר שכונתי'],['🛒','סוחר ממולח'],['🥉','על הפודיום'],['🥈','סגן אלוף השכונה'],['👑','מלך השכונה']][st-1];
+  const pod=rows.slice(0,3),order=pod.length===3?[pod[1],pod[0],pod[2]]:pod.length===2?[pod[1],pod[0]]:pod,podH={1:100,2:72,3:52};
+  const my=Object.entries(hst.me.days||{}).map(([d,x])=>({d:+d,...x})),best=my.reduce((b,x)=>!b||x.profit>b.profit?x:b,null);
+  const sold=my.reduce((s,x)=>s+x.res.sold,0),caughtThem=my.reduce((s,x)=>s+x.res.attacks.filter(a=>a.caught).length,0),gotCaught=my.reduce((s,x)=>s+x.res.myTricks.filter(t=>t.caught).length,0);
+  const winners=Object.entries(hst.results||{}).map(([d,rs])=>{const w=rs.slice().sort((a,b)=>b.profit-a.profit)[0];return{d:+d,w};}).sort((a,b)=>a.d-b.d);
+  const Fact=({ic,label,v,delay})=><div className="fx-rec" style={{animationDelay:delay+'s'}}><small>{ic} {label}</small><b className="num">{v}</b></div>;
+  return <div className="report fin">
+   <div className="rp-hero fin-hero">
+    {place<=3&&<div className="confetti" aria-hidden="true">{Array.from({length:place===1?44:24}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',background:['#FFD23F','#4ADE80','#FF8FB1','#5CC8F0'][i%4],animationDelay:(0.6+(i%10)*0.12)+'s'}}/>)}</div>}
+    <div className="rp-day">🏁 {hst.hood.name} · {hst.hood.days} ימים · {n} דוכנים</div>
+    <div className="fin-rank"><span>{rk[0]}</span><b>{rk[1]}</b></div>
+    <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:0.5+i*0.18+'s'}}>★</span>)}</div>
+    <div className={"rp-big num "+(tot>=0?'g':'r')}>{tot<0?'−':''}₪<CountTo v={Math.abs(Math.round(tot))}/></div>
+    <div className="rp-sub">מקום {place} מתוך {n} · מוניטין {S.rep}</div>
+   </div>
+   <section className="blk fin-pod-wrap"><div className="blk-h"><h3>🏆 הטבלה הסופית</h3><span className="tag">{place===1?'ניצחת! 🎉':`מקום ${place} מתוך ${n}`}</span></div>
+    <div className="fin-pod">{order.map(x=>{const p=rows.indexOf(x)+1,m=names[x.id]||{};return <div key={x.id} className={"pod-col p"+p+(x.id===hst.me.id?' me':'')}>
+     <div className="pod-who" style={{animationDelay:1.6+(3-p)*0.35+'s'}}><span>{m.em}</span><b>{m.nick}{m.bot?' 🤖':''}</b><i className="num">{fmt(x.score)}</i></div>
+     <div className="pod-bar" style={{height:podH[p],animationDelay:1.2+(3-p)*0.35+'s'}}><b>{p}</b></div></div>;})}</div>
+    {n>3&&<div className="pod-rest">{rows.slice(3).map((x,i)=><span key={x.id} className={x.id===hst.me.id?'me':''}>{i+4}. {names[x.id]?.em} {names[x.id]?.nick} · <b className="num">{fmt(x.score)}</b></span>)}</div>}
+   </section>
+   <section className="blk"><div className="blk-h"><h3>📊 העונה שלך</h3></div>
+    <div className="fx-recs">
+     <Fact ic="📅" label={best?`היום הכי טוב (יום ${best.d})`:'היום הכי טוב'} v={best?fmt(best.profit):'—'} delay={2.4}/>
+     <Fact ic="🥤" label="כוסות שנמכרו" v={sold} delay={2.6}/>
+     <Fact ic="🛡️" label="תוקפים שתפסת" v={caughtThem} delay={2.8}/>
+     <Fact ic="🚨" label="פעמים שנתפסת" v={gotCaught} delay={3.0}/>
+    </div></section>
+   {winners.length>0&&<section className="blk"><div className="blk-h"><h3>🗓️ מי ניצח בכל יום</h3></div><div className="hd-winners">
+    {winners.map((x,i)=><div key={x.d} className={"lb"+(x.w.id===hst.me.id?' me':'')} style={{animation:'hdIn .4s var(--ease-out) both',animationDelay:3.2+i*0.12+'s'}}><span className="lb-r num">{x.d}</span>
+     <span className="lb-n">{names[x.w.id]?.em} {names[x.w.id]?.nick}</span><span className="num lb-s">{x.w.sold} כוסות</span><b className="num g">{fmt(x.w.profit)}</b></div>)}</div></section>}
+   <button className="btn ghost" onClick={leaveHood}>‹ השכונות שלי</button></div>;};
 
  /* ── Screens ── */
  const titleFor={news:'חדשות',product:'המוצר',stock:'מחסן',mkt:'שיווק ותחרות',intel:'מודיעין',biz:'העסק'};
@@ -2080,9 +2141,12 @@ function Game(){
    <div><small>מבקרים</small><b className="num">{r.visitors}</b></div>
    <div><small>נמכרו</small><b className="num">{r.sold}<i>/{r.cups}</i></b></div>
    <div><small>מוניטין</small><b className={"num "+(r.repD>=0?'g':'r')}>{r.repD>=0?'+':'−'}{Math.abs(r.repD)}</b><i>עכשיו {r.rep}</i></div>
-   {r.comps&&r.comps.length?(()=>{const place=1+r.comps.filter(c=>c.profit>r.profit).length;return <div><small>מקום ברחוב</small><b className="num">{place}<i>/{r.comps.length+1}</i></b><i>{place===1?'הרווחת הכי הרבה 🏆':'יש מי שהרוויח יותר'}</i></div>;})()
+   {hood&&r.place?<div><small>מקום בשכונה</small><b className="num">{r.place}<i>/{r.n}</i></b><i>{r.prevPlace==null?'אחרי היום הראשון':r.prevPlace>r.place?`⬆ עלית ממקום ${r.prevPlace}`:r.prevPlace<r.place?`⬇ ירדת ממקום ${r.prevPlace}`:'נשארת באותו מקום'}</i></div>
+   :r.comps&&r.comps.length?(()=>{const place=1+r.comps.filter(c=>c.profit>r.profit).length;return <div><small>מקום ברחוב</small><b className="num">{place}<i>/{r.comps.length+1}</i></b><i>{place===1?'הרווחת הכי הרבה 🏆':'יש מי שהרוויח יותר'}</i></div>;})()
     :<div><small>הכנסות</small><b className="num">{fmt(r.rev)}</b><i>{fmt(r.rev/Math.max(1,r.sold))} לכוס</i></div>}
   </div>
+  {hood&&hoodMoments&&hoodMoments.day===r.day&&hoodMoments.list.length>0&&<div className="rp-types"><div className="cl-h">⏱️ רגעי היום ברחוב</div>
+   {hoodMoments.list.map((m,i)=><div key={i} className="hd-mom" style={{animationDelay:0.6+i*0.18+'s'}}><span className="num">{m.at}</span>{m.t}</div>)}</div>}
   {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">הרחוב היום · לפי רווח</div>{[{em:'🍋',n:'אתה',profit:r.profit,sold:r.sold,me:true},...r.comps].sort((x,y)=>y.profit-x.profit).map((c,i)=><div key={i} className={"lb"+(c.me?' me':'')}><span className="lb-r num">{i+1}</span><span className="lb-n">{c.em} {c.n}</span><span className="num lb-s">{c.sold} כוסות</span><b className={"num "+(c.profit>=0?'g':'r')}>{fmt(c.profit)}</b></div>)}</div>}
   {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">🏙️ מה עשו המתחרים היום</div>{r.comps.map((c,i)=><div key={i} className="rv-day"><b>{c.em} {c.n}</b><span>{c.seen&&c.seen.length?seenTxt(c):'יום שקט, בלי שיווק'}</span>{c.hidden&&<em>🕵️ {hidTxt(c.hidden)||'לא קנה מודיעין'}</em>}</div>)}{!hood&&!r.comps.some(c=>c.hidden)&&<div className="hint">מה שהם עשו מאחורי הקלעים (מודיעין, שמועות) רואים רק עם ריגול</div>}</div>}
   {r.byType&&r.visitors>0&&<div className="rp-types"><div className="cl-h">מי קנה היום</div>{TYPES.map(k=>{const t=r.byType[k],w=r.whys?.[k];return <div key={k} className="rt-r">
@@ -2105,7 +2169,19 @@ function Game(){
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
    {hood?<div><small>{s.live?'נסגר בעוד':'הדוכנים'}</small><b className="num">{s.live&&hst&&hst.today?clockTxt(openMs(hst.hood.start,hst.today)+9*36e5-hNow):'נסגרו'}</b></div>:<div><small>לא קנו</small><b className="num r">{s.walk}</b></div>}</div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
+  {hood&&HoodLive()}
  </div>;};
+ const HoodLive=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst),order=hoodLiveOrder(hoodCounts),mv=hoodMoves.current;
+  return <><section className="blk hd-live"><div className="blk-h"><h3>🏘️ הרחוב עכשיו</h3><span className="tag">{sim&&sim.live?'מתעדכן כל 15 שניות':'סוף היום'}</span></div>
+   {order.map((id,i)=>{const s=op.stands.find(x=>x.id===id),c=hoodCounts[id]||{sold:0},m=names[id]||{},d=mv[id]||0;
+    return <div key={id} className={"hd-lrow"+(id===hst.me.id?' me':'')+(d>0?' up':d<0?' dn':'')}>
+     <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
+     <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
+     <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 {c.sick}</i>:c.out?<i className="warn">💨 {c.out}</i>:null}{c.caught?<i className="bad">🚨</i>:null}{c.vip?<i>🎩{c.vip}</i>:null}</span>
+     <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num">{c.sold} ☕ · {fmt(c.sold*s.price)}</small></span>
+     {d!==0&&<span className={"hd-mv "+(d>0?'up':'dn')}>{d>0?'⬆':'⬇'}</span>}</div>;})}</section>
+   <section className="blk"><div className="blk-h"><h3>📰 מה קורה ברחוב</h3></div>
+    {hoodAlerts.length?hoodAlerts.slice().reverse().map(a=><div key={a.m+a.t} className={"hd-ev "+a.type}><span className="num">{a.at}</span><p>{a.t}</p></div>):<div className="hint">עוד שקט ברחוב</div>}</section></>;};
 
  // Final standings: you vs the rivals (their profits are estimates, as in the daily report)
  const finalBoard=()=>{const H=history,tot=H.reduce((s,h)=>s+h.profit,0),last=H[H.length-1]?.comps||[];
