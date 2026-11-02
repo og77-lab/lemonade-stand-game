@@ -1583,7 +1583,7 @@ function Hood({onExit,onOpen}){
 function Game(){
  const [seed,setSeed]=useState(()=>Date.now()%100000),[gameId,setGameId]=useState(null),[starting,setStarting]=useState(false);
  // Neighborhood mode: the same screens, with the day's world and the stand coming from the server ({id, st, skew})
- const [hood,setHood]=useState(null),[targets,setTargets]=useState({}),[sec,setSec]=useState(0);
+ const [hood,setHood]=useState(null),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
  const world=useMemo(()=>hood&&hood.st?hoodWorld(hood.st):buildWorld(seed),[seed,hood&&hood.st]);
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
@@ -1842,7 +1842,10 @@ function Game(){
   if((st.today&&!(st.opened||{})[st.today]&&st.hood.last_day<st.today)||(st.deciding&&!st.market))hoodTick(id);
   setHood(h=>({...(h||{}),id,st,skew:Date.parse(st.now+'Z')-Date.now()}));return st;};
  const openHood=id=>{setHood({id,st:null,skew:0});hoodKey.current='';setHoodMsg(null);setPhase('hoodwait');hoodLoad(id).catch(e=>setHoodMsg(hoodErr(e)));};
- const leaveHood=()=>{setHood(null);hoodKey.current='';setReport(null);setSim(null);setPhase('hood');};
+ // leaving a neighborhood: nothing of it may carry into a regular game
+ const leaveHood=()=>{setHood(null);hoodKey.current='';setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);hoodSnap.current='';
+  setDay(1);setCash(80);setLoan(0);setLemons([{q:40,d:1}]);setSugar(0);setIce(0);setRep(50);setBuy({l:0,h:0,i:0});setRecipe({l:3,h:1,i:1});setPrice(6);setCupsWanted(20);setLoc(1);setHelper(false);
+  setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');setPhase('hood');};
  useEffect(()=>{if(!hood||!hood.id)return;const t=setInterval(()=>hoodLoad().catch(()=>{}),30000),c=setInterval(()=>hoodClock(x=>x+1),1000);return()=>{clearInterval(t);clearInterval(c);};},[hood&&hood.id]);
  // which screen the neighborhood is on: deciding (evening), the stands open (sim), the day's report, or the end
  const hoodPhaseOf=st=>{const now=Date.parse(st.now+'Z');if(st.deciding)return 'evening';if(st.today&&now<openMs(st.hood.start,st.today)+9*36e5)return 'sim';return st.hood.status==='done'?'over':'report';};
@@ -1861,7 +1864,9 @@ function Game(){
    setBuy(dec.buy||{l:0,h:0,i:0});setFcast(st.me.forecast?st.me.forecast.data:null);hoodSnap.current=st.me.decision?'restore':'';
    setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${d}`});return;}
   setCash(S.cash);setUps(S.ups);setLoan(S.loan);
-  if(ph==='sim'){const p=st.me.plan||{};if(p.recipe)setRecipe(p.recipe);if(p.price)setPrice(p.price);setCupsWanted(p.cups||0);if(p.loc!=null)setLoc(p.loc);setHelper(!!p.helper);
+  // during the day: the plan the server ran (or, if it didn't send one, the decision this device saved)
+  if(ph==='sim'){let p=st.me.plan;if(!p){try{p=JSON.parse(localStorage.getItem('lm-hood-dec-'+hood.id+'-'+d)||'null');}catch(_){}}p=p||{};
+   if(p.recipe)setRecipe(p.recipe);if(p.price)setPrice(p.price);setCupsWanted(p.cups||0);setHoodCups(p.cups!=null?p.cups:null);if(p.loc!=null)setLoc(p.loc);setHelper(!!p.helper);
    setActs([...(p.mk||[]),...(p.bh||[]).map(b=>b.id)]);hoodAfter.current=-1;setHoodAlerts([]);setHoodCounts({});simFast.current=false;
    setSim({list:[],shown:[],sold:0,rev:0,walk:0,done:false,live:true,mid:null,midSur:null,meSick:false,sickR:[]});setPhase('sim');
    const op=(st.opened||{})[st.today];setShow({kind:'dawn',wx:op?op.weather.w:'sunny',l1:`יום ${d}`,l2:'הדוכנים נפתחו'});return;}
@@ -1882,7 +1887,7 @@ function Game(){
   {k:'intel',ic:'🛡️',t:'אבטחה',v:NB.SECURITY[sec].em+' '+NB.SECURITY[sec].n,st:sec?'ok':'opt'},
   {k:'biz',ic:'📍',t:'מיקום ועוזר',v:`${LOC[loc].n} · ${helper?'עם עוזר':'בלי עוזר'}`,st:'ok'},
  ]:[];
- const hoodSave=async()=>{try{await hoodRpc('lm_save_decision',{p_hood:hood.id,p_day:hst.deciding,p_dec:hoodDec()});hoodSnap.current=hoodCur;setHoodMsg(null);sfx('coin');hoodLoad().catch(()=>{});}
+ const hoodSave=async()=>{try{const dec=hoodDec();await hoodRpc('lm_save_decision',{p_hood:hood.id,p_day:hst.deciding,p_dec:dec});try{localStorage.setItem('lm-hood-dec-'+hood.id+'-'+hst.deciding,JSON.stringify(dec));}catch(_){}hoodSnap.current=hoodCur;setHoodMsg(null);sfx('coin');hoodLoad().catch(()=>{});}
   catch(e){setHoodMsg(hoodErr(e));}};
  const hoodForecast=async(e,f)=>{if(fcast||free<f.c)return;try{const fc=await hoodRpc('lm_buy_forecast',{p_hood:hood.id,p_day:hst.deciding,p_lv:f.lv});pay(f.c,'intel');flyCoin(e,'−₪'+f.c);setFcast(fc);hoodLoad().catch(()=>{});}
   catch(err){setHoodMsg(hoodErr(err));}};
@@ -2156,9 +2161,9 @@ function Game(){
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1],aft=s.mid!=null&&s.shown.length>=s.mid&&(s.midSur||s.meSick||(s.sickR||[]).some(Boolean));return <div className="simwrap">
   {hood&&hoodAlerts.length>0&&<div className="sim-alert" key={hoodAlerts[hoodAlerts.length-1].at+hoodAlerts.length}>{hoodAlerts[hoodAlerts.length-1].at} · {hoodAlerts[hoodAlerts.length-1].t}</div>}
   {aft&&<div className={"sim-alert"+(s.meSick||(s.midSur&&s.midSur.f<1)?' bad':' good')} key="aft">{s.meSick?'🤒 חטפת חום! סוגרים את הדוכן מוקדם':s.midSur?s.midSur.n+'!':''}{(s.sickR||[]).map((x,i)=>x?<span key={i}> · 🤒 {rivalsToday[i]?.n} חלה וסגר</span>:null)}</div>}
-  <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,cups-s.sold)} cupsTotal={cups}
+  <StreetScene events={s.shown.slice(-12)} spd={s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,(hood?hoodCups||0:cups)-s.sold)} cupsTotal={hood?hoodCups||0:cups}
    weather={{id:aft&&s.midSur?s.midSur.wx:W.w,temp:aft&&s.midSur&&s.midSur.f>1?temp+4:temp}} comps={hood?hoodComps():rivalsToday.map((c,i)=>({n:c.n,pr:c.pr,fx:aft&&(s.sickR||[])[i]?'🤒 סגור':[...c.mk.map(id=>MK_EM[id]),...c.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(x=>x.id===u).em),...(c.helper?['🧑‍💼']:[])].join('')}))} done={s.done||(aft&&s.meSick)} ups={ups} acts={acts}/>
-  <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}<i>/{cups}</i></b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
+  <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}{!hood?<i>/{cups}</i>:hoodCups!=null?<i>/{hoodCups}</i>:null}</b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
    {hood?<div><small>{s.live?'נסגר בעוד':'הדוכנים'}</small><b className="num">{s.live&&hst&&hst.today?clockTxt(openMs(hst.hood.start,hst.today)+9*36e5-hNow):'נסגרו'}</b></div>:<div><small>לא קנו</small><b className="num r">{s.walk}</b></div>}</div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
   {hood&&HoodLive()}
@@ -2169,7 +2174,7 @@ function Game(){
     return <div key={id} className={"hd-lrow"+(id===hst.me.id?' me':'')+(d>0?' up':d<0?' dn':'')}>
      <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
      <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
-     <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 {c.sick}</i>:c.out?<i className="warn">💨 {c.out}</i>:null}{c.caught?<i className="bad">🚨</i>:null}{c.vip?<i>🎩{c.vip}</i>:null}</span>
+     <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">🚨 נתפס</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
      <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num">{c.sold} ☕ · {fmt(c.sold*s.price)}</small></span>
      {d!==0&&<span className={"hd-mv "+(d>0?'up':'dn')}>{d>0?'⬆':'⬇'}</span>}</div>;})}</section>
    <section className="blk"><div className="blk-h"><h3>📰 מה קורה ברחוב</h3></div>
