@@ -271,9 +271,15 @@ const prepareStand=(st0,dec,world,day,n)=>{const st={...st0,lemons:st0.lemons.ma
  let free=st.cash-reserve;
  const mkOk=mk.filter(id=>{const c=MKTG.find(m=>m.id===id).c;if(c>free){skipped.push(id);return false;}free-=c;return true;});
  const bh=(dec.bh||[]).filter(x=>BLACK.some(y=>y.id===x.id)).filter(x=>{const c=trickCost(x.id,x.target,n);if(c>free){skipped.push(x.id);return false;}free-=c;return true;});
+ // a player who forgot the market: stock for the cups they planned is bought from what's left after everything they chose (nothing else is added)
+ let auto=null;
+ if(dec.autoStock&&dec.cups>0){const want=Math.min(dec.cups,nbCap(st.ups,helper)),have={l:st.lemons.reduce((s,x)=>s+x.q,0),h:st.sugar,i:st.ice},
+   need={l:Math.max(0,want*recipe.l-have.l),h:Math.max(0,want*recipe.h-have.h),i:Math.max(0,want*recipe.i-have.i)},cost=need.l*P.l+need.h*P.h+need.i*P.i;
+  if(cost>0){const k=Math.max(0,Math.min(1,free/cost)),got={l:Math.floor(need.l*k),h:Math.floor(need.h*k),i:Math.floor(need.i*k)},c=Math.round((got.l*P.l+got.h*P.h+got.i*P.i)*100)/100;
+   if(got.l+got.h+got.i>0&&c<=free+1e-9){st.cash-=c;free-=c;spent.stock=(spent.stock||0)+c;if(got.l)st.lemons.push({q:got.l,d:day});st.sugar+=got.h;st.ice+=got.i;auto={...got,cost:c};}}}
  const lm=st.lemons.reduce((s,x)=>s+x.q,0),stockMax=Math.min(...[['l',lm],['h',st.sugar],['i',st.ice]].filter(([k])=>recipe[k]>0).map(([k,h])=>Math.floor(h/recipe[k])));
  const cups=Math.max(0,Math.min(dec.cups??stockMax,stockMax,nbCap(st.ups,helper)));
- return{st,plan:{recipe,price:Math.max(1,Math.min(20,Math.round(dec.price||6))),cups,loc,helper,mk:mkOk,bh,sec,fc},spent,skipped};};
+ return{st,plan:{recipe,price:Math.max(1,Math.min(20,Math.round(dec.price||6))),cups,loc,helper,mk:mkOk,bh,sec,fc},spent,skipped,auto};};
 
 // The street's day. stands: [{id, st (after prepareStand), plan}]. Returns each stand's day and the timeline.
 const runNeighborhoodDay=({seed,world,day,stands})=>{
@@ -303,8 +309,9 @@ const runNeighborhoodDay=({seed,world,day,stands})=>{
  const pick=(m,zone,not)=>{const roam=r()>=NB.STAY,ok=S.filter(s=>open(s,m)&&s!==not),here=ok.filter(s=>s.plan.loc===zone),pool=!roam&&here.length?here:ok;if(!pool.length)return null;
   const w=pool.map(s=>attr(s,m)*(s.plan.loc===zone?1:0.5)),tot=w.reduce((a,b)=>a+b,0);let x=r()*tot;for(let k=0;k<pool.length;k++){x-=w[k];if(x<=0)return pool[k];}return pool[pool.length-1];};
  const serve=(s,m,typ)=>{const c=CT[typ],sc=cSc(s.plan.recipe.l,s.plan.recipe.h,s.plan.recipe.i,T,c),wants=r()<buyProb(sc.sc,s.plan.price,repNow(s,m),c,T);s.vis++;s.byType[typ].vis++;
-  if(!wants){s.walk++;return 'walk';}
-  if(s.sold>=s.cups){s.miss++;s.byType[typ].miss++;if(s.soldAt===null){s.soldAt=m;at(m,{type:'soldout',stand:s.id});}return 'miss';}
+  // every visitor is a moment of the day, so the live street shows who looked and walked on, and who found it sold out
+  if(!wants){s.walk++;at(m,{type:'walk',stand:s.id,cust:typ});return 'walk';}
+  if(s.sold>=s.cups){s.miss++;s.byType[typ].miss++;if(s.soldAt===null){s.soldAt=m;at(m,{type:'soldout',stand:s.id});}at(m,{type:'miss',stand:s.id,cust:typ});return 'miss';}
   s.sold++;s.rev+=s.plan.price;s.byType[typ].buy++;s.repD+=sc.ts>35?c.rI[0]:sc.ts>20?1:sc.ts>10?0:-1;at(m,{type:'sale',stand:s.id,cust:typ,rx:sc.ts>35?'😊':sc.ts>20?'🙂':sc.ts>10?'😐':'😕'});
   if(s.sold>=s.cups){s.soldAt=m;at(m,{type:'soldout',stand:s.id});}return 'buy';};
  if(W.ev)at(OPEN,{type:'event',ev:W.ev.id,n:W.ev.n,d:W.ev.d});
@@ -421,7 +428,7 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,world=
    open.push({id:m.id,price:p.plan.price,loc:p.plan.loc,ups:p.st.ups,mk:p.plan.mk,helper:p.plan.helper,closed:r.closed});
    results.push({id:m.id,price:r.price,loc:r.loc,sold:r.sold,rev:r.rev,profit:set.profit,score:nbScore(set.st),rep:set.st.rep,closed:r.closed,sick:r.sick,soldAt:r.soldAt,vip:r.vip,insp:r.insp,
     caught:r.myTricks.filter(t=>t.caught).map(t=>({trick:t.trick,all:t.all,at:t.at})),auto:decs[k].auto});
-   privates.push({member:m.id,data:{before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
+   privates.push({member:m.id,data:{before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,autoBuy:p.auto,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
   street=open.map(x=>({id:x.id,price:x.price,loc:x.loc}));
   runs.push({day,open:{weather:out.weather,ev:out.ev,stands:open},events:out.events.map(({m,at,...e})=>({m,at,...e})),results,privates});
   last=day;}
