@@ -242,7 +242,8 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
  ESCALATE:0.05, // every dirty trick earlier in the game makes the next one easier to catch
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
  CAUGHT:{rep:[15,25],fine:[10,20]}, // caught: reputation and fine, targeted / against everyone
- SYMPATHY:3};
+ SYMPATHY:3,
+ PRICE_COMP:1}; // how strongly walkers compare prices along the street: undercutting pays alone, everyone undercutting hurts all (a prisoner's dilemma from ₪7 up)
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
@@ -298,7 +299,9 @@ const runNeighborhoodDay=({seed,world,day,stands})=>{
   tricks.push(tr);a.tricks.push(tr);}));
  const live=(tr,m)=>tr.caughtAt===null||m<tr.caughtAt;
  const repNow=(s,m)=>Math.max(0,s.st.rep-tricks.filter(t=>t.id==='rumor'&&t.vs.includes(s)&&live(t,m)).reduce((x,t)=>x+5*t.power,0));
- const attr=(s,m)=>standAttr(s.plan.recipe,s.plan.price,repNow(s,m),T)*s.boost*tricks.filter(t=>t.id==='signs'&&t.vs.includes(s)&&live(t,m)).reduce((x,t)=>x*(1-0.2*t.power),1);
+ // customers see every price on the street: a stand dearer than the street's average loses walkers to the cheaper ones, and the other way round
+ const onSale=S.filter(s=>!s.closed),avgP=onSale.length?onSale.reduce((x,s)=>x+s.plan.price,0)/onSale.length:6,pMs=TYPES.reduce((x,t)=>x+CT[t].pct*pMt(CT[t],T),0);
+ const attr=(s,m)=>standAttr(s.plan.recipe,s.plan.price,repNow(s,m),T)*Math.exp(-NB.PRICE_COMP*(s.plan.price-avgP)/pMs)*s.boost*tricks.filter(t=>t.id==='signs'&&t.vs.includes(s)&&live(t,m)).reduce((x,t)=>x*(1-0.2*t.power),1);
  const open=(s,m)=>!s.closed&&(s.sick===null||m<s.sick);
  // the crowd: 60 people on an ordinary street, more with more stands and with everyone's marketing (the difficulty is only the bots' level)
  const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street=60*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift;
