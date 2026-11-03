@@ -245,6 +245,7 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
  CAUGHT:{rep:[15,25],fine:[10,20]}, // caught: reputation and fine, targeted / against everyone
  SYMPATHY:3,
+ STYLE:{budget:'cutter',premium:'cartel',steady:'tft',trendy:'follow',veteran:'grim',gambler:'mixed'}, // each character's pricing style (bots)
  PRICE_COMP:1}; // how strongly walkers compare prices along the street: undercutting pays alone, everyone undercutting hurts all (a prisoner's dilemma from ₪7 up)
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
@@ -367,8 +368,20 @@ const nbScore=st=>Math.round((st.tot-st.loan)*100)/100;
 // Stands without a player tonight: bots play by their character, a player who didn't decide gets yesterday's choices with fresh stock
 // o: seed, world, day, diff (the bots' level), n (stands), board [{id,tot}] (the standings so far), me (this stand's id), k (its index), prev {dec,res} (its yesterday),
 //    street [{id,price,loc}] (yesterday's prices and places, which every player sees too)
-// The level is how well a bot plays: an easy one guesses its price, cup and stock and picks a place at random; a medium one fits its cup and place
-// to the weather; a hard one works out its price and cups from yesterday's street, skips marketing that won't pay, and is careful with dirty tricks
+// The level is how well a bot plays: an easy one guesses its price, cup and stock wildly and picks a place at random; a medium one plays its
+// character's pricing style and fits cup, place and stock to the weather; a hard one also prices by the forecast, expects the others' moves,
+// skips marketing that won't pay, and is careful with dirty tricks
+// Pricing styles (tested in tools/tournament.js): u = what people pay in the weather the bot expects, others = yesterday's prices on the street.
+// cartel stays high · cutter stays cheap · follow takes the street's median · tft stays high and answers an undercut by matching it, then forgives ·
+// grim stays high until someone undercuts it, then fights at the cheapest price for the rest of the game (war)
+const median=a=>{const s=a.slice().sort((x,y)=>x-y);return s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2;};
+const stylePrice=(style,u,others,war)=>{const hi=u*1.12,low=others.length?Math.min(...others):u;
+ if(style==='cartel')return{p:hi};
+ if(style==='cutter')return{p:Math.max(5,u*0.8)};
+ if(style==='follow')return{p:others.length?median(others):u};
+ if(style==='tft')return{p:low<hi-1?Math.max(5,low):hi};
+ if(style==='grim'){const w=war||low<hi-1.5;return{p:w?Math.max(5,Math.min(low,u)):hi,war:w};}
+ return{p:u};};
 const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}=o,ai=AI[persona.id],S=SMART[diff],noise=1-S,y=prev&&prev.res,rr=rng(seed*13+day*101+k*7+1),w=world[day],P=world[day-1].p,dec={mk:[],bh:[],ups:[]};
  let cash=st.cash;const spend=c=>{if(c>cash-15)return false;cash-=c;return true;};
  const nx=ai.up.map(id=>ALL_UPS.find(u=>u.id===id)).find(u=>u&&!st.ups.includes(u.id)&&(!u.ad||u.ad<=day));
@@ -377,11 +390,23 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  const Test=fc?fc.t:24,rec=persona.r?{...persona.r}:{l:2+Math.floor(rr()*3),h:Math.floor(rr()*3),i:Math.floor(rr()*3)};
  // the cup: a sharp bot adds ice on a hot day and takes it out on a cold one
  if(S>=0.8){if(Test>=30&&rec.l+rec.h+rec.i<CUP)rec.i++;else if(Test<20&&rec.i>0)rec.i--;}dec.recipe=rec;
- // the price: what people will pay, the character's taste, a guess (the easier, the wilder), and for a sharp bot yesterday's lesson
- const lesson=sharp&&y&&!y.closed?(y.soldAt&&y.soldAt<'14:00'?1:y.sold<y.cups*0.6?-1:0):0;
- dec.price=Math.max(2,Math.round(TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],Test),0)*0.95+persona.pb+(persona.r?0:(rr()-0.5)*6)+noise*(rr()-0.5)*6+lesson));
+ // the price: each character plays its own style against yesterday's street (NB.STYLE), around what people pay in the weather it expects.
+ // The easier the bot, the wilder its guess; a sharp one reads the forecast, a medium or easy one thinks of an ordinary day.
+ const others=(o.street||[]).filter(x=>x.id!==me).map(x=>x.price),usualP=TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],S>=0.8?Test:24),0)*0.95+persona.pb*0.5;
+ const style=NB.STYLE[persona.id]==='mixed'?['cartel','cutter','follow','tft'][Math.floor(rr()*4)]:NB.STYLE[persona.id]||'follow',wasWar=!!(prev&&prev.dec&&prev.dec.mood==='war');
+ const sp=stylePrice(style,usualP,others,wasWar);dec.mood=sp.war?'war':null;
+ dec.price=Math.max(2,Math.min(15,Math.round(sp.p+noise*(rr()-0.5)*(S<0.8?10:6))));
  const busy=Test>=27||(fc&&fc.lv===3&&w.ev&&w.ev.dm>1);
- dec.loc=persona.id==='premium'?2:persona.id==='budget'?0:S>=0.8?(busy?2:1):Math.floor(rr()*3);
+ // the place: a minority game. Each part of the street is worth its crowd shared by the stands that stood there yesterday (plus this one),
+ // less the rent; the character leans to its own part (the chef to the middle, Avi to the corner); an easy bot picks at random
+ const lean={premium:2,budget:0}[persona.id],crowd=[0,1,2].map(z=>(o.street||[]).filter(x=>x.id!==me&&x.loc===z).length);
+ // bots that all read yesterday's crowd the same way all flee it together (herding), so a bot draws a place weighted by its worth;
+ // a sharp one also expects the others to move, and plans for a crowd between yesterday's and an even spread
+ const dmSum=LOC.reduce((a,l)=>a+l.dm,0),pred=crowd.map((c,z)=>sharp?0.5*c+0.5*(n-1)*LOC[z].dm/dmSum:c);
+ const worth=[0,1,2].map(z=>LOC[z].dm*(z===2&&busy?1.25:1)/(pred[z]+1)*Math.max(1,usualP-2)*4-LOC[z].rent+(z===lean?3:0));
+ if(S<0.8)dec.loc=Math.floor(rr()*3);
+ else{const wts=worth.map(v=>Math.exp((v-Math.max(...worth))/6)),tot=wts.reduce((a,b)=>a+b,0);let x=rr()*tot;dec.loc=2;for(let z=0;z<3;z++){x-=wts[z];if(x<=0){dec.loc=z;break;}}}
+
  const hype=(Test>=28?1.25:1)*(fc&&fc.ev&&w.ev&&w.ev.dm>1?1.4:1);
  const pre=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6;
  MKTG.forEach(m=>{if(rr()<(ai.mk[m.id]||0)*hype&&(!sharp||(m.id==='taste'?rec.l>=3:pre*(m.dm-1)*TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],Test),0)>=m.c*0.8))&&spend(m.c))dec.mk.push(m.id);});
@@ -389,21 +414,11 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  const lead=board.filter(b=>b.id!==me).sort((a,b)=>b.tot-a.tot)[0];
  Object.entries(ai.bh).forEach(([id,pp])=>{if(lead&&rr()<pp*(1.3-0.6*S)*0.7){const all=rr()<0.25*(1.5-S),c=trickCost(id,all?'all':lead.id,n);if(spend(c))dec.bh.push({id,target:all?'all':lead.id});}});
  const sec=board.length&&st.tot>=Math.max(...board.map(b=>b.tot))&&rr()<0.5*S?2:rr()<0.25*S?1:0;if(sec&&spend(NB.SECURITY[sec].c))dec.sec=sec;
- // a sharp bot works out its price and its cups like a careful player: yesterday's prices on the street, the forecast, and what each kind of customer pays
- let best=null;
- if(sharp){const T=Test,others=(o.street||[]).filter(x=>x.id!==me),walkers=60*softEnv(T,WE[fc?fc.w:'nice'].fm,fc&&fc.lv===3&&w.ev?w.ev.dm:1)*Math.pow(n,NB.CROWD);
-  const mix=mixOf(world,day,dec.loc).m,boost=dec.mk.reduce((m,id)=>m*(MKTG.find(x=>x.id===id)?.dm||1),1)*(st.ups.includes('sign')?1.15:1)*(st.ups.includes('shade')&&T>=28?1.2:1);
-  const usual=Math.round(TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],T),0)),them=(others.length?others:Array.from({length:n-1},()=>({price:usual}))).reduce((s,x)=>s+standAttr({l:3,h:1,i:1},x.price,50,T),0);
-  // no more cups than it can serve (a helper if it pays) or afford
-  const unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,most=Math.min(nbCap([...st.ups,...dec.ups],true),Math.floor(Math.max(0,cash-LOC[dec.loc].rent-HELPER_C)/Math.max(0.01,unit)));
-  for(let p=2;p<=15;p++){const a=standAttr(rec,p,st.rep,T)*boost,br=TYPES.reduce((s,t)=>s+mix[t]*buyProb(cSc(rec.l,rec.h,rec.i,T,CT[t]).sc,p,st.rep,CT[t],T),0),buyers=walkers*a/(a+them)*br,gain=Math.min(buyers,most)*p-Math.min(buyers*1.15,most)*unit;
-   if(!best||gain>best.gain)best={p,buyers,gain};}
-  // never below what its character would ask: a price war hurts the bot more than its rivals
-  dec.price=Math.max(2,Math.min(15,Math.max(best.p,Math.round(TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],T),0)*0.95+persona.pb*0.5))));}
- // how many cups: their guess at their share of the street
- const share=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6;
- dec.helper=(best?best.buyers*1.1:share)>CAP_BASE*0.9&&rr()<ai.hp*S*1.5&&spend(HELPER_C);
- const cap=nbCap([...st.ups,...dec.ups],dec.helper),unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,guess=sharp?(1.25+(y&&y.soldAt?0.2:y&&y.sold<y.cups*0.6?-0.2:0)):S>=0.8?1.15:0.8+rr()*0.6,cups=Math.max(0,Math.min(cap,Math.round(best?best.buyers*1.15:share*guess),Math.floor(Math.max(0,cash-LOC[dec.loc].rent)/Math.max(0.01,unit))));
+ // how many cups: their guess at their share of the street (a medium bot knows a cheaper stand sells more)
+ const avgO=others.length?others.reduce((a,b)=>a+b,0)/others.length:dec.price;
+ const share=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6*(S>=0.8?Math.max(0.5,Math.min(2,Math.exp(NB.PRICE_COMP*(avgO-dec.price)/Math.max(1,usualP)))):1);
+ dec.helper=share>CAP_BASE*0.9&&rr()<ai.hp*S*1.5&&spend(HELPER_C);
+ const cap=nbCap([...st.ups,...dec.ups],dec.helper),unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,guess=S>=0.8?1.15:0.6+rr()*1.0,cups=Math.max(0,Math.min(cap,Math.round(share*guess),Math.floor(Math.max(0,cash-LOC[dec.loc].rent)/Math.max(0.01,unit))));
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
  dec.buy={l:Math.max(0,cups*rec.l-lm),h:Math.max(0,cups*rec.h-st.sugar),i:Math.max(0,cups*rec.i-(st.ups.includes('cooler')?st.ice:0))};dec.cups=cups;
  return dec;};
