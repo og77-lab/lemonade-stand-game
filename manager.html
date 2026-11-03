@@ -967,6 +967,7 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .hd-zst i{font-style:normal;font-size:18px}.hd-zst b{font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-zst small{font-size:10.5px;color:var(--dim)}
 .hd-zst.me{background:#2E2A12;box-shadow:inset 0 0 0 1px var(--lemon)}.hd-zst.me b{color:var(--lemon)}.hd-zst.off{opacity:.5}
 @keyframes hdWalk{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+.hd-vs{color:var(--dim)}.hd-vs.hi{color:var(--warn)}.hd-vs.lo{color:var(--good)}
 @keyframes hdIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes hdUp{0%{background:rgba(74,222,128,.28)}100%{background:transparent}}
 @keyframes hdDn{0%{background:rgba(251,113,133,.22)}100%{background:transparent}}
@@ -1531,6 +1532,9 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  if(r.vip===true)T('good','🎩 מבקר האוכל התלהב! +8 מוניטין, ומחר כתבה בעיתון (×1.3 מבקרים)');else if(r.vip===false)T('bad','🎩 מבקר האוכל התאכזב. −6 מוניטין');
  r.attacks.forEach(a=>a.caught?T('good',`🚨 האבטחה תפסה את ${names[a.by]?.nick||'?'} ב-${a.at}: ${TRICK_N[a.trick]}. הוא נענש, ולקוחות חזרו אליך`):T('bad',`⚠️ מישהו הפעיל נגדך ${TRICK_N[a.trick]}, ולא ידוע מי`));
  r.myTricks.forEach(t=>t.caught?T('bad',`🚨 נתפסת ב-${t.at} (${TRICK_N[t.trick]}${t.all?' נגד כולם':''}): מוניטין וקנס, וכל השכונה יודעת`):T('good',`🎩 ${TRICK_N[t.trick]}${t.all?' נגד כולם':''} עבר בשקט`));
+ // my price against the street's that day, and what it did to my sales
+ {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
+  T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
  if(r.stole)T('good',`📢 ${r.stole} לקוחות עברו אליך מהקמפיין`);
  if(r.soldAt)T('warn',`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו: הכן יותר מחר`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות נזרקו: הכן פחות, או הורד מחיר`);
  if(x.autoBuy)T('warn',`🛒 לא היה מספיק מלאי, אז ב-08:00 קנינו בשבילך ${[x.autoBuy.l&&x.autoBuy.l+'🍋',x.autoBuy.h&&x.autoBuy.h+'🍬',x.autoBuy.i&&x.autoBuy.i+'🧊'].filter(Boolean).join(' ')} (${fmt2(x.autoBuy.cost)})`);
@@ -1899,11 +1903,15 @@ function Game(){
  const hoodCur=hood&&hst&&phase==='evening'?JSON.stringify(hoodDec()):'';
  if(hoodSnap.current==='restore'&&hoodCur)hoodSnap.current=hoodCur;
  const hoodDirty=!!hoodCur&&hoodCur!==hoodSnap.current;
+ // yesterday's prices on the street (public): their average without my own stand, and where my price stands against it
+ const hoodAvg=(()=>{if(!hood||!hst||!hst.results)return null;const ds=Object.keys(hst.results).map(Number);if(!ds.length)return null;
+  const rs=hst.results[Math.max(...ds)].filter(r=>r.id!==hst.me.id&&!r.closed);return rs.length?Math.round(rs.reduce((a,r)=>a+r.price,0)/rs.length*10)/10:null;})();
+ const hoodVs=p=>hoodAvg==null?'':p>hoodAvg+0.4?'יקר מהרחוב: פחות עוברים יבחרו בך':p<hoodAvg-0.4?'זול מהרחוב: יותר עוברים יבחרו בך':'בערך כמו הרחוב';
  const hoodTasks=hood&&hst&&phase==='evening'?[
   {k:'stock',ic:'📦',t:'מלאי למחר',v:hoodShort?`מספיק ל-${afterCups} מתוך ${hoodWant} כוסות`:`מספיק ל-${afterCups} כוסות`,st:hoodShort?'warn':'ok',
    note:hoodShort?`אם לא תקנה, ב-08:00 נקנה בשבילך את מה שחסר (כ-${fmt(hoodShort.cost)}), רק אם יישאר מספיק כסף`:null},
   {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה: מחליטים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
-  {k:'product',ic:'🥤',t:'הכוס',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · ₪${price} · ${hoodWant} כוסות`,st:hoodWant===0?'bad':'ok',note:hoodWant===0?'אין כוסות: הדוכן ייסגר':null},
+  {k:'product',ic:'🥤',t:'הכוס',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · ₪${price} · ${hoodWant} כוסות`,st:hoodWant===0?'bad':'ok',note:hoodWant===0?'אין כוסות: הדוכן ייסגר':hoodAvg!=null?`ממוצע הרחוב אתמול ₪${hoodAvg} · ${hoodVs(price)}`:null},
   {k:'mkt',ic:'📣',t:'שיווק',v:[...acts.filter(id=>MKTG.some(m=>m.id===id)).map(id=>MKTG.find(m=>m.id===id).n),...acts.filter(id=>targets[id]).map(id=>'🖤 '+BLACK.find(b=>b.id===id).n)].join(', ')||'לא נבחר',st:acts.length?'ok':'opt'},
   {k:'intel',ic:'🛡️',t:'אבטחה',v:NB.SECURITY[sec].em+' '+NB.SECURITY[sec].n,st:sec?'ok':'opt'},
   {k:'biz',ic:'📍',t:'מיקום ועוזר',v:`${LOC[loc].n} · ${helper?'עם עוזר':'בלי עוזר'}`,st:'ok'},
@@ -2026,13 +2034,15 @@ function Game(){
   <section className="blk">
    <div className="blk-h"><h3>💰 מחיר וכמות</h3><span className="tag">עלות כוס {fmt2(costCup)}</span></div>
    <div className="pq">
-    <div className="pq-c"><small>מחיר לכוס</small><div className="big num">₪{price}</div><Stepper v={price} set={setPrice} min={1} max={20}/>{research&&<div className="ing-d">₪{price-1}: <Delta d={buyersFor(R,price-1)-buyers}/> · ₪{price+1}: <Delta d={buyersFor(R,price+1)-buyers}/></div>}</div>
+    <div className="pq-c"><small>מחיר לכוס</small><div className="big num">₪{price}</div><Stepper v={price} set={setPrice} min={1} max={20}/>{research&&<div className="ing-d">₪{price-1}: <Delta d={buyersFor(R,price-1)-buyers}/> · ₪{price+1}: <Delta d={buyersFor(R,price+1)-buyers}/></div>}
+     {hood&&hoodAvg!=null&&<div className={"limit hd-vs"+(price>hoodAvg+0.4?' hi':price<hoodAvg-0.4?' lo':'')}>ממוצע הרחוב אתמול <b className="num">₪{hoodAvg}</b> · {hoodVs(price)}</div>}</div>
     <div className="pq-c"><small>{isEve?'כמה להכין מחר':'כמה להכין'}</small><div className="big num">{hood?hoodWant:cups}</div><Stepper v={hood?hoodWant:cups} set={v=>setCupsWanted(v)} min={0} max={hood?cap:maxCups} big5/>
      {hood&&hoodShort?<div className="limit">מהמלאי: <b>{afterCups}</b> כוסות · את השאר (כ-{fmt(hoodShort.cost)}) נקנה בשבילך ב-08:00 אם לא תקנה בשוק<button className="btn sm" style={{marginTop:6}} onClick={()=>setTab('stock')}>🛒 לקנות בשוק ›</button></div>
      :isEve&&maxCups===0?<div className="limit">אין עדיין מצרכים לכוס אחת<button className="btn sm" style={{marginTop:6}} onClick={()=>setTab('stock')}>🛒 לקנות בשוק ›</button></div>
      :<div className="limit">{phase==='morning'||isEve?<>מקסימום <b>{maxCups}</b> · מגבלה: {limiter?.em} {limiter?.n}{limiter&&limiter.k?` (${limiter.have} ${isEve?'כולל הסל':'במלאי'})`:''}</>:null}</div>}
      {isEve&&maxCups>0&&<div className="ing-d">מכינים בבוקר · צריך עוד? <a className="lnk" onClick={()=>setTab('stock')}>לשוק</a></div>}</div>
    </div>
+   {hood&&<div className="note">💡 הלקוחות רואים את כל המחירים ברחוב והולכים יותר לזול. אם רק אתה מוריד, אתה מרוויח. אבל אם כולם מורידים, כולם מרוויחים פחות. המחירים של אתמול גלויים לכולם בטבלה במרכז הבקרה.</div>}
   </section>
   {!hood&&<section className={"blk aud"+(research?'':' blur')}>
    <div className="blk-h"><h3>👥 מי יקנה היום</h3>{research?<span className="tag good">סקר שוק ✓</span>:<span className="tag">דורש סקר שוק</span>}</div>
@@ -2197,7 +2207,7 @@ function Game(){
  </div>;};
  // the street from above: its three parts, how many walkers each gets, and who stands in each (the crowd of a part is shared by its stands)
  const HoodMap=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst);
-  return <section className="blk hd-map"><div className="blk-h"><h3>🗺️ מי איפה ברחוב</h3><span className="tag">הקהל מתחלק בין הדוכנים</span></div>
+  return <section className="blk hd-map"><div className="blk-h"><h3>🗺️ מי איפה ברחוב</h3><span className="tag">מחיר ממוצע היום <b className="num">₪{(()=>{const o=op.stands.filter(s=>!s.closed);return o.length?Math.round(o.reduce((a,s)=>a+s.price,0)/o.length*10)/10:'—';})()}</b></span></div>
    <div className="hd-zones">{[0,1,2].map(z=>{const here=op.stands.filter(s=>s.loc===z),mine=here.some(s=>s.id===hst.me.id);
     return <div key={z} className={"hd-zone z"+z+(mine?' mine':'')}>
      <div className="hd-zh"><span>{LOC[z].em}</span><b>{LOC[z].n}</b><small>👥 ×{LOC[z].dm} · {here.length?`${here.length} דוכנים`:'ריק'}</small></div>
