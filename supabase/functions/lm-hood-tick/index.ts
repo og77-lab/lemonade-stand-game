@@ -241,16 +241,21 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
  RETRY:0.6,   // a walker who found a stand sold out or closed tries another one
  SECURITY:[{lv:0,em:'👥',n:'בלי אבטחה',c:0,catch:0.05,know:0},{lv:1,em:'👀',n:'שומר',c:3,catch:0.3,know:0.5},
   {lv:2,em:'📹',n:'מצלמות',c:6,catch:0.55,know:0.8},{lv:3,em:'🕵️',n:'בלש',c:10,catch:0.8,know:1}],
- ESCALATE:0.05, // every dirty trick earlier in the game makes the next one easier to catch
+ ESCALATE:0.05,ESC_MAX:0.15, // every dirty trick earlier in the game makes the next one easier to catch (up to a limit)
+ TRICKS:['ads','rumor'], // the street's dirty tricks: a campaign that steals customers, and a rumor (it hits the leader harder)
+ // a rumor: some walkers stay away from the victim today, and its reputation drops
+ EFFECT:{ads:0.4,rumor:5,rumorA:0.25},LEADER:1.6,TRICK_C:{ads:5,rumor:4},
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
- CAUGHT:{rep:[15,25],fine:[10,20]}, // caught: reputation and fine, targeted / against everyone
- SYMPATHY:3,
+ // a catch is the catcher's secret. Tonight they choose: expose it (the attacker loses reputation and pays damages, once, and every secret
+ // held on them is gone; the exposers share the damages) or keep quiet (for a few days some of the attacker's customers come to them instead)
+ CAUGHT:{rep:15,fine:14},HOLD:{q:0.5,days:3},
+ EXPOSE:{cartel:0.2,cutter:0.3,follow:0.5,tft:0.7,grim:0.9}, // how likely each pricing style is to expose a catch (bots)
  STYLE:{budget:'cutter',premium:'cartel',steady:'tft',trendy:'follow',veteran:'grim',gambler:'mixed'}, // each character's pricing style (bots)
  PRICE_COMP:1}; // how strongly walkers compare prices along the street: undercutting pays alone, everyone undercutting hurts all (a prisoner's dilemma from ₪7 up)
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
-const trickCost=(id,target,n)=>{const b=BLACK.find(x=>x.id===id);return target==='all'?Math.round(b.c*NB.GENERAL.cost*Math.max(1,n-1)):b.c;};
+const trickCost=(id,target,n)=>{const c=NB.TRICK_C[id]??BLACK.find(x=>x.id===id).c;return target==='all'?Math.round(c*NB.GENERAL.cost*Math.max(1,n-1)):c;};
 const nbAcAdj=(world,day)=>f=>Math.max(0.35,f.ac+((world[day-1].mev&&world[day-1].mev.acc)||0));
 // A forecast for the coming day: everyone who buys the same level gets the same forecast
 const nbForecast=(seed,world,day,lv)=>makeForecast({seed,day,world,acAdj:nbAcAdj(world,day)},FORECAST[lv-1]);
@@ -274,7 +279,7 @@ const prepareStand=(st0,dec,world,day,n)=>{const st={...st0,lemons:st0.lemons.ma
  // marketing and tricks come out of what's left after the rent and helper
  let free=st.cash-reserve;
  const mkOk=mk.filter(id=>{const c=MKTG.find(m=>m.id===id).c;if(c>free){skipped.push(id);return false;}free-=c;return true;});
- const bh=(dec.bh||[]).filter(x=>BLACK.some(y=>y.id===x.id)).filter(x=>{const c=trickCost(x.id,x.target,n);if(c>free){skipped.push(x.id);return false;}free-=c;return true;});
+ const bh=(dec.bh||[]).filter(x=>NB.TRICKS.includes(x.id)).filter(x=>{const c=trickCost(x.id,x.target,n);if(c>free){skipped.push(x.id);return false;}free-=c;return true;});
  // a player who forgot the market: stock for the cups they planned is bought from what's left after everything they chose (nothing else is added)
  let auto=null;
  if(dec.autoStock&&dec.cups>0){const want=Math.min(dec.cups,nbCap(st.ups,helper)),have={l:st.lemons.reduce((s,x)=>s+x.q,0),h:st.sugar,i:st.ice},
@@ -293,18 +298,22 @@ const runNeighborhoodDay=({seed,world,day,stands})=>{
   const mix=mixOf(world,day,s.plan.loc).m,boost=s.plan.mk.reduce((m,id)=>m*(MKTG.find(x=>x.id===id)?.dm||1),1)*(s.st.ups.includes('sign')?1.15:1)*(s.st.ups.includes('shade')&&T>=28?1.2:1)*(s.st.paper?1.3:1);
   const closed=s.plan.cups<=0;
   return{k,id:s.id,st:s.st,plan:s.plan,mix,boost,closed,sick:closed?null:sick,insp,cups:s.plan.cups,sold:0,rev:0,miss:0,walk:0,vis:0,repD:0,byType:Object.fromEntries(TYPES.map(t=>[t,{vis:0,buy:0,miss:0}])),
-   rumor:0,signs:1,steal:[],soldAt:null,vip:null,tricks:[],hits:[]};});
- // dirty tricks: each one against each of its targets, checked against that target's security at a moment of the day
- const tricks=[];S.forEach(a=>a.plan.bh.forEach(x=>{const vs=x.target==='all'?S.filter(v=>v!==a):S.filter(v=>v.id===x.target&&v!==a);if(!vs.length)return;
-  const power=x.target==='all'?NB.GENERAL.power:1,tr={by:a,id:x.id,all:x.target==='all',power,vs,caughtAt:null,caughtBy:null};
-  vs.forEach(v=>{const p=Math.min(0.95,NB.SECURITY[v.plan.sec].catch+NB.ESCALATE*a.st.tricks),m=OPEN+30+Math.floor(r()*(CLOSE-OPEN-60));
-   if(r()<p&&(tr.caughtAt===null||m<tr.caughtAt)){tr.caughtAt=m;tr.caughtBy=v;}});
+   steal:[],secret:0,soldAt:null,vip:null,tricks:[]};});
+ // dirty tricks: each one is checked against each victim's own security at a moment of the day. A victim who catches it stops it for
+ // itself only (against everyone, the others still suffer it) and keeps the catch to itself until tonight's choice
+ const top=Math.max(...S.map(s=>s.st.tot)),tricks=[];
+ S.forEach(a=>a.plan.bh.forEach(x=>{const vs=x.target==='all'?S.filter(v=>v!==a):S.filter(v=>v.id===x.target&&v!==a);if(!vs.length)return;
+  const power=x.target==='all'?NB.GENERAL.power:1,tr={by:a,id:x.id,all:x.target==='all',power,vs,caught:new Map()};
+  vs.forEach(v=>{const p=Math.min(0.95,NB.SECURITY[v.plan.sec].catch+Math.min(NB.ESC_MAX,NB.ESCALATE*a.st.tricks)),m=OPEN+30+Math.floor(r()*(CLOSE-OPEN-60));if(r()<p)tr.caught.set(v,m);});
   tricks.push(tr);a.tricks.push(tr);}));
- const live=(tr,m)=>tr.caughtAt===null||m<tr.caughtAt;
- const repNow=(s,m)=>Math.max(0,s.st.rep-tricks.filter(t=>t.id==='rumor'&&t.vs.includes(s)&&live(t,m)).reduce((x,t)=>x+5*t.power,0));
+ const live=(tr,v,m)=>!tr.caught.has(v)||m<tr.caught.get(v);
+ const lead=(t,s)=>t.power*(top>0&&s.st.tot>=top?NB.LEADER:1),rumorOn=(t,s)=>NB.EFFECT.rumor*lead(t,s);
+ const repNow=(s,m)=>Math.max(0,s.st.rep-tricks.filter(t=>t.id==='rumor'&&t.vs.includes(s)&&live(t,s,m)).reduce((x,t)=>x+rumorOn(t,s),0));
+ // a secret kept from an earlier catch: some of the attacker's customers come to the catcher instead
+ const holders=Object.fromEntries(S.map(s=>[s.id,S.filter(c=>c!==s&&(c.st.holds||[]).some(h=>h.on===s.id&&h.until>=day))]));
  // customers see every price on the street: a stand dearer than the street's average loses walkers to the cheaper ones, and the other way round
  const onSale=S.filter(s=>!s.closed),avgP=onSale.length?onSale.reduce((x,s)=>x+s.plan.price,0)/onSale.length:6,pMs=TYPES.reduce((x,t)=>x+CT[t].pct*pMt(CT[t],T),0);
- const attr=(s,m)=>standAttr(s.plan.recipe,s.plan.price,repNow(s,m),T)*Math.exp(-NB.PRICE_COMP*(s.plan.price-avgP)/pMs)*s.boost*tricks.filter(t=>t.id==='signs'&&t.vs.includes(s)&&live(t,m)).reduce((x,t)=>x*(1-0.2*t.power),1);
+ const attr=(s,m)=>standAttr(s.plan.recipe,s.plan.price,repNow(s,m),T)*Math.exp(-NB.PRICE_COMP*(s.plan.price-avgP)/pMs)*s.boost*tricks.filter(t=>t.id==='rumor'&&t.vs.includes(s)&&live(t,s,m)).reduce((x,t)=>x*Math.max(0.2,1-NB.EFFECT.rumorA*lead(t,s)),1);
  const open=(s,m)=>!s.closed&&(s.sick===null||m<s.sick);
  // the crowd: 60 people on an ordinary street, more with more stands and with everyone's marketing (the difficulty is only the bots' level)
  const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street=60*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift;
@@ -323,30 +332,34 @@ const runNeighborhoodDay=({seed,world,day,stands})=>{
  if(W.ev)at(OPEN,{type:'event',ev:W.ev.id,n:W.ev.n,d:W.ev.d});
  S.forEach(s=>{if(s.closed)at(OPEN,{type:'closed',stand:s.id});if(s.sick!==null)at(s.sick,{type:'sick',stand:s.id});});
  if(W.sur)at(OPEN+5*60,{type:'surprise',n:W.sur.n,f:W.sur.f});
- tricks.forEach(t=>{if(t.caughtAt!==null)at(t.caughtAt,{type:'caught',stand:t.by.id,trick:t.id,all:t.all,victim:t.caughtBy.id});});
+ // the street only sees that a stand's security stopped something; who did it is the victim's secret
+ tricks.forEach(t=>t.caught.forEach((m,v)=>at(m,{type:'caught',victim:v.id,trick:t.id})));
  for(const m of walkers){
   if(!vipDone&&m>=vipAt){vipDone=true;const s=pick(m,2,null);if(s){const bought=s.sold<s.cups;if(bought){s.sold++;s.rev+=s.plan.price;s.vip=relQ(s.plan.recipe,T,s.mix)>=VIP_Q;}else s.vip=false;s.repD+=s.vip?8:-6;at(m,{type:'vip',stand:s.id,ok:s.vip,bought});}}
   const zone=(()=>{let x=r()*zs;for(let z=0;z<3;z++){x-=zw[z];if(x<=0)return z;}return 2;})();
   let s=pick(m,zone,null);if(!s)continue;
   // a stealing trick turns some of the victim's customers toward the one who ran it
-  const st=tricks.find(t=>t.id==='ads'&&t.vs.includes(s)&&live(t,m)&&open(t.by,m)&&r()<0.18*t.power);if(st){st.by.steal.push(m);s=st.by;}
+  const st=tricks.find(t=>t.id==='ads'&&t.vs.includes(s)&&live(t,s,m)&&open(t.by,m)&&r()<NB.EFFECT.ads*t.power);if(st){st.by.steal.push(m);s=st.by;}
+  // (each one who keeps quiet gets its share; many together don't take every customer)
+  else{const hs=holders[s.id],q=NB.HOLD.q/Math.sqrt(Math.max(1,hs.length)),c=hs.find(c=>open(c,m)&&r()<q);if(c){c.secret++;s=c;}}
   let x=r(),typ='adult',cum=0;for(const t of TYPES){cum+=s.mix[t];if(x<cum){typ=t;break;}}
   if(serve(s,m,typ)==='miss'&&r()<NB.RETRY){const s2=pick(m,zone,s);if(s2)serve(s2,m,typ);}}
  // the day's accounts for each stand (reputation as in the regular game, plus tricks, the critic and the inspector)
- const results=S.map(s=>{const caughtMine=s.tricks.filter(t=>t.caughtAt!==null),costs={rent:s.closed?0:LOC[s.plan.loc].rent,helper:s.plan.helper?HELPER_C:0,
+ const results=S.map(s=>{const costs={rent:s.closed?0:LOC[s.plan.loc].rent,helper:s.plan.helper?HELPER_C:0,
    mkt:s.plan.mk.reduce((x,id)=>x+MKTG.find(m=>m.id===id).c,0),bh:s.tricks.reduce((x,t)=>x+trickCost(t.id,t.all?'all':'one',n),0),
-   fine:caughtMine.reduce((x,t)=>x+NB.CAUGHT.fine[t.all?1:0],0)+(s.insp?8:0)+((W.ev&&W.ev.cost)||0)};
+   fine:(s.insp?8:0)+((W.ev&&W.ev.cost)||0)};
   let repD=Math.max(-10,Math.min(10,s.repD))-Math.min(6,s.miss*2)+(s.st.ups.includes('cups')?1:0)+((W.ev&&W.ev.rep)||0)+(s.plan.mk.includes('taste')&&s.plan.recipe.l>=3&&s.sold>0?3:0)+(s.plan.mk.includes('social')&&r()<0.5?2:0);
   const hitBy=tricks.filter(t=>t.vs.includes(s));
-  repD-=hitBy.filter(t=>t.id==='rumor'&&t.caughtAt===null).reduce((x,t)=>x+5*t.power,0);
-  repD+=hitBy.filter(t=>t.caughtAt!==null).length?NB.SYMPATHY:0;
-  repD-=caughtMine.reduce((x,t)=>x+NB.CAUGHT.rep[t.all?1:0],0);
+  repD-=hitBy.filter(t=>t.id==='rumor'&&!t.caught.has(s)).reduce((x,t)=>x+rumorOn(t,s),0);
   const rep=Math.max(0,Math.min(100,Math.round(s.st.rep+repD+(50-s.st.rep-repD)*0.06)));
   // what the stand's security tells it: the caught ones by name, the others maybe as "someone attacked you"
-  const kr=rng(seed*71+day*13+s.k),attacks=hitBy.map(t=>t.caughtAt!==null?{trick:t.id,by:t.by.id,at:hhmm(t.caughtAt),caught:true}:kr()<NB.SECURITY[s.plan.sec].know?{trick:t.id,caught:false}:null).filter(Boolean);
+  const kr=rng(seed*71+day*13+s.k),attacks=hitBy.map(t=>t.caught.has(s)?{trick:t.id,all:t.all,by:t.by.id,at:hhmm(t.caught.get(s)),caught:true}:kr()<NB.SECURITY[s.plan.sec].know?{trick:t.id,caught:false}:null).filter(Boolean);
+  // the catches to decide on tonight, one per attacker
+  const caught=[...new Set(attacks.filter(a=>a.caught).map(a=>a.by))].map(by=>({by,tricks:attacks.filter(a=>a.caught&&a.by===by).map(a=>a.trick)}));
   return{id:s.id,sold:s.sold,cups:s.cups,rev:s.rev,miss:s.miss,walk:s.walk,visitors:s.vis,byType:s.byType,price:s.plan.price,loc:s.plan.loc,closed:s.closed,sick:s.sick!==null?hhmm(s.sick):null,
-   soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,costs,repD:rep-s.st.rep,rep,attacks,
-   myTricks:s.tricks.map(t=>({trick:t.id,all:t.all,caught:t.caughtAt!==null,at:t.caughtAt!==null?hhmm(t.caughtAt):null}))};});
+   soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,secret:s.secret,costs,repD:rep-s.st.rep,rep,attacks,caught,
+   // the attacker knows a trick was caught (and how many times), not by whom
+   myTricks:s.tricks.map(t=>({trick:t.id,all:t.all,caught:t.caught.size>0,times:t.caught.size}))};});
  at(CLOSE,{type:'close'});
  ev.sort((a,b)=>a.m-b.m);return{results,events:ev,weather:{t:T,w:W.w},ev:W.ev?W.ev.id:null};};
 
@@ -362,8 +375,23 @@ const settleStand=(st,plan,res,spent,day)=>{const n={...st,ups:[...st.ups]};
  if(n.loan>0&&n.cash>=n.loan*1.5){n.cash=Math.round((n.cash-n.loan)*100)/100;n.loan=0;}
  const profit=Math.round((res.rev-dayCost-interest-Object.values(spent).reduce((a,b)=>a+b,0))*100)/100;
  n.tot=Math.round((st.tot+profit)*100)/100;n.rep=res.rep;n.tricks=st.tricks+res.myTricks.length;n.paper=res.vip===true;
+ n.caught=res.caught||[];n.holds=(st.holds||[]).filter(h=>h.until>day);
  return{st:n,profit,spoiled};};
 const nbScore=st=>Math.round((st.tot-st.loan)*100)/100;
+// The morning after a catch (before the stands open): each catcher chose last night (dec.expose = the attackers it exposes, otherwise it keeps quiet).
+// One exposure is public: the attacker loses reputation and pays a fine, once, however many caught it, and every secret held on it is gone;
+// the exposers share the damages. If every catcher keeps quiet, each one holds its secret for a few days.
+// states {id:st} is updated in place; decs {id:dec}. Returns what the street hears (exposed) and what each quiet catcher keeps (kept).
+const resolveCatches=(states,decs,day)=>{const ids=Object.keys(states),on={},exposed=[],kept=[],r2=x=>Math.round(x*100)/100;
+ ids.forEach(c=>(states[c].caught||[]).forEach(x=>{if(states[x.by])(on[x.by]=on[x.by]||[]).push(c);}));
+ Object.entries(on).forEach(([a,C])=>{const E=C.filter(c=>((decs[c]||{}).expose||[]).includes(a));
+  if(E.length){const v=states[a],f=NB.CAUGHT.fine;states[a]={...v,rep:Math.max(0,v.rep-NB.CAUGHT.rep),cash:r2(v.cash-f),tot:r2(v.tot-f)};
+   E.forEach(c=>{const w=states[c],d=r2(f/E.length);states[c]={...w,cash:r2(w.cash+d),tot:r2(w.tot+d)};});
+   ids.forEach(c=>{if((states[c].holds||[]).some(h=>h.on===a))states[c]={...states[c],holds:states[c].holds.filter(h=>h.on!==a)};});
+   exposed.push({stand:a,by:E,quiet:C.filter(c=>!E.includes(c))});}
+  else C.forEach(c=>{states[c]={...states[c],holds:[...(states[c].holds||[]).filter(h=>h.on!==a),{on:a,until:day+NB.HOLD.days-1}]};kept.push({by:c,on:a});});});
+ ids.forEach(c=>{if((states[c].caught||[]).length)states[c]={...states[c],caught:[]};});
+ return{exposed,kept};};
 
 // Stands without a player tonight: bots play by their character, a player who didn't decide gets yesterday's choices with fresh stock
 // o: seed, world, day, diff (the bots' level), n (stands), board [{id,tot}] (the standings so far), me (this stand's id), k (its index), prev {dec,res} (its yesterday),
@@ -412,11 +440,13 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  MKTG.forEach(m=>{if(rr()<(ai.mk[m.id]||0)*hype&&(!sharp||(m.id==='taste'?rec.l>=3:pre*(m.dm-1)*TYPES.reduce((s,t)=>s+CT[t].pct*pMt(CT[t],Test),0)>=m.c*0.8))&&spend(m.c))dec.mk.push(m.id);});
  // tricks go against the leader (or, now and then, against everyone); a sharp bot takes fewer risks, and almost never against everyone
  const lead=board.filter(b=>b.id!==me).sort((a,b)=>b.tot-a.tot)[0];
- Object.entries(ai.bh).forEach(([id,pp])=>{if(lead&&rr()<pp*(1.3-0.6*S)*0.7){const all=rr()<0.25*(1.5-S),c=trickCost(id,all?'all':lead.id,n);if(spend(c))dec.bh.push({id,target:all?'all':lead.id});}});
+ Object.entries(ai.bh).forEach(([id,pp])=>{if(NB.TRICKS.includes(id)&&lead&&rr()<pp*(1.3-0.6*S)*0.7){const all=rr()<0.25*(1.5-S),c=trickCost(id,all?'all':lead.id,n);if(spend(c))dec.bh.push({id,target:all?'all':lead.id});}});
  const sec=board.length&&st.tot>=Math.max(...board.map(b=>b.tot))&&rr()<0.5*S?2:rr()<0.25*S?1:0;if(sec&&spend(NB.SECURITY[sec].c))dec.sec=sec;
+ // a catch from yesterday: expose it or keep the secret, by the character's pricing style
+ const xp=NB.EXPOSE[NB.STYLE[persona.id]]??0.5;dec.expose=(st.caught||[]).filter(()=>rr()<xp).map(x=>x.by);
  // how many cups: their guess at their share of the street (a medium bot knows a cheaper stand sells more)
  const avgO=others.length?others.reduce((a,b)=>a+b,0)/others.length:dec.price;
- const share=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6*(S>=0.8?Math.max(0.5,Math.min(2,Math.exp(NB.PRICE_COMP*(avgO-dec.price)/Math.max(1,usualP)))):1);
+ const share=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6*(1+dec.bh.filter(x=>x.id==='ads').length*NB.EFFECT.ads*(dec.bh.some(x=>x.target==='all')?NB.GENERAL.power*2:1))*(S>=0.8?Math.max(0.5,Math.min(2,Math.exp(NB.PRICE_COMP*(avgO-dec.price)/Math.max(1,usualP)))):1);
  dec.helper=share>CAP_BASE*0.9&&rr()<ai.hp*S*1.5&&spend(HELPER_C);
  const cap=nbCap([...st.ups,...dec.ups],dec.helper),unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,guess=S>=0.8?1.15:0.6+rr()*1.0,cups=Math.max(0,Math.min(cap,Math.round(share*guess),Math.floor(Math.max(0,cash-LOC[dec.loc].rent)/Math.max(0.01,unit))));
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
@@ -440,6 +470,8 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,world=
   const decs=g.members.map(m=>{if(m.persona)return{dec:botDecision(PERSONAS.find(p=>p.id===m.persona)||PERSONAS[0],states[m.id],{seed,world,day,diff,n,board,me:m.id,k:m.slot,prev:prev[m.id],street}),auto:'bot'};
    const own=((g.decisions||{})[day]||{})[m.id];if(own)return{dec:{...own,fc:0},auto:null}; // a forecast was paid when bought
    const p=prev[m.id]||{};return{dec:autopilot(states[m.id],p.dec,p.res,world,day),auto:'autopilot'};});
+  // last night's catches: a bot chose with the rest of its day, a player with their decisions (no choice: quiet)
+  const morning=resolveCatches(states,Object.fromEntries(g.members.map((m,k)=>[m.id,decs[k].dec])),day);
   const prep=g.members.map((m,k)=>prepareStand(states[m.id],decs[k].dec,world,day,n));
   const out=runNeighborhoodDay({seed,world,day,stands:g.members.map((m,k)=>({id:m.id,st:prep[k].st,plan:prep[k].plan}))});
   const paid=(g.paid||{})[day]||{},open=[],results=[],privates=[];
@@ -447,10 +479,11 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,world=
    const set=settleStand(p.st,p.plan,r,spent,day);states[m.id]=set.st;prev[m.id]={dec:decs[k].dec,res:r};
    open.push({id:m.id,price:p.plan.price,loc:p.plan.loc,ups:p.st.ups,mk:p.plan.mk,helper:p.plan.helper,closed:r.closed});
    results.push({id:m.id,price:r.price,loc:r.loc,sold:r.sold,rev:r.rev,profit:set.profit,score:nbScore(set.st),rep:set.st.rep,closed:r.closed,sick:r.sick,soldAt:r.soldAt,vip:r.vip,insp:r.insp,
-    caught:r.myTricks.filter(t=>t.caught).map(t=>({trick:t.trick,all:t.all,at:t.at})),auto:decs[k].auto});
-   privates.push({member:m.id,data:{before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,autoBuy:p.auto,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
+    auto:decs[k].auto});
+   privates.push({member:m.id,data:{kept:morning.kept.filter(x=>x.by===m.id).map(x=>x.on),before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,autoBuy:p.auto,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
   street=open.map(x=>({id:x.id,price:x.price,loc:x.loc}));
-  runs.push({day,open:{weather:out.weather,ev:out.ev,stands:open},events:out.events.map(({m,at,...e})=>({m,at,...e})),results,privates});
+  const events=[...morning.exposed.map(x=>({m:NB.OPEN*60,at:hhmm(NB.OPEN*60),type:'exposed',stand:x.stand,by:x.by})),...out.events];
+  runs.push({day,open:{weather:out.weather,ev:out.ev,stands:open,exposed:morning.exposed.map(x=>({stand:x.stand,by:x.by}))},events,results,privates});
   last=day;}
  const intel=last<days?nbIntel(seed,world,last+1):null;
  const status=last>=days&&(now.day>days||now.minutes>=NB.CLOSE*60)?'done':last>0?'running':'open';
@@ -459,7 +492,7 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,world=
 const LemonEngine={CUP,DAYS,CAP_BASE,CAP_STATION,CAP_TEAM,HELPER_B,HELPER_C,LOAN_INT,TP,SR,SW,ITP,WTP,HFR,crP,CT,TYPES,WE,tM,softEnv,iFr,tSc,fSc,freshW,cSc,heatF,setPM,pMt,buyProb,rawQ,bestQ,relQ,VIP_Q,standAttr,rng,
  LOC,UPG_MKT,UPG_OPS,MKTG,BLACK,FORECAST,RESEARCH_C,SPY_C,DIFF,PRESETS,sameR,EVENTS,evGood,MEV,SUR,PERSONAS,AI,SMART,ALL_UPS,MK_EM,buildWorld,
  DOW,dowOf,mixOf,rivalsOf,dayCtx,hitOn,rivalDemand,planRivals,rivalsFor,visitorsFor,whyOf,perType,buyersFor,playerDay,settleDay,makeForecast,
- NB,hhmm,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,botDecision,autopilot,nbIntel,advanceHood};
+ NB,hhmm,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,resolveCatches,botDecision,autopilot,nbIntel,advanceHood};
 if(typeof module!=='undefined'&&module.exports)module.exports=LemonEngine;else root.LemonEngine=LemonEngine;
 })(typeof globalThis!=='undefined'?globalThis:this);
 

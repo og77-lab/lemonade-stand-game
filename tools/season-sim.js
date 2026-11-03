@@ -18,6 +18,8 @@ function season(seed) {
     // half the stands are bots by character, the other half "players" who went quiet (autopilot) on odd days
     const decs = stands.map((s, k) => k % 2 === 1 && day % 2 === 1 && day > 1 ? E.autopilot(s.st, s.last, s.lastRes, world, day)
       : E.botDecision(s.p, s.st, { seed, world, day, diff: DIFF, n: STANDS, board, me: s.id, k, prev: s.lastRes && { dec: s.last, res: s.lastRes }, street: lastStreet }));
+    // last night's catches: exposed or kept quiet, before the stands open
+    { const sts = Object.fromEntries(stands.map(s => [s.id, s.st])); E.resolveCatches(sts, Object.fromEntries(stands.map((s, k) => [s.id, decs[k]])), day); stands = stands.map(s => ({ ...s, st: sts[s.id] })); }
     const prep = stands.map((s, k) => E.prepareStand(s.st, decs[k], world, day, STANDS));
     // purchases never take cash below zero (a stand already in debt just can't buy)
     prep.forEach((p, k) => check(p.st.cash >= Math.min(0, stands[k].st.cash) - 1e-6, `day ${day}: purchases took cash from ${stands[k].st.cash} to ${p.st.cash}`));

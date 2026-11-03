@@ -13,6 +13,8 @@ for (let g = 1; g <= N; g++) {
   for (let day = 1; day <= DAYS; day++) {
     const board = S.map(s => ({ id: s.id, tot: s.st.tot }));
     const decs = S.map((s, k) => E.botDecision(s.p, s.st, { seed, world, day, diff: LEVEL, n: STANDS, board, me: s.id, k, prev: s.prev, street }));
+    // last night's catches: exposed or kept quiet, before the stands open
+    { const sts = Object.fromEntries(S.map(s => [s.id, s.st])); E.resolveCatches(sts, Object.fromEntries(S.map((s, k) => [s.id, decs[k]])), day); S = S.map(s => ({ ...s, st: sts[s.id] })); }
     const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, day, STANDS));
     const out = E.runNeighborhoodDay({ seed, world, day, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
     street = out.results.map(x => ({ id: x.id, price: x.price, loc: x.loc }));

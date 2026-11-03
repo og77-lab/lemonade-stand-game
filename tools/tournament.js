@@ -33,6 +33,8 @@ function season(styles, seed) {
       if (sty.stock) { d.cups = Math.round(d.cups * sty.stock); d.helper = d.cups > E.CAP_BASE; const P = world[day - 1].p, r = d.recipe; d.buy = { l: d.cups * r.l, h: d.cups * r.h, i: d.cups * r.i }; }
       d.autoStock = true; return d;
     });
+    // last night's catches: exposed or kept quiet, before the stands open
+    { const sts = Object.fromEntries(S.map(s => [s.id, s.st])); E.resolveCatches(sts, Object.fromEntries(S.map((s, k) => [s.id, decs[k]])), day); S = S.map(s => ({ ...s, st: sts[s.id] })); }
     const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, day, STANDS));
     const out = E.runNeighborhoodDay({ seed, world, day, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
     street = out.results.map(r => ({ id: r.id, price: r.price, loc: r.loc }));
