@@ -964,6 +964,17 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .hd-onair{align-self:center;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;background:#3D1E28;color:#FFD0D8;border:1px solid #7A2A3C;border-radius:999px;padding:4px 12px;animation:hdIn .3s var(--ease-out) both}
 .hd-onair b{color:#fff}
 .hd-onair.catch{background:#3A3012;color:#FFE58A;border-color:#6B5A1E}
+.hd-zones{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hd-zone{background:var(--panel-2);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;gap:6px;border:1px solid transparent;min-width:0}
+.hd-zone.z0{background:linear-gradient(180deg,#2A2442,var(--panel-2))}.hd-zone.z1{background:linear-gradient(180deg,#26304A,var(--panel-2))}.hd-zone.z2{background:linear-gradient(180deg,#3A2E1C,var(--panel-2))}
+.hd-zone.mine{border-color:var(--lemon)}
+.hd-zh{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px}.hd-zh span{font-size:22px}.hd-zh b{font-size:12.5px}.hd-zh small{font-size:10.5px;color:var(--dim)}
+.hd-crowd{display:flex;flex-wrap:wrap;justify-content:center;gap:1px;font-size:11px;opacity:.7;min-height:16px}.hd-crowd i{font-style:normal;animation:hdWalk 2s ease-in-out infinite alternate}
+.hd-zs{display:flex;flex-direction:column;gap:4px}
+.hd-zst{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(0,0,0,.22);border-radius:9px;padding:4px 2px;animation:hdIn .35s var(--ease-out) both}
+.hd-zst i{font-style:normal;font-size:18px}.hd-zst b{font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-zst small{font-size:10.5px;color:var(--dim)}
+.hd-zst.me{background:#2E2A12;box-shadow:inset 0 0 0 1px var(--lemon)}.hd-zst.me b{color:var(--lemon)}.hd-zst.off{opacity:.5}
+@keyframes hdWalk{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
 @keyframes hdIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes hdUp{0%{background:rgba(74,222,128,.28)}100%{background:transparent}}
 @keyframes hdDn{0%{background:rgba(251,113,133,.22)}100%{background:transparent}}
@@ -1929,11 +1940,11 @@ function Game(){
   return()=>{alive=false;};},[hood&&hood.id,phase,report&&report.day]);
  const hoodBoard=()=>{const ds=Object.keys(hst.results||{}).map(Number),last=ds.length?Math.max(...ds):0;return{last,rows:last?hst.results[last].slice().sort((a,b)=>b.score-a.score):[]};};
  const HoodRows=({rows})=>{const names=hoodNames(hst);return rows.map((r,i)=><div key={r.id} className={"lb"+(r.id===hst.me.id?' me':'')}><span className="lb-r num">{['🥇','🥈','🥉'][i]||i+1}</span>
-  <span className="lb-n">{names[r.id]?.em} {names[r.id]?.nick}{names[r.id]?.bot?' 🤖':''}</span><span className="num lb-s">⭐ {r.rep}{r.price?` · ₪${r.price}`:''}</span><b className={"num "+(r.score>=0?'g':'r')}>{fmt(r.score)}</b></div>);};
+  <span className="lb-n">{names[r.id]?.em} {names[r.id]?.nick}{names[r.id]?.bot?' 🤖':''}</span><span className="num lb-s">⭐ {r.rep}{r.price?` · ₪${r.price}`:''}{r.loc!=null?` · ${LOC[r.loc].em}`:''}</span><b className={"num "+(r.score>=0?'g':'r')}>{fmt(r.score)}</b></div>);};
  // the neighborhood in the control center: the table so far, who's ready for tomorrow, and the code to invite friends
  const HoodPanel=()=>{const {last,rows}=hoodBoard(),H=hst.hood;return <section className="blk">
   <div className="blk-h"><h3>🏘️ {H.name}</h3><span className="tag">קוד: <b dir="ltr">{H.code}</b></span></div>
-  {rows.length?<><HoodRows rows={rows}/><div className="hint">הטבלה אחרי יום {last} · רווח מתחילת המשחק · ₪ = המחיר שלו ביום {last}</div></>
+  {rows.length?<><HoodRows rows={rows}/><div className="hint">הטבלה אחרי יום {last} · רווח מתחילת המשחק · ₪ ו-🏚️🏠🏙️ = המחיר והמקום שלו ביום {last}</div></>
    :<div className="note">שלח לחברים את הקוד <b dir="ltr">{H.code}</b>. אפשר להצטרף עד שהדוכנים נפתחים ביום 1 ב-08:00.
     <button className="btn sm" style={{marginTop:8}} onClick={()=>{const t=`בוא לשכונה "${H.name}" בלימונדה בע״מ! הקוד: ${H.code}\n${location.href.split('#')[0]}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t);}}>📤 לשתף את הקוד</button></div>}
   <div className="cl-h" style={{marginTop:10}}>מי כבר מוכן למחר</div>
@@ -2189,8 +2200,19 @@ function Game(){
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}{!hood?<i>/{cups}</i>:hoodCups!=null?<i>/{hoodCups}</i>:null}</b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
    {hood?<div><small>{s.live?'נסגר בעוד':'הדוכנים'}</small><b className="num">{s.live&&hst&&hst.today?clockTxt(openMs(hst.hood.start,hst.today)+9*36e5-hNow):'נסגרו'}</b></div>:<div><small>לא קנו</small><b className="num r">{s.walk}</b></div>}</div>
   {last&&<div className="sim-q"><span>{last.em}</span><b>{CT[last.type].one}</b><span>{hood&&last.at?last.at+' · ':''}{last.buys?'קנה כוס':last.rx==='💨'?'רצה לקנות — נגמר':'לא קנה'}</span><span className="sim-rx">{last.rx}</span></div>}
+  {hood&&HoodMap()}
   {hood&&HoodLive()}
  </div>;};
+ // the street from above: its three parts, how many walkers each gets, and who stands in each (the crowd of a part is shared by its stands)
+ const HoodMap=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst);
+  return <section className="blk hd-map"><div className="blk-h"><h3>🗺️ מי איפה ברחוב</h3><span className="tag">הקהל מתחלק בין הדוכנים</span></div>
+   <div className="hd-zones">{[0,1,2].map(z=>{const here=op.stands.filter(s=>s.loc===z),mine=here.some(s=>s.id===hst.me.id);
+    return <div key={z} className={"hd-zone z"+z+(mine?' mine':'')}>
+     <div className="hd-zh"><span>{LOC[z].em}</span><b>{LOC[z].n}</b><small>👥 ×{LOC[z].dm} · {here.length?`${here.length} דוכנים`:'ריק'}</small></div>
+     <div className="hd-crowd" aria-hidden="true">{Array.from({length:Math.round(LOC[z].dm*5)}).map((_,i)=><i key={i} style={{animationDelay:(i*0.37%2)+'s'}}>🚶</i>)}</div>
+     <div className="hd-zs">{here.map(s=>{const c=hoodCounts[s.id]||{},m=names[s.id]||{},me=s.id===hst.me.id;
+      return <span key={s.id} className={"hd-zst"+(me?' me':'')+(c.out||c.sick||s.closed?' off':'')}><i>{m.em}</i><b>{me?'אתה':m.nick}</b>
+       <small className="num">₪{s.price}{s.closed?' · 🔒':c.sick?' · 🤒':c.out?' · 💨 אזל':` · ${c.sold||0}☕`}</small></span>;})}</div></div>;})}</div></section>;};
  const HoodLive=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst),order=hoodLiveOrder(hoodCounts),mv=hoodMoves.current;
   return <><section className="blk hd-live"><div className="blk-h"><h3>🏘️ הרחוב עכשיו</h3><span className="tag">{sim&&sim.live?'מתעדכן כל 15 שניות':'סוף היום'}</span></div>
    {order.map((id,i)=>{const s=op.stands.find(x=>x.id===id),c=hoodCounts[id]||{sold:0},m=names[id]||{},d=mv[id]||0;
