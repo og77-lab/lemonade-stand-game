@@ -1553,7 +1553,7 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
   T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
  if(r.stole)T('good',`📢 ${r.stole} לקוחות עברו אליך מהקמפיין`);
- if(r.soldAt)T('warn',`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו: הכן יותר מחר`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות נזרקו: הכן פחות, או הורד מחיר`);
+ if(r.soldAt)T('warn',`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו: הכן יותר מחר`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות לא נמכרו. הלימון והסוכר שלהן נשארים למחר, והקרח נמס: הכן פחות, או הורד מחיר`);
  if(x.autoBuy)T('warn',`🛒 לא היה מספיק מלאי, אז ב-08:00 קנינו בשבילך ${[x.autoBuy.l&&x.autoBuy.l+'🍋',x.autoBuy.h&&x.autoBuy.h+'🍬',x.autoBuy.i&&x.autoBuy.i+'🧊'].filter(Boolean).join(' ')} (${fmt2(x.autoBuy.cost)})`);
  if(r.insp)T('warn','🏛️ פיקוח עירוני: ₪8');if(x.spoiled>0)T('warn',`${x.spoiled} לימונים התקלקלו`);
  if(x.skipped&&x.skipped.length)T('warn','⚠️ לא היה מספיק כסף, ולכן לא בוצעו: '+x.skipped.map(skipN).join(', '));
@@ -1624,7 +1624,7 @@ function Game(){
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
  const [diff,setDiff]=useState('medium'),[nComp,setNComp]=useState(2);
- const withComp=nComp>0;
+ const withComp=nComp>0&&!hood;
  // Which characters run the other stands (fixed for the whole season)
  const rivals=useMemo(()=>rivalsOf(seed),[seed]);
  const comps=rivals.slice(0,nComp);
@@ -2144,7 +2144,7 @@ function Game(){
       <button className="btn sm" disabled={free<f.c} onClick={e=>forecastBuy(e,f)}>{free<f.c?`חסר ${fmt(f.c-free)}`:<>קנה · ₪{f.c}</>}</button></div>)}</div>}
   </section>
   {hood&&<section className="blk"><div className="blk-h"><h3>🛡️ אבטחה · מי זומם נגדי</h3><span className="tag">משלמים ב-08:00 · עובדת כל היום</span></div>
-   <div className="note">כל טריק שמופעל נגדך מחר נבדק מול האבטחה שלך. אם היא תופסת את התוקף: הטריק נעצר, הלקוחות חוזרים אליך, והוא נחשף לכל השכונה. אם לא, אבטחה טובה לפחות תדע לספר שהייתה תקיפה.</div>
+   <div className="note">כל טריק שמופעל נגדך מחר נבדק מול האבטחה שלך. אם היא תופסת את התוקף: הטריק נעצר אצלך, רק אתה יודע מי זה, ובערב תחליט אם לחשוף אותו או לשתוק. אם לא, אבטחה טובה לפחות תדע לספר שהייתה תקיפה.</div>
    <div className="locs four">{NB.SECURITY.map(s=><button key={s.lv} className={"loc"+(sec===s.lv?' on':'')} onClick={()=>setSec(s.lv)}><span>{s.em}</span><b>{s.n}</b><small>{s.c?`₪${s.c} · `:''}תופסת {Math.round(s.catch*100)}%</small></button>)}</div></section>}
   {!hood&&<section className="blk"><div className="blk-h"><h3>📋 סקר שוק</h3><span className="tag">{isEve?'זמין בבוקר':'להיום'}</span></div>
    {research&&!isEve?<>
