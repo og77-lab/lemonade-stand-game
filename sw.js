@@ -33,3 +33,14 @@ self.addEventListener('fetch', e => {
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => put(req, res))));
 });
+
+// Reminders from the server (turned on in the game's settings)
+self.addEventListener('push', e => {
+  const m = e.data ? e.data.json() : {};
+  e.waitUntil(self.registration.showNotification(m.title || 'לימונדה בע״מ', { body: m.body || '', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', dir: 'rtl', lang: 'he', tag: m.tag || 'lm' }));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => list.length ? list[0].focus() : self.clients.openWindow('./')));
+});

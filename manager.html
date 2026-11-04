@@ -1408,7 +1408,7 @@ const Roll=({v,f=x=>Math.round(x)})=>{const [d,setD]=useState(v);const from=useR
   raf=requestAnimationFrame(tick);return()=>{cancelAnimationFrame(raf);from.current=b;};},[v]);
  return <span className="num roll">{f(d)}</span>;};
 // Player settings, kept only on this device
-const CFG0={music:true,vol:0.45,sfx:true,motion:'auto',big:false,hc:false};
+const CFG0={music:true,vol:0.45,sfx:true,motion:'auto',big:false,hc:false,remEve:false,remMorn:false};
 const loadCfg=()=>{try{return{...CFG0,...JSON.parse(localStorage.getItem('lm-cfg')||'{}')};}catch(_){return{...CFG0};}};
 const reduced=()=>document.documentElement.classList.contains('reduce');
 // Short synthesized sound effects (no files needed)
@@ -1516,6 +1516,15 @@ const hoodWorld=st=>{const blank=()=>({t:24,w:'nice',p:{l:0.5,h:0.45,i:0.1},ev:n
  if(st.deciding&&fc){w[st.deciding].t=fc.t;w[st.deciding].w=fc.w;}
  if(op){w[st.today].t=op.weather.t;w[st.today].w=op.weather.w;w[st.today].ev=EVENTS.find(e=>e.id===op.ev)||null;}
  return w;};
+// Reminders: this device's push subscription, kept on the server with which reminders it wants (none = no subscription)
+const VAPID_PUBLIC='BKRiGHp03Wt8O9QhQ_D-1b1B1TNPFcCQhRaPhIyi5ejV9yLi3o5bWnsxVPUbH7x7DQ2zZzHM5hxINHws3ORpvjs';
+const pushSet=async(evening,morning)=>{const reg='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window?await navigator.serviceWorker.getRegistration():null;if(!reg)throw new Error('unsupported');
+ let sub=await reg.pushManager.getSubscription();
+ if(!evening&&!morning){if(sub){await hoodRpc('lm_push_delete',{p_endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe();}return;}
+ if(await Notification.requestPermission()!=='granted')throw new Error('denied');
+ const key=Uint8Array.from(atob(VAPID_PUBLIC.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+ sub=sub||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});const k=sub.toJSON().keys;
+ await hoodRpc('lm_push_save',{p_endpoint:sub.endpoint,p_p256dh:k.p256dh,p_auth:k.auth,p_evening:evening,p_morning:morning});};
 const hoodNames=st=>Object.fromEntries(st.members.map(m=>[m.id,m]));
 // A moment on the street, in words (other stands' sales are counted, not told)
 const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?'אתה':(names[id]?names[id].nick:'?');
@@ -1728,7 +1737,7 @@ function Game(){
  const openStand=(closed)=>{setSim(LemonEngine.playerDay(G,plans,closed,cups,quality));
   setPhase('sim');if(!closed)setShow({kind:'open',l1:'הדוכן נפתח!',l2:`${cups} כוסות × ₪${price}`});};
  // Settings: sound, accessibility, legal pages
- const [cfg,setCfgS]=useState(loadCfg),[setOpen,setSetOpen]=useState(false),[setPage,setSetPage]=useState('main');
+ const [cfg,setCfgS]=useState(loadCfg),[setOpen,setSetOpen]=useState(false),[setPage,setSetPage]=useState('main'),[pushMsg,setPushMsg]=useState(null);
  const setCfg=p=>setCfgS(c=>{const n={...c,...p};try{localStorage.setItem('lm-cfg',JSON.stringify(n));}catch(_){}return n;});
  useEffect(()=>{SFX.on=cfg.sfx;const h=document.documentElement,sys=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   h.classList.toggle('reduce',cfg.motion==='reduce'||(cfg.motion==='auto'&&sys));h.classList.toggle('big',cfg.big);h.classList.toggle('hc',cfg.hc);},[cfg]);
@@ -1743,6 +1752,9 @@ function Game(){
  const lastSold=useRef(0);
  useEffect(()=>{const s=sim?sim.sold:0;if(s>lastSold.current&&!simFast.current)sfx('sell');lastSold.current=s;},[sim&&sim.sold]);
  useEffect(()=>{if(phase==='report')setTimeout(()=>sfx('register'),1100);},[phase]);
+ const setRemind=async(k,v)=>{const n={remEve:cfg.remEve,remMorn:cfg.remMorn,[k]:v};setPushMsg(null);
+  try{await pushSet(n.remEve,n.remMorn);setCfg({[k]:v});}
+  catch(e){setPushMsg(e.message==='unsupported'?'הדפדפן הזה לא תומך בתזכורות. באייפון צריך קודם להוסיף את המשחק למסך הבית ולפתוח אותו משם.':e.message==='denied'?'התראות חסומות בדפדפן. אפשר לאשר אותן בהגדרות הדפדפן, ולנסות שוב.':'אין חיבור לשרת, נסה שוב.');}};
  const Toggle=({on,set,label,sub})=><button className="set-row" role="switch" aria-checked={on} onClick={()=>set(!on)}><span className="set-t"><b>{label}</b>{sub&&<small>{sub}</small>}</span><span className={"tgl"+(on?' on':'')}><i/></span></button>;
  const Settings=()=><div className="dlg-bg" onClick={()=>setSetOpen(false)}><div className="sheet" role="dialog" aria-label="הגדרות" onClick={e=>e.stopPropagation()}>
   <div className="sheet-h">{setPage!=='main'&&<button className="chip" onClick={()=>setSetPage('main')}>‹ חזרה</button>}<h2>{setPage==='main'?'⚙️ הגדרות':setPage==='terms'?'📜 תנאי שימוש':setPage==='privacy'?'🔒 פרטיות':'♿ הצהרת נגישות'}</h2><button className="sheet-x" aria-label="סגור" onClick={()=>setSetOpen(false)}>✕</button></div>
@@ -1751,6 +1763,10 @@ function Game(){
    <div className="set-grp">{Toggle({on:cfg.music,set:v=>setCfg({music:v}),label:'🎵 מוזיקה',sub:'שירים ברקע'})}
     {cfg.music&&<label className="set-row vol"><span className="set-t"><b>עוצמת מוזיקה</b></span><input type="range" min="0" max="1" step="0.05" value={cfg.vol} onChange={e=>setCfg({vol:+e.target.value})} aria-label="עוצמת מוזיקה"/></label>}
     {Toggle({on:cfg.sfx,set:v=>{setCfg({sfx:v});SFX.on=v;if(v)sfx('coin');},label:'🔔 צלילים',sub:'מטבעות, קופה, מכירות'})}</div>
+   <div className="cl-h">⏰ תזכורות לשכונה</div>
+   <div className="set-grp">{Toggle({on:cfg.remEve,set:v=>setRemind('remEve',v),label:'🌙 בערב',sub:'ב-19:00, אם עוד לא החלטת למחר'})}
+    {Toggle({on:cfg.remMorn,set:v=>setRemind('remMorn',v),label:'🌅 בבוקר',sub:'ב-07:00, שעה לפני שהדוכנים נפתחים, אם עוד לא החלטת'})}</div>
+   {pushMsg&&<div className="note">{pushMsg}</div>}
    <div className="cl-h">♿ נגישות</div>
    <div className="set-grp">{Toggle({on:cfg.motion==='reduce',set:v=>setCfg({motion:v?'reduce':'auto'}),label:'🐢 פחות תנועה',sub:'מבטל אנימציות וחפצים מעופפים'})}
     {Toggle({on:cfg.big,set:v=>setCfg({big:v}),label:'🔠 טקסט גדול',sub:'מגדיל את כל המסך ב-15%'})}
@@ -1769,12 +1785,13 @@ function Game(){
    <h4>אחריות</h4><p>המשחק ניתן "כמו שהוא" (AS IS). אנחנו משתדלים שיעבוד היטב, אבל לא מתחייבים שיהיה זמין תמיד או נקי מתקלות.</p>
    <h4>שינויים</h4><p>המשחק והתנאים יכולים להשתנות מדי פעם. הגרסה העדכנית תמיד כאן.</p>
   </div>:setPage==='privacy'?<div className="sheet-b legal">
-   <h4>מה אנחנו אוספים</h4><p>המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה. המידע היחיד שיוצא מהמכשיר הוא תוצאה שבחרת לשלוח לטבלת השיאים (ראו למטה).</p>
+   <h4>מה אנחנו אוספים</h4><p>המשחק לא מבקש שם, אימייל או כל פרט אישי, ואין בו הרשמה. מהמכשיר יוצאים רק תוצאה שבחרת לשלוח לטבלת השיאים, ומה שצריך לתזכורות אם הפעלת אותן (ראו למטה).</p>
    <h4>מה נשמר במכשיר</h4><p>רק ההגדרות שלך (סאונד ונגישות) נשמרות בדפדפן במכשיר שלך, כדי שלא תצטרך לבחור אותן שוב. הן לא נשלחות לשום מקום. אפשר למחוק אותן בכפתור למטה.</p>
    <h4>טבלת שיאי הקהילה</h4><p>כשמתחילים משחק, נרשם בשרת מזהה משחק אנונימי (רמת קושי ומספר מתחרים, בלי שום פרט אישי), כדי שאפשר יהיה לוודא שתוצאות בטבלה אמיתיות. רק אם תבחר לשלוח תוצאה בסוף משחק: נשלחים הכינוי שבחרת, התוצאה (רווח, כוכבים, כוסות ומוניטין) וסיכום של כל יום (מחיר, כוסות, הכנסות ורווח) לבדיקה לשרת של Supabase, והם מוצגים לכל השחקנים. לא נשלחים שם, אימייל או כל פרט אישי אחר. אל תשתמש בשם האמיתי שלך ככינוי. כדי למחוק תוצאות, כתוב לנו: alwaysbusinessday@gmail.com.</p>
+   <h4>תזכורות</h4><p>התזכורות כבויות עד שמפעילים אותן בהגדרות. כשמפעילים, נשמרים בשרת כתובת ההתראות שהדפדפן נותן למכשיר הזה ומתי לשלוח, והיא עוברת דרך שירות ההתראות של הדפדפן (Google, Apple, Mozilla או Microsoft). תוכן ההודעה מוצפן. כיבוי התזכורות מוחק את הכתובת מהשרת.</p>
    <h4>התקדמות במשחק</h4><p>התקדמות המשחק לא נשמרת כרגע. רענון הדף מתחיל משחק חדש.</p>
    <h4>שירותים חיצוניים</h4><p>כדי לטעון את המשחק הדפדפן מוריד גופנים מ-Google Fonts וקוד מ-cdnjs (Cloudflare), והאתר מאוחסן ב-Vercel. כמו בכל אתר, שירותים אלה רואים פרטים טכניים כמו כתובת IP. המשחק לא משתמש בעוגיות פרסום או במעקב.</p>
-   <button className="btn ghost" onClick={()=>{try{localStorage.removeItem('lm-cfg');}catch(_){}setCfgS({...CFG0});}}>🗑️ מחק את ההגדרות השמורות</button>
+   <button className="btn ghost" onClick={()=>{try{localStorage.removeItem('lm-cfg');}catch(_){}setCfgS({...CFG0});pushSet(false,false).catch(()=>{});}}>🗑️ מחק את ההגדרות השמורות</button>
   </div>:<div className="sheet-b legal">
    <p>אנחנו רוצים שכל אחד יוכל ליהנות מהמשחק.</p>
    <h4>מה יש במשחק</h4><p>• "פחות תנועה" מבטל אנימציות, ומופעל אוטומטית אם ביקשת זאת בהגדרות המכשיר.<br/>• "טקסט גדול" מגדיל את כל המסך.<br/>• "ניגודיות גבוהה" מבהיר טקסט וגבולות.<br/>• אפשר לכבות מוזיקה וצלילים בנפרד.<br/>• המשחק בעברית מימין לשמאל, והכפתורים נגישים במקלדת.</p>
