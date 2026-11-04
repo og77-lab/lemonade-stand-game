@@ -96,6 +96,14 @@ async function vapidAuth(endpoint, d, nowSec = Math.floor(Date.now() / 1000)) {
   const part = o => b64u.enc(utf8(JSON.stringify(o))), head = part({ typ: 'JWT', alg: 'ES256' }) + '.' + part({ aud: new URL(endpoint).origin, exp: nowSec + 12 * 3600, sub: VAPID_SUB });
   return `vapid t=${head}.${b64u.enc(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, utf8(head)))}, k=${VAPID_PUBLIC}`;
 }
+// is the secret the private half of VAPID_PUBLIC? (the server's answer says so, so a wrong secret doesn't fail silently at 19:00)
+async function pushKeyStatus(d) {
+  if (!d) return 'no key';
+  try {
+    const [head, claims, sig] = (await vapidAuth('https://web.push.apple.com/', d)).match(/t=([^,]+)/)[1].split('.'), pub = await crypto.subtle.importKey('raw', b64u.dec(VAPID_PUBLIC), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+    return (await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pub, b64u.dec(sig), utf8(head + '.' + claims))) ? 'ok' : 'wrong key';
+  } catch (e) { return 'wrong key'; }
+}
 const pushSender = d => async (t, text) => {
   if (!PUSH_HOSTS.test(t.endpoint)) return 410;
   const r = await fetch(t.endpoint, { method: 'POST', signal: AbortSignal.timeout(8000), body: await encryptPush(text, t.p256dh, t.auth),
@@ -144,10 +152,10 @@ if (typeof Deno !== 'undefined') {
       const db = restDb(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
       const now = israelNow(), report = await tick(db, globalThis.LemonEngine, now, only), key = Deno.env.get('VAPID_KEY');
       const reminders = !only && key ? await remind(db, now, pushSender(key)).catch(e => ({ error: String(e && e.message || e) })) : [];
-      return new Response(JSON.stringify({ ok: true, report, reminders }), { headers: { ...cors, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ ok: true, report, reminders, push: await pushKeyStatus(key) }), { headers: { ...cors, 'Content-Type': 'application/json' } });
     } catch (e) {
       return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e) }), { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } });
     }
   });
 }
-if (typeof module !== 'undefined' && module.exports) module.exports = { tick, israelNow, dayNumber, restDb, reminderFor, remind, encryptPush, vapidAuth, VAPID_PUBLIC };
+if (typeof module !== 'undefined' && module.exports) module.exports = { tick, israelNow, dayNumber, restDb, reminderFor, remind, encryptPush, vapidAuth, pushKeyStatus, VAPID_PUBLIC };
