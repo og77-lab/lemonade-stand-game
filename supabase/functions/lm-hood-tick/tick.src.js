@@ -10,7 +10,7 @@ function israelNow(date = new Date()) {
 }
 const dayNumber = (start, date) => Math.round((Date.parse(date + 'T00:00:00Z') - Date.parse(start + 'T00:00:00Z')) / 864e5) + 1;
 
-// db: { hoods(only), members(hood), decisions(memberIds, fromDay, toDay), bought(memberIds, fromDay, toDay), memberDays(memberIds, day), lastOpen(hood, day),
+// db: { hoods(only), members(hood), decisions(memberIds, fromDay, toDay), bought(memberIds, fromDay, toDay), spied(memberIds, fromDay, toDay), memberDays(memberIds, day), lastOpen(hood, day),
 //       hasIntel(hood, day), claim(hood, fromLastDay, toLastDay, status), saveDays(rows), saveMemberDays(rows), saveStates(rows), saveIntel(row), setStatus(hood, status) }
 async function tick(db, E, now = israelNow(), only = null) {
   const report = [];
@@ -26,6 +26,7 @@ async function tick(db, E, now = israelNow(), only = null) {
     if (due) {
       for (const d of await db.decisions(ids, h.last_day + 1, today.day)) (decisions[d.day] = decisions[d.day] || {})[d.member] = d.dec;
       for (const b of await db.bought(ids, h.last_day + 1, today.day)) (paid[b.day] = paid[b.day] || {})[b.member] = +b.cost;
+      for (const b of await db.spied(ids, h.last_day + 1, today.day)) { const p = paid[b.day] = paid[b.day] || {}; p[b.member] = (p[b.member] || 0) + +b.cost; }
       if (h.last_day > 0) {
         for (const x of await db.memberDays(ids, h.last_day)) prev[x.member] = { dec: x.data.dec, res: x.data.res };
         street = ((await db.lastOpen(h.id, h.last_day)) || { stands: [] }).stands.map(x => ({ id: x.id, price: x.price, loc: x.loc }));
@@ -123,6 +124,7 @@ function restDb(url, key) {
     members: hood => q('lm_members?select=id,slot,persona,state&hood=eq.' + hood + '&order=slot'),
     decisions: (ids, a, b) => q(`lm_decisions?select=member,day,dec&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
     bought: (ids, a, b) => q(`lm_bought?select=member,day,cost&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
+    spied: (ids, a, b) => q(`lm_spied?select=member,day,cost&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`).catch(() => []),
     memberDays: (ids, d) => q(`lm_member_days?select=member,data&member=${inList(ids)}&day=eq.${d}`),
     lastOpen: async (hood, d) => ((await q(`lm_days?select=open&hood=eq.${hood}&day=eq.${d}`))[0] || {}).open,
     hasIntel: async (hood, d) => (await q(`lm_intel?select=day&hood=eq.${hood}&day=eq.${d}`)).length > 0,

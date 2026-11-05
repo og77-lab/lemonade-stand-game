@@ -12,11 +12,10 @@ for (let g = 1; g <= N; g++) {
   let S = cast.map((p, k) => ({ id: 's' + k, p, st: E.newStand(), prev: null })), street = [];
   for (let day = 1; day <= DAYS; day++) {
     const board = S.map(s => ({ id: s.id, tot: s.st.tot }));
-    const decs = S.map((s, k) => E.botDecision(s.p, s.st, { seed, world, day, diff: LEVEL, n: STANDS, board, me: s.id, k, prev: s.prev, street }));
-    // last night's catches: exposed or kept quiet, before the stands open
-    { const sts = Object.fromEntries(S.map(s => [s.id, s.st])); E.resolveCatches(sts, Object.fromEntries(S.map((s, k) => [s.id, decs[k]])), day); S = S.map(s => ({ ...s, st: sts[s.id] })); }
+    const pairs = E.couponPairs(S.map(s => s.id), day), mate = Object.fromEntries(pairs.flatMap(([a, b]) => [[a, b], [b, a]])), peers = Object.fromEntries(S.map(s => [s.id, s.st.cp || []])), fund = E.fundOffer('h' + g, day, STANDS);
+    const decs = S.map((s, k) => E.botDecision(s.p, s.st, { seed, world, day, diff: LEVEL, n: STANDS, board, me: s.id, k, prev: s.prev, street, partner: mate[s.id], peers, days: DAYS, fund }));
     const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, day, STANDS));
-    const out = E.runNeighborhoodDay({ seed, world, day, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
+    const out = E.runNeighborhoodDay({ seed, world, day, pairs, fund, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
     street = out.results.map(x => ({ id: x.id, price: x.price, loc: x.loc }));
     S = S.map((s, k) => ({ ...s, st: E.settleStand(prep[k].st, prep[k].plan, out.results[k], prep[k].spent, day).st, prev: { dec: decs[k], res: out.results[k] } }));
   }

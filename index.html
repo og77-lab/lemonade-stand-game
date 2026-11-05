@@ -919,6 +919,11 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .hd-line>span{font-size:14px;font-weight:600}.hd-line small{display:block;font-size:11.5px;color:var(--dim);font-weight:400}
 .hd-line.col{flex-direction:column;align-items:stretch}
 .hd-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rd-row{display:flex;flex-direction:column;gap:3px;padding:9px 2px;border-bottom:1px solid var(--line)}.rd-row:last-child{border-bottom:none}.rd-row.me{background:rgba(255,210,63,.07);border-radius:8px;padding-inline:8px}
+.rd-row small{color:var(--dim);font-size:12.5px;line-height:1.4}.rd-row small.rd-in{color:var(--lemon)}
+.rd-top{display:flex;justify-content:space-between;gap:8px;font-size:14.5px}.rd-fig{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px}
+.rd-scroll{overflow-x:auto}.rd-tbl{border-collapse:collapse;font-size:13px;min-width:100%}.rd-tbl th,.rd-tbl td{padding:6px 7px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.rd-tbl tbody th{text-align:right;font-weight:600;position:sticky;right:0;background:var(--panel)}.rd-tbl thead th{color:var(--dim);font-weight:500}.rd-tbl tr.me th{color:var(--lemon)}.rd-tbl td.top{font-weight:700;color:var(--lemon)}
 .hd-day{font-style:normal;font-size:13px;color:rgba(255,255,255,.75)}
 .hd-timer{margin-top:8px;background:rgba(0,0,0,.25);border-radius:10px;padding:6px 10px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .hd-timer b{font-size:18px;color:var(--lemon)}
@@ -1502,7 +1507,7 @@ const SkyShow=({kind,wx,line1,line2,onDone,ups,item,ev})=>{useEffect(()=>{const 
   <div className="sky-text"><div className="sky-l1">{line1}</div><div className="sky-l2">{line2}</div></div>
  </div>;};
 
-const {NB,prepareStand,trickCost}=LemonEngine;
+const {NB,prepareStand,trickCost,couponPairs,fundOffer}=LemonEngine;
 /* ───────── Neighborhood (multiplayer): one real day per game day, with friends on the same street ───────── */
 const HOOD_ERR={'not signed in':'צריך להתחבר שוב','bad nickname':'כינוי של 2–16 תווים','no such neighborhood':'אין שכונה עם הקוד הזה','already started':'השכונה כבר התחילה, אי אפשר להצטרף',
  'neighborhood full':'השכונה מלאה','locked':'הזמן להחלטות נגמר','already bought':'כבר קנית תחזית הערב','not enough cash':'אין מספיק כסף בקופה','not ready':'השוק עוד לא מוכן, נסה בעוד רגע',
@@ -1516,7 +1521,7 @@ const hoodTick=hood=>fetch(SB_URL+'/functions/v1/lm-hood-tick',{method:'POST',he
 const openMs=(start,d)=>Date.parse(start+'T08:00:00Z')+(d-1)*864e5;
 const clockTxt=ms=>{ms=Math.max(0,ms);const h=Math.floor(ms/36e5),m=Math.floor(ms/6e4)%60,s=Math.floor(ms/1e3)%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0');};
 const TRICK_N={ads:'קמפיין נגד',rumor:'שמועות',signs:'הסרת שלטים'};
-const skipN=k=>({stock:'כל המלאי',ups:'שדרוג',security:'אבטחה',loc:'השכירות (עברת לפינה)',helper:'עוזר'})[k]||MKTG.find(m=>m.id===k)?.n||BLACK.find(b=>b.id===k)?.n||k;
+const skipN=k=>({fund:'התרומה לקרן הרחוב',stock:'כל המלאי',ups:'שדרוג',security:'אבטחה',loc:'השכירות (עברת לפינה)',helper:'עוזר'})[k]||MKTG.find(m=>m.id===k)?.n||BLACK.find(b=>b.id===k)?.n||k;
 // The days as a player may see them: tonight's market prices, tomorrow's weather only through a bought forecast, today's weather once the stands open
 const hoodWorld=st=>{const blank=()=>({t:24,w:'nice',p:{l:0.5,h:0.45,i:0.1},ev:null,vip:false,insp:false,mev:null,sur:null,sick:[]}),w=Array.from({length:st.hood.days+2},blank);
  const M=st.market,fc=st.me.forecast&&st.me.forecast.data,op=st.today&&(st.opened||{})[st.today];
@@ -1533,6 +1538,8 @@ const pushSet=async(evening,morning)=>{const reg='serviceWorker' in navigator&&'
  const key=Uint8Array.from(atob(VAPID_PUBLIC.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
  sub=sub||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});const k=sub.toJSON().keys;
  await hoodRpc('lm_push_save',{p_endpoint:sub.endpoint,p_p256dh:k.p256dh,p_auth:k.auth,p_evening:evening,p_morning:morning});};
+// tonight's coupon neighbor (the street's order is the slots'), or nobody on the night this stand sits out
+const hoodMate=st=>{const me=st.me.id,p=st.deciding&&couponPairs(st.members.map(m=>m.id),st.deciding).find(x=>x.includes(me));return p?st.members.find(m=>m.id===(p[0]===me?p[1]:p[0])):null;};
 const hoodNames=st=>Object.fromEntries(st.members.map(m=>[m.id,m]));
 // A moment on the street, in words (other stands' sales are counted, not told)
 const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?'אתה':(names[id]?names[id].nick:'?');
@@ -1540,8 +1547,8 @@ const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?'אתה':(names[id]?name
   case 'sick':return e.stand===meId?'🤒 חלית והדוכן נסגר':`🤒 ${n(e.stand)} חלה, הדוכן שלו נסגר`;
   case 'event':return `${e.n}: ${e.d}`;case 'surprise':return e.n;
   case 'vip':return `🎩 מבקר האוכל אצל ${n(e.stand)}: ${e.ok?'התלהב! 🌟':'התאכזב 😤'}`;
-  case 'caught':return e.victim===meId?`🚨 האבטחה שלך עצרה ${TRICK_N[e.trick]}. רק אתה יודע מי`:`🚨 האבטחה של ${n(e.victim)} עצרה ${TRICK_N[e.trick]}`;
-  case 'exposed':return e.stand===meId?'📣 נחשפת בתרגיל מלוכלך! כל השכונה יודעת':`📣 ${n(e.stand)} נחשף בתרגיל מלוכלך!`;default:return null;}};
+  case 'caught':return e.stand===meId?`🚨 נתפסת: ${TRICK_N[e.trick]} נגד ${n(e.victim)}`:`🚨 ${n(e.stand)} נתפס: ${TRICK_N[e.trick]} נגד ${n(e.victim)}`;
+  case 'fund':return e.ok?`🎉 הקרן הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}): ${e.n} היום ברחוב!`:`😞 הקרן לא הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}). הכסף אבד`;default:return null;}};
 // The day's report from the server's numbers, in the shape of the regular game's report
 const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNames(st),op=(st.opened||{})[d],rows=(st.results||{})[d]||[],sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
  const tips=[];const T=(k,t)=>tips.push({k,t});
@@ -1549,15 +1556,13 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  if(r.closed)T('bad','🔒 הדוכן היה סגור היום');if(r.sick)T('bad',`🤒 חלית ב-${r.sick} והדוכן נסגר מוקדם`);
  if(r.vip===true)T('good','🎩 מבקר האוכל התלהב! +8 מוניטין, ומחר כתבה בעיתון (×1.3 מבקרים)');else if(r.vip===false)T('bad','🎩 מבקר האוכל התאכזב. −6 מוניטין');
  const nick=id=>names[id]?.nick||'?',C=NB.CAUGHT;
- // last night's choices on catches, as the street heard them at 08:00
- const yCaught=((st.me.days[d-1]||{}).res||{}).caught||[];
- ((op&&op.exposed)||[]).forEach(e=>{if(e.stand===me)T('bad',`📣 נחשפת! כל השכונה יודעת על התרגיל: −${C.rep} מוניטין ופיצוי ${fmt(C.fine)} למי שחשף`);
-  else if(e.by.includes(me))T('good',`📣 חשפת את ${nick(e.stand)}: הוא איבד ${C.rep} מוניטין, ואתה קיבלת פיצוי ${fmt2(C.fine/e.by.length)}${e.by.length>1?` (התחלקת עם עוד ${e.by.length-1} שחשפו)`:''}`);
-  else if(yCaught.some(c=>c.by===e.stand))T('warn',`📣 מישהו אחר חשף את ${nick(e.stand)}, אז הסוד שלך כבר לא שווה כלום`);});
- (x.kept||[]).forEach(on=>T('good',`🤫 שתקת על ${nick(on)}: עד יום ${d+NB.HOLD.days-1} חלק מהלקוחות שלו יבואו אליך, כל עוד אף אחד לא חושף אותו`));
- if(r.secret)T('good',`🤫 ${r.secret} לקוחות הגיעו אליך היום בזכות סוד שאתה שומר`);
- r.attacks.forEach(a=>a.caught?T('good',`🚨 האבטחה תפסה את ${nick(a.by)} ב-${a.at}: ${TRICK_N[a.trick]}${a.all?' נגד כולם':''}. רק אתה יודע. הערב תחליט: לחשוף או לשתוק`):T('bad',`⚠️ מישהו הפעיל נגדך ${TRICK_N[a.trick]}, ולא ידוע מי`));
- r.myTricks.forEach(t=>t.caught?T('bad',`🚨 ה${TRICK_N[t.trick]} שלך${t.all?' נגד כולם':''} נתפס${t.times>1?` (${t.times} פעמים)`:''}. מי תפס? לא ידוע. אם יחשפו אותך: −${C.rep} מוניטין ופיצוי ${fmt(C.fine)}. אם ישתקו: חלק מהלקוחות שלך יעברו אליהם לכמה ימים`):T('good',`🎩 ${TRICK_N[t.trick]}${t.all?' נגד כולם':''} עבר בשקט`));
+ r.attacks.forEach(a=>a.caught?T('good',`🚨 האבטחה תפסה את ${nick(a.by)} ב-${a.at}: ${TRICK_N[a.trick]}${a.all?' נגד כולם':''}. הוא נחשף לכל השכונה ושילם פיצוי`):T('bad',`⚠️ מישהו הפעיל נגדך ${TRICK_N[a.trick]}, ולא ידוע מי`));
+ if(r.comp)T('good',`💰 קיבלת ${fmt2(r.comp)} פיצוי ממי שתקף אותך`);
+ r.myTricks.forEach(t=>t.caught?T('bad',`🚨 ה${TRICK_N[t.trick]} שלך${t.all?' נגד כולם':''} נתפס, וכל השכונה יודעת: −${C.rep} מוניטין ופיצוי ${fmt(C.fine)}`):T('good',`🎩 ${TRICK_N[t.trick]}${t.all?' נגד כולם':''} עבר בשקט`));
+ // the street fund
+ if(r.fund&&op&&op.fund){const f=r.fund,o=op.fund;if(o.ok)T('good',f.gave?`🎉 ${o.n}: הקרן הגיעה ליעד. נתת ${fmt(f.gave)}, ו-${f.came} לקוחות מהאירוע קנו אצלך`:`🎉 ${o.n}: הקרן הגיעה ליעד בלעדיך. הרחוב היה מלא, אבל רוב הקהל הלך למי שתרם`);else if(f.gave)T('bad',`😞 הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target}), וה-${fmt(f.gave)} שלך אבדו`);else T('warn',`הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target})`);}
+ // the coupons deal with tonight's neighbor
+ if(r.coupon){const c=r.coupon,n=nick(c.with);T(c.got?'good':c.gave?'bad':'warn',c.gave&&c.got?`🎟️ אתה ו${n} חילקתם קופונים: ${c.came} לקוחות חדשים קנו אצלך`:c.got?`🗑️ זרקת את הקופונים של ${n}, והוא חילק את שלך: ${c.came} לקוחות חדשים קנו אצלך`:c.gave?`🗑️ ${n} זרק את הקופונים שלך: שילמת על הדפוס, ${c.left} מהלקוחות שלך עברו אליו, ולא קיבלת כלום`:`🗑️ גם אתה וגם ${n} זרקתם את הקופונים: אף אחד לא הרוויח`);}
  // my price against the street's that day, and what it did to my sales
  {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
   T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
@@ -1569,7 +1574,7 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  if(!tips.length)T('good','יום מאוזן. המשך כך');
  const comps=rows.filter(o=>o.id!==me).map(o=>{const m=names[o.id]||{},s=op&&op.stands.find(z=>z.id===o.id)||{mk:[]};
   return{em:m.em,n:m.nick,pr:o.price,sold:o.sold,profit:o.profit,rep:o.rep,hidden:null,
-   seen:[...(o.auto==='autopilot'?['auto']:[]),...(o.sick?['sick']:[]),...(o.vip===true?['vip+']:o.vip===false?['vip-']:[]),...s.mk,...(s.helper?['helper']:[]),...((op&&op.exposed)||[]).filter(e=>e.stand===o.id).map(()=>'exposed')]};});
+   seen:[...(o.auto==='autopilot'?['auto']:[]),...(o.sick?['sick']:[]),...(o.vip===true?['vip+']:o.vip===false?['vip-']:[]),...s.mk,...(s.helper?['helper']:[]),...(o.caught?['exposed']:[]),...(o.coupon?[o.coupon.gave?'cp+':'cp-']:[]),...(o.fund?['fd'+o.fund]:[])]};});
  // place in the season table after this day, and before it
  const placeOn=k=>{const rs=((st.results||{})[k]||[]).slice().sort((a,b)=>b.score-a.score);const i=rs.findIndex(o=>o.id===me);return i<0?null:i+1;};
  return{day:d,place:placeOn(d),prevPlace:d>1?placeOn(d-1):null,n:rows.length,
@@ -1628,7 +1633,7 @@ function Hood({onExit,onOpen}){
 function Game(){
  const [seed,setSeed]=useState(()=>Date.now()%100000),[gameId,setGameId]=useState(null),[starting,setStarting]=useState(false);
  // Neighborhood mode: the same screens, with the day's world and the stand coming from the server ({id, st, skew})
- const [hood,setHood]=useState(null),[hoodExpose,setHoodExpose]=useState([]),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
+ const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('price'),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
  const world=useMemo(()=>hood&&hood.st?hoodWorld(hood.st):buildWorld(seed),[seed,hood&&hood.st]);
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
@@ -1668,7 +1673,7 @@ function Game(){
  const cap=(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
  const actCost=acts.reduce((s,id)=>s+(hood&&hood.st&&BLACK.some(b=>b.id===id)?trickCost(id,targets[id]||'',hood.st.members.length):([...MKTG,...BLACK].find(a=>a.id===id)?.c||0)),0);
  // in a neighborhood the evening also holds the morning's choices, so the day's costs are counted already
- const committed=(phase==='morning'||(hood&&phase==='evening')?actCost+LOC[loc].rent+(hood?NB.SECURITY[sec].c:0):0)+(helper?HELPER_C:0);
+ const committed=(phase==='morning'||(hood&&phase==='evening')?actCost+LOC[loc].rent+(hood?NB.SECURITY[sec].c+hoodFund+(hoodCoupon&&hood.st&&hoodMate(hood.st)?NB.COUPON.cost:0):0):0)+(helper?HELPER_C:0);
  const shopCost=phase==='evening'?buy.l*tP.l+buy.h*tP.h+buy.i*tP.i:0;
  const free=cash-committed-shopCost;
  const temp=W.t,wInfo=WE[W.w];
@@ -1897,7 +1902,7 @@ function Game(){
   setHood(h=>({...(h||{}),id,st,skew:Date.parse(st.now+'Z')-Date.now()}));return st;};
  const openHood=id=>{setHood({id,st:null,skew:0});hoodKey.current='';setHoodMsg(null);setPhase('hoodwait');hoodLoad(id).catch(e=>setHoodMsg(hoodErr(e)));};
  // leaving a neighborhood: nothing of it may carry into a regular game
- const leaveHood=()=>{setHood(null);hoodKey.current='';setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);hoodSnap.current='';
+ const leaveHood=()=>{setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);hoodSnap.current='';
   setDay(1);setCash(80);setLoan(0);setLemons([{q:40,d:1}]);setSugar(0);setIce(0);setRep(50);setBuy({l:0,h:0,i:0});setRecipe({l:3,h:1,i:1});setPrice(6);setCupsWanted(20);setLoc(1);setHelper(false);
   setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');setPhase('hood');};
  useEffect(()=>{if(!hood||!hood.id)return;const t=setInterval(()=>hoodLoad().catch(()=>{}),30000),c=setInterval(()=>hoodClock(x=>x+1),1000);return()=>{clearInterval(t);clearInterval(c);};},[hood&&hood.id]);
@@ -1914,7 +1919,7 @@ function Game(){
   if(ph==='evening'){const dec=st.me.decision||{},newUps=(dec.ups||[]).filter(u=>!S.ups.includes(u)),upCost=newUps.reduce((s,u)=>s+(ALL_UPS.find(x=>x.id===u)?.c||0),0),loanAdd=dec.loan&&!S.loan?dec.loan:0;
    setCash(S.cash-upCost+loanAdd);setUps([...S.ups,...newUps]);setLoan(S.loan+loanAdd);
    if(dec.recipe)setRecipe(dec.recipe);if(dec.price)setPrice(dec.price);if(dec.cups!=null)setCupsWanted(dec.cups);if(dec.loc!=null)setLoc(dec.loc);setHelper(!!dec.helper);
-   setActs([...(dec.mk||[]),...(dec.bh||[]).map(b=>b.id)]);setTargets(Object.fromEntries((dec.bh||[]).map(b=>[b.id,b.target])));setSec(dec.sec||0);setHoodExpose(dec.expose||[]);
+   setActs([...(dec.mk||[]),...(dec.bh||[]).map(b=>b.id)]);setTargets(Object.fromEntries((dec.bh||[]).map(b=>[b.id,b.target])));setSec(dec.sec||0);setHoodCoupon(dec.coupon!==false);setHoodFund(dec.fund||0);
    setBuy(dec.buy||{l:0,h:0,i:0});setFcast(st.me.forecast?st.me.forecast.data:null);hoodSnap.current=st.me.decision?'restore':'';
    setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${d}`});return;}
   setCash(S.cash);setUps(S.ups);setLoan(S.loan);
@@ -1933,7 +1938,7 @@ function Game(){
  const hoodShort=hood&&phase==='evening'&&hoodWant>afterCups?(()=>{const have={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i},need={l:Math.max(0,hoodWant*recipe.l-have.l),h:Math.max(0,hoodWant*recipe.h-have.h),i:Math.max(0,hoodWant*recipe.i-have.i)};
   return{...need,cost:need.l*tP.l+need.h*tP.h+need.i*tP.i};})():null;
  const hoodDec=()=>{const S=hst.me.state;return{recipe,price,cups:hoodWant,autoStock:true,loc,helper,sec,buy,mk:acts.filter(id=>MKTG.some(m=>m.id===id)),
-  bh:acts.filter(id=>NB.TRICKS.includes(id)&&targets[id]).map(id=>({id,target:targets[id]})),expose:hoodExpose.filter(id=>(S.caught||[]).some(c=>c.by===id)),ups:ups.filter(u=>!S.ups.includes(u)),loan:loan>S.loan?Math.round(loan-S.loan):0};};
+  bh:acts.filter(id=>NB.TRICKS.includes(id)&&targets[id]).map(id=>({id,target:targets[id]})),coupon:hoodCoupon,fund:hoodFund,ups:ups.filter(u=>!S.ups.includes(u)),loan:loan>S.loan?Math.round(loan-S.loan):0};};
  const hoodCur=hood&&hst&&phase==='evening'?JSON.stringify(hoodDec()):'';
  if(hoodSnap.current==='restore'&&hoodCur)hoodSnap.current=hoodCur;
  const hoodDirty=!!hoodCur&&hoodCur!==hoodSnap.current;
@@ -1947,11 +1952,16 @@ function Game(){
   {k:'intel',ic:'🔮',t:'תחזית למחר',v:fcast?`${WE[fcast.w].em} ${WE[fcast.w].n} ${fcast.t}° · דיוק ~${Math.round(fcast.ac*100)}%`:'לא נקנתה: מחליטים בלי לדעת את מזג האוויר',st:fcast?'ok':'opt'},
   {k:'product',ic:'🥤',t:'הכוס',v:`${recipe.l}🍋 ${recipe.h}🍬 ${recipe.i}🧊 · ₪${price} · ${hoodWant} כוסות`,st:hoodWant===0?'bad':'ok',note:hoodWant===0?'אין כוסות: הדוכן ייסגר':hoodAvg!=null?`ממוצע הרחוב אתמול ₪${hoodAvg} · ${hoodVs(price)}`:null},
   {k:'mkt',ic:'📣',t:'שיווק',v:[...acts.filter(id=>MKTG.some(m=>m.id===id)).map(id=>MKTG.find(m=>m.id===id).n),...acts.filter(id=>targets[id]).map(id=>'🖤 '+BLACK.find(b=>b.id===id).n)].join(', ')||'לא נבחר',st:acts.length?'ok':'opt'},
+  {k:'mkt',ic:'🎪',t:'קרן הרחוב',v:hoodFund?'תורם '+fmt(hoodFund):'לא תורם',st:'ok'},
+  ...(hoodMate(hst)?[{k:'mkt',ic:'🎟️',t:'קופונים',v:(hoodCoupon?'🎟️ מחלק':'🗑️ זורק')+' · עם '+hoodMate(hst).nick,st:'ok'}]:[]),
   {k:'intel',ic:'🛡️',t:'אבטחה',v:NB.SECURITY[sec].em+' '+NB.SECURITY[sec].n,st:sec?'ok':'opt'},
   {k:'biz',ic:'📍',t:'מיקום ועוזר',v:`${LOC[loc].n} · ${helper?'עם עוזר':'בלי עוזר'}`,st:'ok'},
  ]:[];
  const hoodSave=async()=>{try{const dec=hoodDec();await hoodRpc('lm_save_decision',{p_hood:hood.id,p_day:hst.deciding,p_dec:dec});try{localStorage.setItem('lm-hood-dec-'+hood.id+'-'+hst.deciding,JSON.stringify(dec));}catch(_){}hoodSnap.current=hoodCur;setHoodMsg(null);sfx('coin');hoodLoad().catch(()=>{});}
   catch(e){setHoodMsg(hoodErr(e));}};
+ // the intel report on the last day: bought in the evening, kept for the season
+ const hoodSpy=async e=>{if(free<SPY_C)return;try{const data=await hoodRpc('lm_buy_rivals',{p_hood:hood.id,p_day:hst.deciding});pay(SPY_C,'intel');flyCoin(e,'−₪'+SPY_C);setHoodSpied(s=>({...s,[hst.deciding-1]:data}));hoodLoad().catch(()=>{});}
+  catch(err){setHoodMsg(hoodErr(err));}};
  const hoodForecast=async(e,f)=>{if(fcast||free<f.c)return;try{const fc=await hoodRpc('lm_buy_forecast',{p_hood:hood.id,p_day:hst.deciding,p_lv:f.lv});pay(f.c,'intel');flyCoin(e,'−₪'+f.c);setFcast(fc);hoodLoad().catch(()=>{});}
   catch(err){setHoodMsg(hoodErr(err));}};
  // the live street: the day's moments every 15 seconds; my customers walk into the street scene, the rest become headlines
@@ -1960,8 +1970,8 @@ function Game(){
    // everyone who came to my stand walks into the scene: buyers, those who looked and walked on, those who found it sold out
    const mine=ev.filter(e=>e.stand===me&&['sale','walk','miss','vip'].includes(e.type)).map((e,k)=>e.type==='vip'?{id:'v'+e.m,type:'foodie',em:'🎩',buys:!!e.bought,rx:e.ok?'🌟':e.bought?'😤':'💨',isVip:true,sp:'',at:e.at}
     :{id:'c'+e.m+'-'+k+'-'+hoodAfter.current,type:e.cust,em:CT[e.cust].em,buys:e.type==='sale',rx:e.type==='sale'?e.rx:e.type==='miss'?'💨':'🚶',isVip:false,sp:'',at:e.at});
-   setHoodCounts(c=>{const n={...c};ev.forEach(e=>{if(e.type==='caught'&&e.victim){const v=n[e.victim]={...(n[e.victim]||{sold:0,vis:0})};v.saved=(v.saved||0)+1;return;}if(!e.stand)return;const b=n[e.stand]={...(n[e.stand]||{sold:0,vis:0})};if(['sale','walk','miss'].includes(e.type))b.vis=(b.vis||0)+1;if(e.type==='sale'||(e.type==='vip'&&e.bought))b.sold++;if(e.type==='soldout')b.out=e.at;if(e.type==='sick')b.sick=e.at;
-     if(e.type==='exposed')b.caught=1;if(e.type==='vip')b.vip=e.ok?'🌟':'😤';});
+   setHoodCounts(c=>{const n={...c};ev.forEach(e=>{if(e.type==='caught'&&e.victim){const v=n[e.victim]={...(n[e.victim]||{sold:0,vis:0})};v.saved=(v.saved||0)+1;}if(!e.stand)return;const b=n[e.stand]={...(n[e.stand]||{sold:0,vis:0})};if(['sale','walk','miss'].includes(e.type))b.vis=(b.vis||0)+1;if(e.type==='sale'||(e.type==='vip'&&e.bought))b.sold++;if(e.type==='soldout')b.out=e.at;if(e.type==='sick')b.sick=e.at;
+     if(e.type==='caught')b.caught=1;if(e.type==='vip')b.vip=e.ok?'🌟':'😤';});
     // who moved up or down the live table since the last update
     const before=hoodLiveOrder(c),after=hoodLiveOrder(n);hoodMoves.current=!Object.keys(c).length?{}:Object.fromEntries(after.map((id,i)=>[id,before.indexOf(id)<0?0:before.indexOf(id)-i]));return n;});
    setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,m:e.m,t,type:e.type};}).filter(Boolean)].slice(-12));
@@ -2129,6 +2139,14 @@ function Game(){
  const Mkt=()=> <div className="pane">
   <Banner kind="ads" ic="📣" title="משרד הפרסום" sub="השקעות לטווח ארוך, וטקטיקות ליום אחד: כובע לבן וכובע שחור" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי להוצאות: <b className="num">{fmt(free)}</b>{committed>0&&<span> · כבר התחייבת ל-{fmt(committed)} שיורדים בסוף היום</span>}</div>
+  {hood&&hst&&hst.deciding&&(()=>{const n=hst.members.length,o=fundOffer(hst.hood.id,hst.deciding,n),fair=Math.ceil(o.target/n),opts=[0,fair,fair*2,fair*3];return <section className="blk"><div className="blk-h"><h3>🎪 קרן הרחוב</h3><span className="tag">לשים או לקוות?</span></div>
+   <div className="note">הוועד מציע למחר: <b>{o.n}</b>. היעד <b>{fmt(o.target)}</b>, ואם מגיעים אליו יגיע קהל פי {o.boost}.<br/>כולם תורמים בסתר, ורק ב-08:00 יתברר אם הגיעו ליעד. אם לא, כל מי שתרם מאבד את הכסף.<br/>אם כן, רוב הקהל הנוסף הולך למי שתרם, לפי כמה שתרם. מי שלא תרם נהנה רק מהשאר. כדאי גם להכין יותר כוסות.</div>
+   <div className="hd-chips" style={{marginTop:8}}>{opts.map(v=><button key={v} className={"chip"+(hoodFund===v?' on':'')} disabled={v>hoodFund&&v-hoodFund>free} onClick={()=>setHoodFund(v)}>{v?'🎪 ₪'+v:'לא לתרום'}</button>)}</div></section>;})()}
+  {hood&&hst&&hst.deciding&&(()=>{const m=hoodMate(hst),past=m?Object.values(hst.results||{}).flat().filter(r=>r.id===m.id&&r.coupon):[];return <section className="blk"><div className="blk-h"><h3>🎟️ קופונים של שכנים</h3><span className="tag">לסמוך או לא?</span></div>
+   {m?<><div className="note">הלילה אתה מחליף קופונים עם <b>{m.em} {m.nick}</b>: "קנית אצלי? קבל הנחה אצל השכן". מה תעשה עם הקופונים שלו?<br/>🎟️ <b>לחלק:</b> הדפוס עולה {fmt(NB.COUPON.cost)}, והוא מקבל לקוחות חדשים וגם קצת מהלקוחות שלך.<br/>🗑️ <b>לזרוק:</b> לא עולה כלום, ואתה עדיין נהנה אם הוא חילק את שלך.<br/>אם שניכם מחלקים, שניכם מרוויחים יפה. אם רק הוא מחלק, אתה מרוויח הכי הרבה. אם רק אתה מחלק, אתה מפסיד. מחר ב-17:00 כולם יראו מי זרק.</div>
+    {past.length>0&&<div className="hint">עד עכשיו אצל {m.nick}: חלוקה ב-{past.filter(r=>r.coupon.gave).length} מתוך {past.length} פעמים</div>}
+    <div className="hd-chips" style={{marginTop:8}}><button className={"chip"+(hoodCoupon?' on':'')} onClick={()=>setHoodCoupon(true)}>🎟️ לחלק · ₪{NB.COUPON.cost}</button><button className={"chip"+(!hoodCoupon?' on':'')} onClick={()=>setHoodCoupon(false)}>🗑️ לזרוק</button></div></>
+    :<div className="note">הלילה אתה בחוץ: במספר אי זוגי של דוכנים, כל ערב מישהו אחר נשאר בלי שכן.</div>}</section>;})()}
   <section className="blk"><div className="blk-h"><h3>🏗️ השקעה לטווח ארוך</h3><span className="tag">משלמים פעם אחת · עובד עד סוף המשחק</span></div>
    <div className="shop">{UPG_MKT.map(u=>{const own=ups.includes(u.id);return <div key={u.id} className={"item"+(own?' own':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
     {own?<span className="badge g">✓ שלך</span>:<button className="btn sm" disabled={free<u.c} onClick={e=>{setUps(x=>[...x,u.id]);pay(u.c,'ups');flyCoin(e,'−₪'+u.c);setShow({kind:'install',item:u.id,l1:`${u.em} ${u.n} — חדש בדוכן!`,l2:u.d});}}>{free<u.c?`חסר ${fmt(u.c-free)}`:<>קנה · ₪{u.c}</>}</button>}</div>;})}</div></section>
@@ -2138,13 +2156,8 @@ function Game(){
   {withComp&&!hood&&<section className="blk"><div className="blk-h"><h3>🖤 טקטיקה ליום אחד · כובע שחור</h3><span className="tag">{isEve?'זמין בבוקר':'להיום · יש סיכון'}</span></div>
    <div className="shop">{BLACK.map(a=>{const on=acts.includes(a.id);return <div key={a.id} className={"item dark"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n} {a.risk>0&&<em>{a.risk}% להיתפס</em>}</b><span>{a.d}</span></div>
     {isEve?<span className="badge">בבוקר</span>:on?<button className="btn sm r" onClick={()=>setActs(x=>x.filter(i=>i!==a.id))}>✓ פעיל · בטל</button>:<button className="btn sm ghost" disabled={free<a.c} onClick={()=>setActs(x=>[...x,a.id])}>{free<a.c?`חסר ${fmt(a.c-free)}`:<>הפעל · ₪{a.c}</>}</button>}</div>;})}</div></section>}
-  {hood&&hst&&(hst.me.state.caught||[]).length>0&&<section className="blk"><div className="blk-h"><h3>🚨 תפסת מישהו</h3><span className="tag">רק אתה יודע</span></div>
-   <div className="note">📣 <b>לחשוף:</b> כל השכונה תדע. הוא מאבד {NB.CAUGHT.rep} מוניטין ומשלם פיצוי {fmt(NB.CAUGHT.fine)} (אם עוד מישהו חושף, מתחלקים). זה קורה רק פעם אחת, וכל מי ששתק עליו מאבד את הסוד.<br/>🤫 <b>לשתוק:</b> {NB.HOLD.days} ימים חלק מהלקוחות שלו יבואו אליך, כל עוד אף אחד אחר לא חושף אותו. אולי גם אחרים תפסו אותו.<br/>אם לא תבחר, אתה שותק.</div>
-   <div className="shop">{hst.me.state.caught.map(c=>{const m=rivalsH.find(x=>x.id===c.by)||{},on=hoodExpose.includes(c.by);return <div key={c.by} className="item dark"><span className="it-e">{m.em||'🕵️'}</span><div className="it-t"><b>{m.nick||'?'}</b><span>הפעיל נגדך: {c.tricks.map(t=>TRICK_N[t]).join(', ')}</span></div>
-    <div className="hd-chips"><button className={"chip"+(on?' on':'')} onClick={()=>setHoodExpose(x=>[...x.filter(i=>i!==c.by),c.by])}>📣 לחשוף</button><button className={"chip"+(!on?' on':'')} onClick={()=>setHoodExpose(x=>x.filter(i=>i!==c.by))}>🤫 לשתוק</button></div></div>;})}</div></section>}
-  {hood&&hst&&(hst.me.state.holds||[]).length>0&&<div className="note">🤫 אתה שומר סוד על {hst.me.state.holds.map(h=>`${(rivalsH.find(x=>x.id===h.on)||{}).nick||'?'} (עד יום ${h.until})`).join(', ')}: חלק מהלקוחות שלו באים אליך</div>}
   {hood&&rivalsH.length>0&&<section className="blk"><div className="blk-h"><h3>🖤 טקטיקה ליום אחד · כובע שחור</h3><span className="tag">יש סיכון</span></div>
-   <div className="note">🎯 <b>נגד יריב אחד:</b> מחיר מלא, ונזק מלא ליריב הזה.<br/>👥 <b>נגד כולם:</b> זול יותר לכל יריב, אבל הנזק לכל אחד הוא חצי, וכל אחד מהם יכול לתפוס אותך.<br/>🚨 מי שתופס אותך מחליט אם לחשוף אותך לכל השכונה (−{NB.CAUGHT.rep} מוניטין ופיצוי {fmt(NB.CAUGHT.fine)}) או לשתוק ולקחת לעצמו חלק מהלקוחות שלך לכמה ימים. אתה תדע שנתפסת, לא על ידי מי. הסיכוי תלוי באבטחה של מי שאתה תוקף.</div>
+   <div className="note">🎯 <b>נגד יריב אחד:</b> מחיר מלא, ונזק מלא ליריב הזה.<br/>👥 <b>נגד כולם:</b> זול יותר לכל יריב, אבל הנזק לכל אחד הוא חצי, וכל אחד מהם יכול לתפוס אותך.<br/>🚨 מי שנתפס נחשף לכל השכונה: −{NB.CAUGHT.rep} מוניטין ופיצוי {fmt(NB.CAUGHT.fine)} למי שתפס אותו. הסיכוי תלוי באבטחה של מי שאתה תוקף.</div>
    <div className="shop">{BLACK.filter(a=>NB.TRICKS.includes(a.id)).map(a=>{const on=acts.includes(a.id),t=targets[a.id],n=hst.members.length,c1=trickCost(a.id,'one',n);return <div key={a.id} className={"item dark"+(on?' on':'')}><span className="it-e">{a.em}</span><div className="it-t"><b>{a.n}</b><span>{a.id==='ads'?`גונב ${Math.round(NB.EFFECT.ads*100)}% מהלקוחות שלו היום`:`−${NB.EFFECT.rumor} מוניטין ליריב, כפול נגד המוביל`}</span>
      {on&&<div className="hd-chips" style={{marginTop:6}}>{[...rivalsH.map(m=>[m.id,m.nick]),['all','👥 נגד כולם']].map(([id,lab])=><button key={id} className={"chip"+(t===id?' on':'')} onClick={()=>setTargets(x=>({...x,[a.id]:id}))}>{lab} · ₪{trickCost(a.id,id,n)}</button>)}</div>}</div>
     {on?<button className="btn sm r" onClick={()=>{setActs(x=>x.filter(i=>i!==a.id));setTargets(x=>{const y={...x};delete y[a.id];return y;});}}>✓ פעיל · בטל</button>
@@ -2161,7 +2174,7 @@ function Game(){
       <button className="btn sm" disabled={free<f.c} onClick={e=>forecastBuy(e,f)}>{free<f.c?`חסר ${fmt(f.c-free)}`:<>קנה · ₪{f.c}</>}</button></div>)}</div>}
   </section>
   {hood&&<section className="blk"><div className="blk-h"><h3>🛡️ אבטחה · מי זומם נגדי</h3><span className="tag">משלמים ב-08:00 · עובדת כל היום</span></div>
-   <div className="note">כל טריק שמופעל נגדך מחר נבדק מול האבטחה שלך. אם היא תופסת את התוקף: הטריק נעצר אצלך, רק אתה יודע מי זה, ובערב תחליט אם לחשוף אותו או לשתוק. אם לא, אבטחה טובה לפחות תדע לספר שהייתה תקיפה.</div>
+   <div className="note">כל טריק שמופעל נגדך מחר נבדק מול האבטחה שלך. אם היא תופסת את התוקף: הטריק נעצר אצלך, והתוקף נחשף לכל השכונה ומשלם לך פיצוי. אם לא, אבטחה טובה לפחות תדע לספר שהייתה תקיפה.</div>
    <div className="locs four">{NB.SECURITY.map(s=><button key={s.lv} className={"loc"+(sec===s.lv?' on':'')} onClick={()=>setSec(s.lv)}><span>{s.em}</span><b>{s.n}</b><small>{s.c?`₪${s.c} · `:''}תופסת {Math.round(s.catch*100)}%</small></button>)}</div></section>}
   {!hood&&<section className="blk"><div className="blk-h"><h3>📋 סקר שוק</h3><span className="tag">{isEve?'זמין בבוקר':'להיום'}</span></div>
    {research&&!isEve?<>
@@ -2198,7 +2211,7 @@ function Game(){
     {loan>0?(hood?<span className="badge">נפרע לבד</span>:<button className="btn sm" disabled={cash<loan} onClick={()=>{setCash(c=>c-loan);setLoan(0);}}>החזר · {fmt(loan)}</button>):<button className="btn sm ghost" onClick={e=>{setLoan(20);setCash(c=>c+20);flyCoin(e,'+₪20',true);}}>קח ₪20</button>}</div></section>
  </div>;
 
- const seenTxt=c=>c.seen.map(k=>k==='auto'?'😴 לא החליט (טייס אוטומטי)':k==='exposed'?'📣 נחשף בתרגיל מלוכלך':k.startsWith('caught:')?'🚨 נתפס: '+TRICK_N[k.slice(7)]:k==='sick'?'🤒 חלה ונסגר באמצע היום':k==='vip+'?'🎩 המבקר התלהב ממנו':k==='vip-'?'🎩 המבקר התאכזב ממנו':k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
+ const seenTxt=c=>c.seen.map(k=>k==='auto'?'😴 לא החליט (טייס אוטומטי)':k==='exposed'?'🚨 נתפס בתרגיל מלוכלך':k==='cp+'?'🎟️ חילק קופונים':k==='cp-'?'🗑️ זרק קופונים':k.startsWith('fd')?'🎪 תרם ₪'+k.slice(2)+' לקרן':k.startsWith('caught:')?'🚨 נתפס: '+TRICK_N[k.slice(7)]:k==='sick'?'🤒 חלה ונסגר באמצע היום':k==='vip+'?'🎩 המבקר התלהב ממנו':k==='vip-'?'🎩 המבקר התאכזב ממנו':k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
  const hidTxt=h=>[h.fc?['','👂','📡','🛰️'][h.fc]+' תחזית':null,h.rs?'📋 סקר שוק':null,h.spy?'🔭 ריגל':null,...h.bh.map(x=>{const[id,t]=x.split(':');return MK_EM[id]+' '+(id==='rumor'?'שמועות':'הסרת שלטים')+' נגד '+(t==='me'?'אתה':t);})].filter(Boolean).join(' · ');
  const Report=()=>{const r=report;return <div className="report">
   <div className="rp-hero">
@@ -2222,7 +2235,7 @@ function Game(){
    <span className="rt-n">{CT[k].em} {CT[k].nm}</span><span className="aud-b"><i className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'} style={{width:(t.vis?Math.round(t.buy/t.vis*100):0)+'%'}}/></span>
    <span className="num rt-x"><b>{t.buy}</b>/{t.vis}</span>{w&&<span className={"why "+w[1]}>{t.miss>0&&t.miss>=t.vis-t.buy?'נגמר המלאי':w[0]}</span>}</div>;})}</div>}
   <div className="rp-tips"><div className="cl-h">מה ללמוד מהיום</div>{r.tips.map((t,i)=><div key={i} className={"tip "+t.k}>{t.t}</div>)}</div>
-  {!hood&&<button className="btn ghost" onClick={()=>setDashOpen(true)}>📊 כל הנתונים, גרפים והשוואה למתחרים ›</button>}
+  <button className="btn ghost" onClick={()=>setDashOpen(true)}>{hood?'📊 ניתוח המתחרים: מה כל אחד עשה היום ›':'📊 כל הנתונים, גרפים והשוואה למתחרים ›'}</button>
   <div className="rp-tot">סה״כ רווח במשחק: <b className="num">{fmt(hood&&r.score!=null?r.score:history.reduce((s,h)=>s+h.profit,0))}</b></div>
  </div>;};
 
@@ -2260,7 +2273,7 @@ function Game(){
     return <div key={id} className={"hd-lrow"+(id===hst.me.id?' me':'')+(d>0?' up':d<0?' dn':'')}>
      <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
      <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
-     <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">📣 נחשף</i>:null}{c.saved?<i>🚨 האבטחה עצרה</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
+     <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">🚨 נתפס</i>:null}{c.saved?<i>🚨 האבטחה עצרה</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
      <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num">{c.sold} קנו מתוך {c.vis||0} · {fmt(c.sold*s.price)}</small></span>
      {d!==0&&<span className={"hd-mv "+(d>0?'up':'dn')}>{d>0?'⬆':'⬇'}</span>}</div>;})}</section>
    <section className="blk"><div className="blk-h"><h3>📰 מה קורה ברחוב</h3></div>
@@ -2393,6 +2406,47 @@ function Game(){
 
  /* ── Dashboard: the whole season in numbers ── */
  const [dashOpen,setDashOpen]=useState(false);
+ useEffect(()=>{if(dashOpen&&hood&&hood.id)hoodRpc('lm_rivals_intel',{p_hood:hood.id}).then(x=>setHoodSpied(x||{})).catch(()=>{});},[dashOpen]);
+ // the rivals dashboard: what every stand did each day (open to all), how each one tends to play, and the paid report on what's behind the counter
+ const HoodDash=()=>{const names=hoodNames(hst),me=hst.me.id,ds=Object.keys(hst.results||{}).map(Number).sort((a,b)=>a-b),nm=id=>id===me?'אתה':names[id]?.nick||'?',em=id=>names[id]?.em||'';
+  const close=<button className="sheet-x" aria-label="סגור" onClick={()=>setDashOpen(false)}>✕</button>;
+  if(!ds.length)return <div className="dash"><div className="sheet-h"><h2>📊 ניתוח המתחרים</h2>{close}</div><div className="dash-b"><div className="note">הנתונים מופיעים כאן בסוף היום הראשון, ב-17:00.</div></div></div>;
+  const d=ds.includes(hoodDashDay)?hoodDashDay:ds[ds.length-1],rows=hst.results[d].slice().sort((a,b)=>b.profit-a.profit),opOf=x=>((hst.opened||{})[x]||{stands:[]}),op=opOf(d),spy=hoodSpied[d],mine=(hst.me.days||{})[d];
+  const moves=r=>{const s=op.stands.find(z=>z.id===r.id)||{mk:[]};return[...s.mk.map(id=>MK_EM[id]+' '+MKTG.find(m=>m.id===id).n),s.helper&&'🧑‍💼 עוזר',r.closed&&'🔒 סגור',r.sick&&'🤒 חלה ב-'+r.sick,r.soldAt&&'💨 אזל ב-'+r.soldAt,r.vip===true&&'🎩 המבקר התלהב',r.vip===false&&'🎩 המבקר התאכזב',r.caught&&'🚨 נתפס',r.fund&&'🎪 תרם ₪'+r.fund,r.coupon&&(r.coupon.gave?'🎟️ חילק':'🗑️ זרק')+(r.coupon.with===me?' איתך':' עם '+nm(r.coupon.with))].filter(Boolean).join(' · ');};
+  const inside=r=>{const x=r.id===me?(mine&&mine.plan):spy&&spy[r.id];if(!x)return null;const c=x.recipe||{},sc=NB.SECURITY[x.sec||0];return `${c.l}🍋 ${c.h}🍬 ${c.i}🧊 · הכין ${x.cups} כוסות · ${sc.em} ${sc.n}`;};
+  // the season, day by day
+  const M=[['price','מחיר'],['loc','מקום'],['sold','נמכרו'],['profit','רווח']],m=hoodDashM,order=hst.results[ds[ds.length-1]].slice().sort((a,b)=>b.score-a.score).map(r=>r.id);
+  const cell=(x,id)=>{const r=hst.results[x].find(z=>z.id===id);if(!r)return '';return r.closed?'🔒':m==='price'?'₪'+r.price:m==='loc'?LOC[r.loc].em:m==='sold'?r.sold:Math.round(r.profit);};
+  const best=(x,id)=>{if(m==='loc')return false;const o=hst.results[x].filter(z=>!z.closed),r=o.find(z=>z.id===id);if(!r)return false;const v=z=>m==='price'?-z.price:z[m];return v(r)===Math.max(...o.map(v));};
+  // how each stand tends to play
+  const style=id=>{const my=ds.map(x=>({x,r:hst.results[x].find(z=>z.id===id)})).filter(o=>o.r&&!o.r.closed);if(!my.length)return null;
+   const gap=my.reduce((a,{x,r})=>{const o=hst.results[x].filter(z=>z.id!==id&&!z.closed);return a+(o.length?r.price-o.reduce((s,z)=>s+z.price,0)/o.length:0);},0)/my.length,ps=my.map(o=>o.r.price),lo=Math.min(...ps),hi=Math.max(...ps);
+   const cnt=[0,1,2].map(z=>my.filter(o=>o.r.loc===z).length),fav=cnt.indexOf(Math.max(...cnt)),hops=my.filter((o,i)=>i&&o.r.loc!==my[i-1].r.loc).length,mk=my.filter(o=>((opOf(o.x).stands.find(s=>s.id===id)||{}).mk||[]).length).length,cp=my.filter(o=>o.r.coupon);
+   return[(gap<=-0.5?'💸 זול מהרחוב':gap>=0.5?'💎 יקר מהרחוב':'⚖️ כמו הרחוב')+(lo===hi?`, תמיד ₪${lo}`:`, בין ₪${lo} ל-₪${hi}`),hops===0?`${LOC[fav].em} תמיד ב${LOC[fav].n}`:hops>=my.length/2?'🔀 קופץ בין המקומות':`${LOC[fav].em} בעיקר ב${LOC[fav].n}`,mk?`📣 שיווק ב-${mk} מתוך ${my.length} ימים`:'🤫 בלי שיווק',...(cp.length?[`🎟️ חילק ${cp.filter(o=>o.r.coupon.gave).length} מתוך ${cp.length}`]:[]),`🎪 תרם ב-${my.filter(o=>o.r.fund).length} מתוך ${my.length}`].join(' · ');};
+  const last=hst.deciding?hst.deciding-1:null;
+  return <div className="dash"><div className="sheet-h"><h2>📊 ניתוח המתחרים</h2>{close}</div><div className="dash-b">
+   <section className="blk"><div className="blk-h"><h3>מה כל אחד עשה</h3><span className="tag">פתוח לכולם</span></div>
+    {op.fund&&<div className="hint">🎪 {op.fund.n}: {op.fund.ok?'הגיעו ליעד':'לא הגיעו ליעד'} (₪{op.fund.gifts} מתוך ₪{op.fund.target})</div>}
+    {ds.length>1&&<div className="hd-chips" style={{marginBottom:8}}>{ds.map(x=><button key={x} className={"chip"+(x===d?' on':'')} onClick={()=>setHoodDashDay(x)}>יום {x}</button>)}</div>}
+    {rows.map(r=>{const t=moves(r),z=inside(r);return <div key={r.id} className={"rd-row"+(r.id===me?' me':'')}>
+     <div className="rd-top"><b>{em(r.id)} {nm(r.id)}</b><span className={"num "+(r.profit>=0?'g':'r')}>רווח {fmt(r.profit)}</span></div>
+     <div className="rd-fig num"><span>₪{r.price}</span><span>{LOC[r.loc].em} {LOC[r.loc].n}</span><span>{r.sold}☕</span><span>⭐ {r.rep}</span></div>
+     {t&&<small>{t}</small>}{z&&<small className="rd-in">🕵️ {z}</small>}</div>;})}</section>
+   <section className="blk"><div className="blk-h"><h3>🕵️ דוח מודיעין</h3><span className="tag">₪{SPY_C} · בערב</span></div>
+    <div className="note">מה שקורה מאחורי הדלפק: המתכון, כמה כוסות הכין, ואיזו אבטחה קנה.</div>
+    {last>=1?(hoodSpied[last]?<div className="hint">✓ קנית את הדוח על יום {last}. הוא מופיע בשורות של אותו יום.</div>
+     :<button className="btn sm" style={{marginTop:8}} disabled={free<SPY_C} onClick={hoodSpy}>{free<SPY_C?`חסר ${fmt(SPY_C-free)}`:<>לקנות את הדוח על יום {last} · ₪{SPY_C}</>}</button>)
+     :<div className="hint">אפשר לקנות בערב, על היום שהסתיים.</div>}
+    {hoodMsg&&<div className="note">{hoodMsg}</div>}</section>
+   <section className="blk"><div className="blk-h"><h3>לאורך העונה</h3></div>
+    <div className="hd-chips" style={{marginBottom:8}}>{M.map(([k,n])=><button key={k} className={"chip"+(k===m?' on':'')} onClick={()=>setHoodDashM(k)}>{n}</button>)}</div>
+    <div className="rd-scroll"><table className="rd-tbl"><thead><tr><th></th>{ds.map(x=><th key={x}>{x}</th>)}</tr></thead>
+     <tbody>{order.map(id=><tr key={id} className={id===me?'me':''}><th>{em(id)} {nm(id)}</th>{ds.map(x=><td key={x} className={"num"+(best(x,id)?' top':'')}>{cell(x,id)}</td>)}</tr>)}</tbody></table></div>
+    {m!=='loc'&&<div className="hint">{m==='price'?'מודגש: הכי זול באותו יום':'מודגש: הכי גבוה באותו יום'}</div>}</section>
+   <section className="blk"><div className="blk-h"><h3>איך כל אחד משחק</h3></div>
+    {order.filter(id=>id!==me).map(id=>{const s=style(id);return s&&<div key={id} className="rd-row"><b>{em(id)} {nm(id)}</b><small>{s}</small></div>;})}
+    <div className="hint">לפי הימים שעברו. כדאי לשים לב מי מגיב למחיר שלך, ומי עוזב מקום צפוף.</div></section>
+  </div></div>;};
  const Line=({series,labels,zero,h=110,fmtY=v=>Math.round(v)})=>{const W2=320,P=24,all=series.flatMap(s=>s.v).concat(zero?[0]:[]);
   const mn=Math.min(...all),mx=Math.max(...all),rg=mx-mn||1,n=labels.length,X=j=>P+j*((W2-P-8)/Math.max(1,n-1)),Y=v=>8+(h-26)*(1-(v-mn)/rg);
   return <svg viewBox={`0 0 ${W2} ${h}`} className="dchart" aria-hidden="true">
@@ -2545,7 +2599,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   <header className="top">
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{hood&&hst?'🏘️ '+hst.hood.name+' · ':''}{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{hood&&hst?hst.hood.days:DAYS}</i></b></div>
-    <div className="t-side">{Gear()}{hood?<button className="gear" aria-label="השכונות שלי" onClick={()=>{leaveHood();sfx('tap');}}>🏘️</button>
+    <div className="t-side">{Gear()}{hood?<><button className="gear" aria-label="ניתוח המתחרים" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button><button className="gear" aria-label="השכונות שלי" onClick={()=>{leaveHood();sfx('tap');}}>🏘️</button></>
      :<button data-tut="dash" className="gear" aria-label="הנתונים שלי" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button>}<div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div></div>
    </div>
    <div className="res">
@@ -2571,7 +2625,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
   {(phase==='evening'||phase==='morning')&&<nav className="nav">{NAV.map(([k,ic,l])=><button key={k} data-tut={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span>{ic}</span><small>{l}</small>{k==='news'&&unread>0&&<em>{unread}</em>}</button>)}</nav>}
   {confirm&&<div className="dlg-bg"><div className="dlg"><b>{confirm.t}</b><p>{confirm.s}</p><div className="dlg-b"><button className="btn ghost" onClick={()=>{const f=confirm.onNo;setConfirm(null);f&&f();}}>{confirm.no}</button><button className="btn" onClick={()=>{const f=confirm.onYes;setConfirm(null);f();}}>{confirm.yes}</button></div></div></div>}
   {setOpen&&Settings()}
-  {dashOpen&&Dash()}
+  {dashOpen&&(hood?(hst?HoodDash():null):Dash())}
   {Coach()}
   {show&&<SkyShow key={show.kind+show.l1} kind={show.kind} wx={show.wx} line1={show.l1} line2={show.l2} ups={ups} item={show.item} ev={show.ev} onDone={()=>setShow(s=>s&&s.next||null)}/>}
  </div>;
