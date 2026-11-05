@@ -1504,7 +1504,7 @@ const SkyShow=({kind,wx,line1,line2,onDone,ups,item,ev})=>{useEffect(()=>{const 
 const {NB,prepareStand,trickCost,couponPairs,fundOffer}=LemonEngine;
 /* ───────── Neighborhood (multiplayer): one real day per game day, with friends on the same street ───────── */
 const HOOD_ERR={'not signed in':'צריך להתחבר שוב','bad nickname':'כינוי של 2–16 תווים','no such neighborhood':'אין שכונה עם הקוד הזה','already started':'השכונה כבר התחילה, אי אפשר להצטרף',
- 'neighborhood full':'השכונה מלאה','locked':'הזמן להחלטות נגמר','already bought':'כבר קנית תחזית הערב','not enough cash':'אין מספיק כסף בקופה','not ready':'השוק עוד לא מוכן, נסה בעוד רגע',
+ 'neighborhood full':'השכונה מלאה','season over':'העונה הזו כבר הסתיימה','locked':'הזמן להחלטות נגמר','already bought':'כבר קנית תחזית הערב','not enough cash':'אין מספיק כסף בקופה','not ready':'השוק עוד לא מוכן, נסה בעוד רגע',
  'too many neighborhoods':'יותר מדי שכונות היום','bad start date':'תאריך התחלה לא תקין','off':'החיבור לשרת כבוי כרגע','not a member':'אתה לא בשכונה הזאת'};
 const hoodErr=e=>{const m=String(e&&e.message||e);if(/Could not find the function|does not exist/i.test(m))return 'מצב שכונה עוד לא הופעל בשרת';return HOOD_ERR[m]||'אין חיבור לשרת, נסה שוב';};
 // a saved sign-in the server no longer accepts is dropped, and the call is tried once more with a fresh one
@@ -1534,6 +1534,8 @@ const pushSet=async(evening,morning)=>{const reg='serviceWorker' in navigator&&'
  await hoodRpc('lm_push_save',{p_endpoint:sub.endpoint,p_p256dh:k.p256dh,p_auth:k.auth,p_evening:evening,p_morning:morning});};
 // tonight's coupon neighbor (the street's order is the slots'), or nobody on the night this stand sits out
 const hoodMate=st=>{const me=st.me.id,p=st.deciding&&couponPairs(st.members.map(m=>m.id),st.deciding).find(x=>x.includes(me));return p?st.members.find(m=>m.id===(p[0]===me?p[1]:p[0])):null;};
+// the season's prize anyone can win, even a late joiner: the most profitable single day so far
+const hoodBestDay=st=>Object.entries(st.results||{}).flatMap(([d,rs])=>rs.map(r=>({d:+d,r}))).reduce((b,x)=>!b||x.r.profit>b.r.profit?x:b,null);
 const hoodNames=st=>Object.fromEntries(st.members.map(m=>[m.id,m]));
 // A moment on the street, in words (other stands' sales are counted, not told)
 const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?'אתה':(names[id]?names[id].nick:'?');
@@ -1541,7 +1543,9 @@ const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?'אתה':(names[id]?name
   case 'sick':return e.stand===meId?'🤒 חלית והדוכן נסגר':`🤒 ${n(e.stand)} חלה, הדוכן שלו נסגר`;
   case 'event':return `${e.n}: ${e.d}`;case 'surprise':return e.n;
   case 'vip':return `🎩 מבקר האוכל אצל ${n(e.stand)}: ${e.ok?'התלהב! 🌟':'התאכזב 😤'}`;
-  case 'caught':return e.stand===meId?`🚨 נתפסת: ${TRICK_N[e.trick]} נגד ${n(e.victim)}`:`🚨 ${n(e.stand)} נתפס: ${TRICK_N[e.trick]} נגד ${n(e.victim)}`;
+  case 'caught':{const ad=e.trick==='ads',mine=e.victim===meId,did=ad?(mine?'מריץ נגדך קמפיין':'מריץ קמפיין נגד '+n(e.victim)):(mine?'מפיץ עליך שמועות':'מפיץ שמועות על '+n(e.victim));
+   if(!e.stand)return mine?`🚨 האבטחה שלך עצרה ${TRICK_N[e.trick]} נגדך`:`🚨 האבטחה של ${n(e.victim)} עצרה ${TRICK_N[e.trick]}`;
+   return e.stand===meId?`🚨 נתפסת ${ad?'מריץ קמפיין נגד':'מפיץ שמועות על'} ${n(e.victim)}`:`🚨 ${n(e.stand)} נתפס ${did}`;}
   case 'fund':return e.ok?`🎉 הקרן הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}): ${e.n} היום ברחוב!`:`😞 הקרן לא הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}). הכסף אבד`;default:return null;}};
 // The day's report from the server's numbers, in the shape of the regular game's report
 const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNames(st),op=(st.opened||{})[d],rows=(st.results||{})[d]||[],sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
@@ -1579,7 +1583,7 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
 function Hood({onExit,onOpen}){
  const [nick,setNick]=useState(()=>(sbLoad()||{}).nick||'');
  const [view,setView]=useState('list'),[list,setList]=useState(null),[err,setErr]=useState(null),[busy,setBusy]=useState(false);
- const [form,setForm]=useState({name:'',days:7,diff:'medium',size:6,bots:true,fund:true,coupons:true,black:true}),[code,setCode]=useState(''),[gone,setGone]=useState(null);
+ const [form,setForm]=useState({name:'',days:7,diff:'medium',size:6,bots:true,fund:true,coupons:true,black:true}),[code,setCode]=useState(''),[gone,setGone]=useState(null),[late,setLate]=useState(false);
  const keepNick=n=>{setNick(n);const s=sbLoad();if(s)sbSave({...s,nick:n});};
  const run=async f=>{setBusy(true);setErr(null);try{await f();}catch(e){setErr(hoodErr(e));}setBusy(false);};
  const loadList=()=>run(async()=>setList(await hoodRpc('lm_my_hoods',{})));
@@ -1620,9 +1624,10 @@ function Hood({onExit,onOpen}){
       await hoodTick(r.id);open(r.id);})}>{busy?'פותח…':'לפתוח את השכונה ›'}</button></div>
    </section>}
    {view==='join'&&<section className="blk hd-form">
-    <label className="hd-field"><span>קוד השכונה</span><input value={code} maxLength={6} dir="ltr" className="hd-code" onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="ABC123"/></label>
-    <div className="intro-btns"><button className="btn ghost" onClick={()=>setView('list')}>‹ חזרה</button>
-     <button className="cta" disabled={busy||code.trim().length!==6} onClick={()=>run(async()=>{const r=await hoodRpc('lm_hood_join',{p_code:code.trim(),p_nick:nick.trim()});open(r.id);})}>{busy?'מצטרף…':'להצטרף ›'}</button></div>
+    <label className="hd-field"><span>קוד השכונה</span><input value={code} maxLength={6} dir="ltr" className="hd-code" onChange={e=>{setCode(e.target.value.toUpperCase());setLate(false);}} placeholder="ABC123"/></label>
+    {late&&<div className="note">העונה בשכונה הזו כבר התחילה. אפשר להיכנס למקום של בוט, אבל מתחילים מאפס: ₪80, בלי הרווח של הימים שעברו. סביר שלא תגיע למקום הראשון, אבל עדיין אפשר לזכות בפרס <b>🏅 היום הכי רווחי</b>.</div>}
+    <div className="intro-btns"><button className="btn ghost" onClick={()=>{setLate(false);setView('list');}}>‹ חזרה</button>
+     <button className="cta" disabled={busy||code.trim().length!==6} onClick={()=>run(async()=>{let r;try{r=await hoodRpc(late?'lm_hood_join_late':'lm_hood_join',{p_code:code.trim(),p_nick:nick.trim()});}catch(e){if(!late&&/already started/.test(e.message)){setLate(true);return;}throw e;}open(r.id);})}>{busy?'מצטרף…':late?'להצטרף בכל זאת ›':'להצטרף ›'}</button></div>
    </section>}
    <button className="btn ghost" onClick={onExit}>‹ למשחק הרגיל</button>
   </div></div>;
@@ -2037,6 +2042,8 @@ function Game(){
      <div className="pod-bar" style={{height:podH[p],animationDelay:1.2+(3-p)*0.35+'s'}}><b>{p}</b></div></div>;})}</div>
     {n>3&&<div className="pod-rest">{rows.slice(3).map((x,i)=><span key={x.id} className={x.id===hst.me.id?'me':''}>{i+4}. {names[x.id]?.em} {names[x.id]?.nick} · <b className="num">{fmt(x.score)}</b></span>)}</div>}
    </section>
+   {(()=>{const b=hoodBestDay(hst);return b&&b.r.profit>0&&<section className="blk"><div className="blk-h"><h3>🏅 היום הכי רווחי</h3><span className="tag">פרס העונה</span></div>
+    <div className={"lb"+(b.r.id===hst.me.id?' me':'')}><span className="lb-r">🏅</span><span className="lb-n">{names[b.r.id]?.em} {b.r.id===hst.me.id?'אתה!':names[b.r.id]?.nick}</span><span className="num lb-s">יום {b.d} · {b.r.sold} כוסות</span><b className="num g">{fmt(b.r.profit)}</b></div></section>;})()}
    <section className="blk"><div className="blk-h"><h3>📊 העונה שלך</h3></div>
     <div className="fx-recs">
      <Fact ic="📅" label={best?`היום הכי טוב (יום ${best.d})`:'היום הכי טוב'} v={best?fmt(best.profit):'—'} delay={2.4}/>
@@ -2445,7 +2452,8 @@ function Game(){
   const last=hst.deciding?hst.deciding-1:null;
   return <div className="dash"><div className="sheet-h"><h2>📊 ניתוח המתחרים</h2>{close}</div><div className="dash-b">
    <section className="blk"><div className="blk-h"><h3>מה כל אחד עשה</h3><span className="tag">פתוח לכולם</span></div>
-    {op.fund&&<div className="hint">🎪 {op.fund.n}: {op.fund.ok?'הגיעו ליעד':'לא הגיעו ליעד'} (₪{op.fund.gifts} מתוך ₪{op.fund.target})</div>}
+    {(()=>{const b=hoodBestDay(hst);return b&&b.r.profit>0&&<div className="hint">🏅 היום הכי רווחי עד עכשיו: {nm(b.r.id)}, {fmt(b.r.profit)} ביום {b.d}</div>;})()}
+    {op.fund&&<div className="hint">{op.fund.n}: {op.fund.ok?'הגיעו ליעד':'לא הגיעו ליעד'} (₪{op.fund.gifts} מתוך ₪{op.fund.target})</div>}
     {ds.length>1&&<div className="hd-chips" style={{marginBottom:8}}>{ds.map(x=><button key={x} className={"chip"+(x===d?' on':'')} onClick={()=>setHoodDashDay(x)}>יום {x}</button>)}</div>}
     {rows.map(r=>{const t=moves(r),z=inside(r);return <div key={r.id} className={"rd-row"+(r.id===me?' me':'')}>
      <div className="rd-top"><b>{em(r.id)} {nm(r.id)}</b><span className={"num "+(r.profit>=0?'g':'r')}>רווח {fmt(r.profit)}</span></div>
