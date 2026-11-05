@@ -1592,10 +1592,12 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
   recipe:x.plan.recipe,price:x.plan.price,w:op&&op.weather.w,t:op&&op.weather.t,score:st.me.state.tot};};
 
 // The neighborhoods screen: my neighborhoods, open a new one, join with a code. Inside a neighborhood the regular game screens take over.
+// a date some days from now, as the server wants it
+const startOn=d=>new Date(Date.now()+d*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Jerusalem'});
 function Hood({onExit,onOpen}){
  const [nick,setNick]=useState(()=>(sbLoad()||{}).nick||'');
  const [view,setView]=useState('list'),[list,setList]=useState(null),[err,setErr]=useState(null),[busy,setBusy]=useState(false);
- const [form,setForm]=useState({name:'',days:7,diff:'medium',size:6,bots:true,fund:true,coupons:true,black:true}),[code,setCode]=useState(''),[gone,setGone]=useState(null),[late,setLate]=useState(false);
+ const [form,setForm]=useState({name:'',days:7,diff:'medium',size:6,bots:true,fund:true,coupons:true,black:true,wait:1}),[code,setCode]=useState(''),[gone,setGone]=useState(null),[late,setLate]=useState(false);
  const keepNick=n=>{setNick(n);const s=sbLoad();if(s)sbSave({...s,nick:n});};
  const run=async f=>{setBusy(true);setErr(null);try{await f();}catch(e){setErr(hoodErr(e));}setBusy(false);};
  const loadList=()=>run(async()=>setList(await hoodRpc('lm_my_hoods',{})));
@@ -1629,15 +1631,17 @@ function Hood({onExit,onOpen}){
     <div className="cl-h">מה יש בליגה הזו</div>
     {[['fund','🎪 קרן הרחוב','תורמים בסתר לאירוע של כל הרחוב'],['coupons','🎟️ קופונים של שכנים','כל ערב: לחלק או לזרוק, מול שכן אחר'],['black','🎩 כובע שחור ואבטחה','טריקים נגד יריבים, ואבטחה מפניהם']].map(([k,t,d])=><button key={k} className="set-row" role="switch" aria-checked={form[k]} onClick={()=>setForm({...form,[k]:!form[k]})}><span className="set-t"><b>{t}</b><small>{d}</small></span><span className={"tgl"+(form[k]?' on':'')}><i/></span></button>)}
     <p className="hd-note">פחות דברים זה ערב קצר יותר. אחרי שהליגה נפתחת אי אפשר לשנות.</p>
-    <p className="hd-note">יום 1 מתחיל מחר ב-08:00. עד אז אפשר להצטרף ולהחליט.</p>
+    <div className="cl-h">מתי מתחילים</div>
+    <div className="hd-chips">{[[1,'מחר'],[3,'בעוד 3 ימים'],[7,'בעוד שבוע'],[14,'בעוד שבועיים']].map(([d,n])=><button key={d} className={"chip"+(form.wait===d?' on':'')} onClick={()=>setForm({...form,wait:d})}>{n}</button>)}</div>
+    <p className="hd-note">יום 1 מתחיל ב-{startOn(form.wait).split('-').reverse().slice(0,2).join('.')} ב-08:00. עד אז אפשר להזמין אנשים, להצטרף ולהחליט.</p>
     <div className="intro-btns"><button className="btn ghost" onClick={()=>setView('list')}>‹ חזרה</button>
-     <button className="cta" disabled={busy||form.name.trim().length<2} onClick={()=>run(async()=>{const r=await hoodRpc('lm_hood_create',{p_name:form.name.trim(),p_nick:nick.trim(),p_days:form.days,p_difficulty:form.bots?form.diff:'medium',p_size:form.size,p_bots:form.bots,p_start:null});
+     <button className="cta" disabled={busy||form.name.trim().length<2} onClick={()=>run(async()=>{const r=await hoodRpc('lm_hood_create',{p_name:form.name.trim(),p_nick:nick.trim(),p_days:form.days,p_difficulty:form.bots?form.diff:'medium',p_size:form.size,p_bots:form.bots,p_start:startOn(form.wait)});
       if(!form.fund||!form.coupons||!form.black)await hoodRpc('lm_hood_set_features',{p_hood:r.id,p_features:{fund:form.fund,coupons:form.coupons,black:form.black}});
       await hoodTick(r.id);open(r.id);})}>{busy?'פותח…':'לפתוח את השכונה ›'}</button></div>
    </section>}
    {view==='join'&&<section className="blk hd-form">
     <label className="hd-field"><span>קוד השכונה</span><input value={code} maxLength={6} dir="ltr" className="hd-code" onChange={e=>{setCode(e.target.value.toUpperCase());setLate(false);}} placeholder="ABC123"/></label>
-    {late&&<div className="note">העונה בשכונה הזו כבר התחילה. אפשר להיכנס למקום של בוט, אבל מתחילים מאפס: ₪80, בלי הרווח של הימים שעברו. המקום הראשון כנראה לא בהישג יד, אבל עדיין אפשר לזכות בפרס <b>🏅 היום הכי רווחי</b>.</div>}
+    {late&&<div className="note">העונה בשכונה הזו כבר התחילה. אפשר להצטרף, אבל מתחילים מאפס: ₪80, בלי הרווח של הימים שעברו. המקום הראשון כנראה לא בהישג יד, אבל עדיין אפשר לזכות בפרס <b>🏅 היום הכי רווחי</b>.</div>}
     <div className="intro-btns"><button className="btn ghost" onClick={()=>{setLate(false);setView('list');}}>‹ חזרה</button>
      <button className="cta" disabled={busy||code.trim().length!==6} onClick={()=>run(async()=>{let r;try{r=await hoodRpc(late?'lm_hood_join_late':'lm_hood_join',{p_code:code.trim(),p_nick:nick.trim()});}catch(e){if(!late&&/already started/.test(e.message)){setLate(true);return;}throw e;}open(r.id);})}>{busy?'מצטרף…':late?'להצטרף בכל זאת ›':'להצטרף ›'}</button></div>
    </section>}
