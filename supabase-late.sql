@@ -18,5 +18,19 @@ begin
   return json_build_object('id', h.id);
 end $$;
 
+-- The owner removes a player: the stand stays on the street as a bot, with what it has, and the player can come back only by joining again from nothing
+create or replace function public.lm_hood_kick(p_hood uuid, p_member uuid) returns void language plpgsql security definer set search_path = public as $$
+declare h lm_hoods; m lm_members; personas text[] := array['budget','premium','steady','trendy','gambler','veteran'];
+begin
+  select * into h from lm_hoods where id = p_hood;
+  if not found or h.owner is distinct from auth.uid() then raise exception 'not the owner'; end if;
+  select * into m from lm_members where id = p_member and hood = p_hood;
+  if not found or m.user_id is null then raise exception 'no such player'; end if;
+  if m.user_id = auth.uid() then raise exception 'not yourself'; end if;
+  update lm_members set user_id = null, persona = personas[1 + m.slot % 6] where id = p_member;
+end $$;
+
 revoke all on function public.lm_hood_join_late(text, text) from public, anon;
+revoke all on function public.lm_hood_kick(uuid, uuid) from public, anon;
+grant execute on function public.lm_hood_kick(uuid, uuid) to authenticated;
 grant execute on function public.lm_hood_join_late(text, text) to authenticated;

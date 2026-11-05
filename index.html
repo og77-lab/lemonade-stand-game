@@ -1512,7 +1512,7 @@ const SkyShow=({kind,wx,line1,line2,onDone,ups,item,ev})=>{useEffect(()=>{const 
 const {NB,prepareStand,trickCost,couponPairs,fundOffer}=LemonEngine;
 /* ───────── Neighborhood (multiplayer): one real day per game day, with friends on the same street ───────── */
 const HOOD_ERR={'not signed in':'צריך להתחבר שוב','bad nickname':'כינוי של 2–16 תווים','no such neighborhood':'אין שכונה עם הקוד הזה','already started':'השכונה כבר התחילה, אי אפשר להצטרף',
- 'neighborhood full':'השכונה מלאה','season over':'העונה הזו כבר הסתיימה','locked':'הזמן להחלטות נגמר','already bought':'כבר קנית תחזית הערב','not enough cash':'אין מספיק כסף בקופה','not ready':'השוק עוד לא מוכן, נסה בעוד רגע',
+ 'neighborhood full':'השכונה מלאה','not the owner':'רק מי שפתח את השכונה יכול לעשות את זה','season over':'העונה הזו כבר הסתיימה','locked':'הזמן להחלטות נגמר','already bought':'כבר קנית תחזית הערב','not enough cash':'אין מספיק כסף בקופה','not ready':'השוק עוד לא מוכן, נסה בעוד רגע',
  'too many neighborhoods':'יותר מדי שכונות היום','bad start date':'תאריך התחלה לא תקין','off':'החיבור לשרת כבוי כרגע','not a member':'אתה לא בשכונה הזאת'};
 const hoodErr=e=>{const m=String(e&&e.message||e);if(/Could not find the function|does not exist/i.test(m))return 'מצב שכונה עוד לא הופעל בשרת';return HOOD_ERR[m]||'אין חיבור לשרת, נסה שוב';};
 // a saved sign-in the server no longer accepts is dropped, and the call is tried once more with a fresh one
@@ -2024,7 +2024,7 @@ function Game(){
     <button className="btn sm" style={{marginTop:8}} onClick={()=>{const t=`בוא לשכונה "${H.name}" בלימונדה בע״מ! הקוד: ${H.code}\n${location.href.split('#')[0]}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t);}}>📤 לשתף את הקוד</button></div>}
   {!cfg.remEve&&!cfg.remMorn&&<button className="btn ghost sm" style={{marginTop:10}} onClick={()=>{setSetPage('main');setSetOpen(true);}}>⏰ שלא תשכח להחליט: להפעיל תזכורות</button>}
   <div className="cl-h" style={{marginTop:10}}>מי כבר מוכן למחר</div>
-  {hst.members.map(m=><div key={m.id} className={"hd-mem"+(m.me?' mine':'')}><span>{m.em}</span><b>{m.nick}{m.me?' (אתה)':''}</b><small>{m.bot?'🤖 בוט':m.ready?'💡 הדוכן מוכן':'🌑 עוד לא החליט'}</small></div>)}
+  {hst.members.map(m=><div key={m.id} className={"hd-mem"+(m.me?' mine':'')}><span>{m.em}</span><b>{m.nick}{m.me?' (אתה)':''}</b><small>{m.bot?'🤖 בוט':m.ready?'💡 הדוכן מוכן':'🌑 עוד לא החליט'}</small>{H.owner&&!m.me&&!m.bot&&<button className="chip" onClick={()=>setConfirm({t:`להסיר את ${m.nick}?`,s:'הדוכן יישאר ברחוב וימשיך כבוט. אפשר לחזור רק עם הקוד, ומתחילים מאפס.',yes:'כן, להסיר',no:'לא',onYes:()=>hoodRpc('lm_hood_kick',{p_hood:hood.id,p_member:m.id}).then(()=>hoodLoad()).catch(e=>setHoodMsg(hoodErr(e))),onNo:()=>{}})}>להסיר</button>}</div>)}
  </section>;};
  // the end of the season: title and stars by place, the podium rising, the season in numbers, and who won each day
  const HoodOver=()=>{const {rows}=hoodBoard(),n=rows.length,place=rows.findIndex(r=>r.id===hst.me.id)+1,S=hst.me.state,tot=S.tot-S.loan,names=hoodNames(hst);
