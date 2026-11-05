@@ -488,15 +488,16 @@ const autopilot=(st,last,lastRes,world,day)=>{const P=world[day-1].p,rec=(last&&
 //    paid {day:{member:intel cost already taken}}, prev {member:{dec,res}} (yesterday, for the autopilot and bots), street [{id,price,loc}] (yesterday's prices),
 //    now {day, minutes} (day 1 = the start date)
 const nbIntel=(seed,world,day)=>{const M=world[day-1].mev;return{day,prices:world[day-1].p,mev:M?{id:M.id,n:M.n,d:M.d}:null,fc:{1:nbForecast(seed,world,day,1),2:nbForecast(seed,world,day,2),3:nbForecast(seed,world,day,3)}};};
-const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,world=buildWorld(seed,days),n=g.members.length,runs=[],states={},prev={...(g.prev||{})};let street=g.street||[];
+const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fund:true,coupons:true,black:true,...(hood.features||{})},world=buildWorld(seed,days),n=g.members.length,runs=[],states={},prev={...(g.prev||{})};let street=g.street||[];
  g.members.forEach(m=>{states[m.id]=m.state;});
  let last=hood.last_day||0;
  const due=d=>d<=days&&(now.day>d||(now.day===d&&now.minutes>=NB.OPEN*60));
  while(due(last+1)){const day=last+1,board=g.members.map(m=>({id:m.id,tot:states[m.id].tot}));
-  const offer=fundOffer(hood.id,day,n),pairs=couponPairs(g.members.map(m=>m.id),day),mateOf=Object.fromEntries(pairs.flatMap(([a,b])=>[[a,b],[b,a]])),peers=Object.fromEntries(g.members.map(m=>[m.id,states[m.id].cp||[]]));
+  const offer=F.fund?fundOffer(hood.id,day,n):null,pairs=F.coupons?couponPairs(g.members.map(m=>m.id),day):[],mateOf=Object.fromEntries(pairs.flatMap(([a,b])=>[[a,b],[b,a]])),peers=Object.fromEntries(g.members.map(m=>[m.id,states[m.id].cp||[]]));
   const decs=g.members.map(m=>{if(m.persona)return{dec:botDecision(PERSONAS.find(p=>p.id===m.persona)||PERSONAS[0],states[m.id],{seed,world,day,diff,n,board,me:m.id,k:m.slot,prev:prev[m.id],street,partner:mateOf[m.id],peers,days,fund:offer}),auto:'bot'};
    const own=((g.decisions||{})[day]||{})[m.id];if(own)return{dec:{...own,fc:0},auto:null}; // a forecast was paid when bought
    const p=prev[m.id]||{};return{dec:autopilot(states[m.id],p.dec,p.res,world,day),auto:'autopilot'};});
+  if(!F.black)decs.forEach(d=>{d.dec={...d.dec,bh:[],sec:0};}); // a league without the black hat
   const prep=g.members.map((m,k)=>prepareStand(states[m.id],decs[k].dec,world,day,n));
   const out=runNeighborhoodDay({seed,world,day,pairs,fund:offer,stands:g.members.map((m,k)=>({id:m.id,st:prep[k].st,plan:prep[k].plan}))});
   const paid=(g.paid||{})[day]||{},open=[],results=[],privates=[];
@@ -642,7 +643,7 @@ function restDb(url, key) {
   const inList = ids => 'in.(' + ids.join(',') + ')';
   const upsert = (table, conflict, rows) => rows.length ? q(table + '?on_conflict=' + conflict, { method: 'POST', body: JSON.stringify(rows), headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } }) : null;
   return {
-    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status&status=neq.done' + (only ? '&id=eq.' + only : '')),
+    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status,features&status=neq.done' + (only ? '&id=eq.' + only : '')),
     members: hood => q('lm_members?select=id,slot,persona,state&hood=eq.' + hood + '&order=slot'),
     decisions: (ids, a, b) => q(`lm_decisions?select=member,day,dec&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
     bought: (ids, a, b) => q(`lm_bought?select=member,day,cost&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),

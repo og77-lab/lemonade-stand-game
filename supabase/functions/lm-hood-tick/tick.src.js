@@ -120,7 +120,7 @@ function restDb(url, key) {
   const inList = ids => 'in.(' + ids.join(',') + ')';
   const upsert = (table, conflict, rows) => rows.length ? q(table + '?on_conflict=' + conflict, { method: 'POST', body: JSON.stringify(rows), headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } }) : null;
   return {
-    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status&status=neq.done' + (only ? '&id=eq.' + only : '')),
+    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status,features&status=neq.done' + (only ? '&id=eq.' + only : '')),
     members: hood => q('lm_members?select=id,slot,persona,state&hood=eq.' + hood + '&order=slot'),
     decisions: (ids, a, b) => q(`lm_decisions?select=member,day,dec&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
     bought: (ids, a, b) => q(`lm_bought?select=member,day,cost&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
