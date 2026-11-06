@@ -247,12 +247,12 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
  EFFECT:{ads:0.4,rumor:5,rumorA:0.25},LEADER:1.6,TRICK_C:{ads:5,rumor:4},
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
  CAUGHT:{rep:15,fine:14}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
- // Neighbors' coupons: each evening the street is paired up. A stand that hands out its neighbor's coupons pays for the printing (cost) and sends that neighbor new customers
- // (bring, a share of a stand's crowd) and some of its own (leak). A day's margin on an ordinary street (tools/coupons.js): throw while the neighbor hands out about ₪25,
- // both hand out about ₪16, both throw ₪0, hand out while the neighbor throws about −₪14: a prisoner's dilemma
- COUPON:{cost:6,bring:0.45,leak:0.1,wild:{easy:1.6,medium:1.15,hard:0.85},floor:{easy:0.2,medium:0.16,hard:0.12},
-  // each character: how it leans, how far it trusts a stranger, how long it remembers a betrayal, how wild it is
-  char:{steady:{lean:2,trust:0.6,grudge:1,temp:7},veteran:{lean:4,trust:0.7,grudge:1.6,temp:6},premium:{lean:8,trust:0.7,grudge:0.4,temp:9},budget:{lean:-8,trust:0.45,grudge:0.8,temp:9},trendy:{lean:0,trust:0.55,grudge:0.8,temp:9,herd:1},gambler:{lean:-2,trust:0.5,grudge:0.5,temp:22}}},
+ // Neighbors' coupons: each evening the street is paired up. A stand that hands out pays for the printing (cost) and sends its neighbor some of its own customers (leak).
+ // A coupon works when it's mutual: both handing out brings each many new customers (both), one side alone few (one). So what's best depends on the neighbor:
+ // if it hands out, hand out; if it throws, throw. No move is always right, and the question each evening is trust (measured in tools/coupons.js)
+ COUPON:{cost:6,one:0.12,both:0.7,leak:0.12,
+  noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
+  honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: each evening the committee names an event, its target and the crowd it brings. Everyone gives in secret; at 08:00 either the target was met and the crowd comes,
  // most of it to the stands that gave, by how much they gave (sponsors), or it wasn't and the money is gone. A bigger target brings a bigger event
  FUND:{sponsors:0.7,tiers:[{n:'🎵 הופעה קטנה',per:3.5,boost:1.3},{n:'🛍️ יריד רחוב',per:5,boost:1.45},{n:'🎪 פסטיבל',per:7,boost:1.6}],
@@ -262,19 +262,25 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
 // Everyone meets everyone in turn (the circle method); on an odd street a different stand sits out each day. ids: the stands in a fixed order
 const couponPairs=(ids,day)=>{const n=ids.length,m=n%2?n+1:n,rest=Array.from({length:m-1},(_,i)=>1+((i+day)%(m-1))),rot=[0,...rest],out=[];
  for(let i=0;i<m/2;i++){const a=rot[i],b=rot[m-1-i];if(a<n&&b<n)out.push([ids[a],ids[b]]);}return out;};
-// What a bot expects a stand to do, from its public record cp [{d,w,m,o}] (day, with whom, its move, the other's): how often it shares, lately, whether it pays back,
-// what it did the last time its moves looked like this, and what it did the last time it met this bot
-const couponRead=(cp,me,trust)=>{if(!cp.length)return{q:trust,rec:0.5};const rate=(cp.filter(x=>x.m).length+2*trust)/(cp.length+2),recent=cp.slice(-3),late=recent.filter(x=>x.m).length/recent.length;
- const after=v=>{const a=cp.slice(1).map((x,i)=>[cp[i].o,x.m]).filter(([o])=>o===v);return(a.filter(x=>x[1]).length+trust)/(a.length+1);},rec=Math.max(0,after(true)-after(false));
- let pat=null;if(cp.length>=3){const a=cp[cp.length-2].m,b=cp[cp.length-1].m,seen=[];for(let i=2;i<cp.length;i++)if(cp[i-2].m===a&&cp[i-1].m===b)seen.push(cp[i].m);if(seen.length)pat=seen.filter(Boolean).length/seen.length;}
- const parts=[[rate,2],[late,1.5],[after(cp[cp.length-1].o),1.5]];if(pat!==null)parts.push([pat,1.5]);
- const q=parts.reduce((s,[v,w])=>s+v*w,0)/parts.reduce((s,[,w])=>s+w,0),met=cp.filter(x=>x.w===me);return{q:met.length?(q*2+(met[met.length-1].m?1:0))/3:q,rec};};
-// The bot's move, as a chance: trust earns trust, the end of the season tempts, someone who always shares invites being used, and a stand that burned it pays by its memory.
-// o: me, partner, peers {id:cp}, day, days. Tested in tools/coupons.js: a player guesses them right 50%–68% of the time, and no way of playing always wins.
-const couponMove=(persona,diff,r,o)=>{const C=NB.COUPON,c=C.char[persona.id],{q,rec}=couponRead(o.peers[o.partner]||[],o.me,c.trust),left=o.days-o.day,mine=o.peers[o.me]||[],burned=mine.filter(x=>x.w===o.partner&&!x.o).length;
- let edge=(q-0.5)*34+c.lean-(left<=1?9:0)-(q>0.85?7:0)-burned*c.grudge*12+rec*6;
- if(c.herd){const y=Object.values(o.peers).flat().filter(x=>x.d===o.day-1);if(y.length)edge+=(y.filter(x=>x.m).length/y.length-0.5)*16;}
- const p=1/(1+Math.exp(-edge/(c.temp*C.wild[diff]))),f=C.floor[diff];return r()<Math.min(1-f,Math.max(f,p));};
+// Each character plays the coupons by its own rule, which a player can discover from the public record:
+// Yossi does what the neighbor did last time, to anyone · Rachel shares until betrayed or until the neighbor throws a lot · the chef shares unless the neighbor threw twice running ·
+// Avi never helps someone ahead of him in the table · Noa goes with the street's majority yesterday · Moti does the opposite of his own last move.
+// On the hard level every character also remembers: whoever threw at it while it handed out gets nothing more from it.
+// o: me, partner, peers {id:cp}, day, tot {id:score}, diff. cp [{d,w,m,o,s}]: day, with whom, its move, the other's, what it said
+const couponRule=(persona,o)=>{const cp=o.peers[o.partner]||[],mine=o.peers[o.me]||[],last=cp[cp.length-1],mineLast=mine[mine.length-1];
+ if(o.diff==='hard'&&mine.some(x=>x.w===o.partner&&x.m&&!x.o))return 0.06;
+ switch(persona.id){
+  case 'steady':return !last?0.8:last.m?0.92:0.08;
+  case 'veteran':return mine.some(x=>x.w===o.partner&&!x.o)||cp.slice(-3).filter(x=>!x.m).length>=2?0.06:0.92;
+  case 'premium':return cp.length>=2&&cp.slice(-2).every(x=>!x.m)?0.1:0.92;
+  case 'budget':return ((o.tot||{})[o.partner]||0)>((o.tot||{})[o.me]||0)?0.06:0.8;
+  case 'trendy':{const y=Object.values(o.peers).flat().filter(x=>x.d===o.day-1);return !y.length?0.6:y.filter(x=>x.m).length*2>=y.length?0.92:0.08;}
+  default:return !mineLast?0.5:mineLast.m?0.08:0.92;}};
+const couponMove=(persona,diff,r,o)=>{const f=NB.COUPON.noise[diff];return r()<couponRule(persona,o)*(1-2*f)+f;};
+// What a character says in the evening, given what it means to do
+const couponSay=(persona,move,r)=>{if(persona.id==='budget')return true;if(persona.id==='gambler')return !move;return r()<NB.COUPON.honest[persona.id]?move:!move;};
+// A bot's night, the same in the evening (what it says) and at 08:00 (what it does)
+const couponNight=(persona,diff,seed,day,k,o)=>{const r=rng(seed*97+day*131+k*7+3),move=couponMove(persona,diff,r,{...o,day,diff});return{move,say:couponSay(persona,move,r)};};
 // Tonight's event: the same for the whole street, from the neighborhood's id and the day. n: stands on the street
 const fundOffer=(id,day,n)=>{let h=7;for(const c of String(id))h=(h*31+c.charCodeAt(0))%2147483647;const t=NB.FUND.tiers[Math.floor(rng(h+day*101)()*NB.FUND.tiers.length)];return{...t,target:Math.round(t.per*n)};};
 // A bot's gift: its character, how the last few funds went (fd: its record), and a chance to surprise
@@ -317,7 +323,7 @@ const prepareStand=(st0,dec,world,day,n)=>{const st={...st0,lemons:st0.lemons.ma
    if(got.l+got.h+got.i>0&&c<=free+1e-9){st.cash-=c;free-=c;spent.stock=(spent.stock||0)+c;if(got.l)st.lemons.push({q:got.l,d:day});st.sugar+=got.h;st.ice+=got.i;auto={...got,cost:c};}}}
  const lm=st.lemons.reduce((s,x)=>s+x.q,0),stockMax=Math.min(...[['l',lm],['h',st.sugar],['i',st.ice]].filter(([k])=>recipe[k]>0).map(([k,h])=>Math.floor(h/recipe[k])));
  const cups=Math.max(0,Math.min(dec.cups??stockMax,stockMax,nbCap(st.ups,helper)));
- return{st,plan:{recipe,price:Math.max(1,Math.min(20,Math.round(dec.price||6))),cups,loc,helper,mk:mkOk,bh,sec,fc,coupon:dec.coupon!==false,fund},spent,skipped,auto};};
+ return{st,plan:{recipe,price:Math.max(1,Math.min(20,Math.round(dec.price||6))),cups,loc,helper,mk:mkOk,bh,sec,fc,coupon:dec.coupon!==false,say:typeof dec.say==='boolean'?dec.say:null,fund},spent,skipped,auto};};
 
 // The street's day. stands: [{id, st (after prepareStand), plan}]. Returns each stand's day and the timeline.
 const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
@@ -354,7 +360,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  NB.HOURS.forEach((h,i)=>{const sur=W.sur&&i>=5?W.sur.f:1,cnt=Math.round(street*h/HS*sur);for(let j=0;j<cnt;j++)walkers.push(OPEN+i*60+Math.floor(r()*60));});
  walkers.sort((a,b)=>a-b);
  // the new customers a neighbor's coupons bring, at moments of the day
- const brought=[];mate.forEach((t,s)=>{if(s.plan.coupon)for(let j=Math.round(street/Math.max(1,n)*NB.COUPON.bring);j>0;j--)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to:t});});
+ const brought=[];mate.forEach((t,s)=>{if(s.plan.coupon)for(let j=Math.round(street/Math.max(1,n)*(t.plan.coupon?NB.COUPON.both:NB.COUPON.one));j>0;j--)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to:t});});
  if(fundOn)for(let j=Math.round(street0*more*NB.FUND.sponsors);j>0;j--){let x=r()*gifts,to=null;for(const s of S){x-=s.plan.fund||0;if(x<=0&&s.plan.fund){to=s;break;}}if(to)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to,fund:true});}
  brought.sort((a,b)=>a.m-b.m);
  const typeOf=s=>{let x=r(),typ='adult',cum=0;for(const t of TYPES){cum+=s.mix[t];if(x<cum){typ=t;break;}}return typ;};
@@ -397,7 +403,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
   const kr=rng(seed*71+day*13+s.k),attacks=hitBy.map(t=>t.caught.has(s)?{trick:t.id,all:t.all,by:t.by.id,at:hhmm(t.caught.get(s)),caught:true}:kr()<NB.SECURITY[s.plan.sec].know?{trick:t.id,caught:false}:null).filter(Boolean);
   const comp=Math.round([...caughtBy.values()].reduce((x,c)=>x+(c.has(s)?NB.CAUGHT.fine/c.size:0),0)*100)/100,t=mate.get(s);
   return{id:s.id,sold:s.sold,cups:s.cups,rev:s.rev,miss:s.miss,walk:s.walk,visitors:s.vis,byType:s.byType,price:s.plan.price,loc:s.plan.loc,closed:s.closed,sick:s.sick!==null?hhmm(s.sick):null,
-   soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,costs,comp,repD:rep-s.st.rep,rep,attacks,coupon:t?{with:t.id,gave:s.plan.coupon,got:t.plan.coupon,came:s.cpIn,left:s.cpOut}:null,fund:fund?{gave:s.plan.fund||0,ok:fundOn,came:s.fdIn}:null,
+   soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,costs,comp,repD:rep-s.st.rep,rep,attacks,coupon:t?{with:t.id,gave:s.plan.coupon,got:t.plan.coupon,said:s.plan.say,came:s.cpIn,left:s.cpOut}:null,fund:fund?{gave:s.plan.fund||0,ok:fundOn,came:s.fdIn}:null,
    myTricks:s.tricks.map(t=>({trick:t.id,all:t.all,caught:t.caught.size>0,times:t.caught.size}))};});
  at(CLOSE,{type:'close'});
  ev.sort((a,b)=>a.m-b.m);return{results,events:ev,weather:{t:T,w:W.w},ev:W.ev?W.ev.id:null,fund:fund?{n:fund.n,target:fund.target,boost:fund.boost,gifts,ok:fundOn}:null};};
@@ -414,7 +420,7 @@ const settleStand=(st,plan,res,spent,day)=>{const n={...st,ups:[...st.ups]};
  if(n.loan>0&&n.cash>=n.loan*1.5){n.cash=Math.round((n.cash-n.loan)*100)/100;n.loan=0;}
  const profit=Math.round((res.rev+comp-dayCost-interest-Object.values(spent).reduce((a,b)=>a+b,0))*100)/100;
  n.tot=Math.round((st.tot+profit)*100)/100;n.rep=res.rep;n.tricks=st.tricks+res.myTricks.length;n.paper=res.vip===true;
- n.cp=res.coupon?[...(st.cp||[]),{d:day,w:res.coupon.with,m:res.coupon.gave,o:res.coupon.got}]:st.cp||[];
+ n.cp=res.coupon?[...(st.cp||[]),{d:day,w:res.coupon.with,m:res.coupon.gave,o:res.coupon.got,s:res.coupon.said}]:st.cp||[];
  n.fd=res.fund?[...(st.fd||[]),{d:day,ok:res.fund.ok,g:res.fund.gave}]:st.fd||[];
  return{st:n,profit,spoiled};};
 const nbScore=st=>Math.round((st.tot-st.loan)*100)/100;
@@ -475,7 +481,7 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  const cap=nbCap([...st.ups,...dec.ups],dec.helper),unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,guess=S>=0.8?1.15:0.6+rr()*1.0,cups=Math.max(0,Math.min(cap,Math.round(share*guess),Math.floor(Math.max(0,cash-LOC[dec.loc].rent)/Math.max(0.01,unit))));
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
  dec.buy={l:Math.max(0,cups*rec.l-lm),h:Math.max(0,cups*rec.h-st.sugar),i:Math.max(0,cups*rec.i-(st.ups.includes('cooler')?st.ice:0))};dec.cups=cups;
- if(o.partner)dec.coupon=couponMove(persona,diff,rr,{me,partner:o.partner,peers:o.peers,day,days:o.days});
+ if(o.partner){const c=couponNight(persona,diff,seed,day,k,{me,partner:o.partner,peers:o.peers,tot:Object.fromEntries(board.map(b=>[b.id,b.tot]))});dec.coupon=c.move;dec.say=c.say;}
  if(o.fund){const g=fundMove(persona,diff,rr,{offer:o.fund,n,fd:st.fd||[]});if(g&&spend(g))dec.fund=g;}
  return dec;};
 const autopilot=(st,last,lastRes,world,day)=>{const P=world[day-1].p,rec=(last&&last.recipe)||{l:3,h:1,i:1},cups=Math.max(10,Math.round(((lastRes&&lastRes.sold)||15)*1.1));
@@ -487,7 +493,7 @@ const autopilot=(st,last,lastRes,world,day)=>{const P=world[day-1].p,rec=(last&&
 // g: hood {seed, days, difficulty, last_day}, members [{id, slot, persona|null, state}], decisions {day:{member:dec}},
 //    paid {day:{member:intel cost already taken}}, prev {member:{dec,res}} (yesterday, for the autopilot and bots), street [{id,price,loc}] (yesterday's prices),
 //    now {day, minutes} (day 1 = the start date)
-const nbIntel=(seed,world,day)=>{const M=world[day-1].mev;return{day,prices:world[day-1].p,mev:M?{id:M.id,n:M.n,d:M.d}:null,fc:{1:nbForecast(seed,world,day,1),2:nbForecast(seed,world,day,2),3:nbForecast(seed,world,day,3)}};};
+const nbIntel=(seed,world,day,says)=>{const M=world[day-1].mev;return{day,says,prices:world[day-1].p,mev:M?{id:M.id,n:M.n,d:M.d}:null,fc:{1:nbForecast(seed,world,day,1),2:nbForecast(seed,world,day,2),3:nbForecast(seed,world,day,3)}};};
 const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fund:true,coupons:true,black:true,...(hood.features||{})},world=buildWorld(seed,days),n=g.members.length,runs=[],states={},prev={...(g.prev||{})};let street=g.street||[];
  g.members.forEach(m=>{states[m.id]=m.state;});
  let last=hood.last_day||0;
@@ -505,19 +511,22 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fun
    const set=settleStand(p.st,p.plan,r,spent,day);states[m.id]=set.st;prev[m.id]={dec:decs[k].dec,res:r};
    open.push({id:m.id,price:p.plan.price,loc:p.plan.loc,ups:p.st.ups,mk:p.plan.mk,helper:p.plan.helper,closed:r.closed});
    results.push({id:m.id,price:r.price,loc:r.loc,sold:r.sold,rev:r.rev,profit:set.profit,score:nbScore(set.st),rep:set.st.rep,closed:r.closed,sick:r.sick,soldAt:r.soldAt,vip:r.vip,insp:r.insp,
-    caught:r.myTricks.filter(t=>t.caught).length,coupon:r.coupon&&{with:r.coupon.with,gave:r.coupon.gave},fund:r.fund?r.fund.gave:0,auto:decs[k].auto});
+    caught:r.myTricks.filter(t=>t.caught).length,coupon:r.coupon&&{with:r.coupon.with,gave:r.coupon.gave,said:r.coupon.said},fund:r.fund?r.fund.gave:0,auto:decs[k].auto});
    privates.push({member:m.id,data:{before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,autoBuy:p.auto,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
   street=open.map(x=>({id:x.id,price:x.price,loc:x.loc}));
   runs.push({day,open:{weather:out.weather,ev:out.ev,stands:open,fund:out.fund},events:out.events,results,privates});
   last=day;}
- const intel=last<days?nbIntel(seed,world,last+1):null;
+ // what the bots say tonight about tomorrow's coupons
+ const says={};if(F.coupons&&last<days){const day=last+1,pairs=couponPairs(g.members.map(m=>m.id),day),mateOf=Object.fromEntries(pairs.flatMap(([a,b])=>[[a,b],[b,a]])),peers=Object.fromEntries(g.members.map(m=>[m.id,states[m.id].cp||[]])),tot=Object.fromEntries(g.members.map(m=>[m.id,states[m.id].tot]));
+  g.members.forEach(m=>{if(m.persona&&mateOf[m.id])says[m.id]=couponNight(PERSONAS.find(p=>p.id===m.persona)||PERSONAS[0],diff,seed,day,m.slot,{me:m.id,partner:mateOf[m.id],peers,tot}).say;});}
+ const intel=last<days?nbIntel(seed,world,last+1,says):null;
  const status=last>=days&&(now.day>days||now.minutes>=NB.CLOSE*60)?'done':last>0?'running':'open';
  return{runs,states,intel,last_day:last,status};};
 
 const LemonEngine={CUP,DAYS,CAP_BASE,CAP_STATION,CAP_TEAM,HELPER_B,HELPER_C,LOAN_INT,TP,SR,SW,ITP,WTP,HFR,crP,CT,TYPES,WE,tM,softEnv,iFr,tSc,fSc,freshW,cSc,heatF,setPM,pMt,buyProb,rawQ,bestQ,relQ,VIP_Q,standAttr,rng,
  LOC,UPG_MKT,UPG_OPS,MKTG,BLACK,FORECAST,RESEARCH_C,SPY_C,DIFF,PRESETS,sameR,EVENTS,evGood,MEV,SUR,PERSONAS,AI,SMART,ALL_UPS,MK_EM,buildWorld,
  DOW,dowOf,mixOf,rivalsOf,dayCtx,hitOn,rivalDemand,planRivals,rivalsFor,visitorsFor,whyOf,perType,buyersFor,playerDay,settleDay,makeForecast,
- NB,hhmm,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,couponPairs,couponRead,couponMove,fundOffer,fundMove,botDecision,autopilot,nbIntel,advanceHood};
+ NB,hhmm,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,couponPairs,couponRule,couponMove,couponSay,couponNight,fundOffer,fundMove,botDecision,autopilot,nbIntel,advanceHood};
 if(typeof module!=='undefined'&&module.exports)module.exports=LemonEngine;else root.LemonEngine=LemonEngine;
 })(typeof globalThis!=='undefined'?globalThis:this);
 

@@ -56,7 +56,7 @@ console.log('\ntricks and deals');
 check('a campaign against me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'ads', target: 's0' }] } : {} }), 'down');
 check('my campaign against a rival', base, avg({ dec: k => k ? {} : { bh: [{ id: 'ads', target: 's1' }] } }), 'up');
 check('a rumor about me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'rumor', target: 's0' }] } : {} }), 'down');
-{ const P = [['s0', 's1']]; check('coupons: my neighbor hands out', base, avg({ pairs: P, dec: k => k === 1 ? { coupon: true } : k === 0 ? { coupon: false } : {} }), 'up'); check('coupons: both throw changes nothing', base, avg({ pairs: P, dec: k => k < 2 ? { coupon: false } : {} }), 'same'); }
+{ const P = [['s0', 's1']]; check('coupons: my neighbor hands out', base, avg({ pairs: P, dec: k => k === 1 ? { coupon: true } : k === 0 ? { coupon: false } : {} }), 'up'); check('coupons: both hand out brings more', avg({ pairs: P, dec: k => k === 1 ? { coupon: true } : k === 0 ? { coupon: false } : {} }), avg({ pairs: P, dec: k => k < 2 ? { coupon: true } : {} }), 'up'); check('coupons: both throw changes nothing', base, avg({ pairs: P, dec: k => k < 2 ? { coupon: false } : {} }), 'same'); }
 { const F = { n: 'x', boost: 1.5, target: 30 }; check('fund met, I gave', base, avg({ fund: F, dec: () => ({ fund: 5 }) }), 'up'); check('fund missed, I gave', base, avg({ fund: F, dec: k => k ? {} : { fund: 5 } }), 'same'); const met = avg({ fund: F, dec: k => k ? { fund: 6 } : {} }), gave = avg({ fund: F, dec: k => k ? { fund: 6 } : { fund: 6 } }); check('fund met: givers get more than one who did not', met, gave, 'up'); }
 // the books, over whole seasons with everything on
 console.log('\nthe books: whole seasons, bots, every feature on');

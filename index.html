@@ -919,6 +919,12 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .hd-line>span{font-size:14px;font-weight:600}.hd-line small{display:block;font-size:11.5px;color:var(--dim);font-weight:400}
 .hd-line.col{flex-direction:column;align-items:stretch}
 .hd-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cr{margin-top:8px}.cr-t{display:grid;gap:4px;align-items:center;text-align:center;font-size:15px}.cr-t small{font-size:11px;color:var(--dim)}.cr-t b{font-size:12px;color:var(--dim);font-weight:600;text-align:start;padding-inline-end:4px}.cr-t span{background:var(--panel-2);border-radius:8px;padding:3px 0;white-space:nowrap}.cr-t .lie{background:rgba(248,113,113,.3)}
+.pg{display:flex;flex-direction:column;gap:6px;margin-top:8px}.pg-r{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:6px;align-items:stretch;text-align:center;width:100%}
+.pg-h b{font-size:12px;color:var(--dim);font-weight:600;align-self:end}.pg-r>b{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1.25;background:var(--panel-2);border-radius:10px;padding:8px 4px}
+.pg-c{background:none;border:none;padding:0;font:inherit;color:inherit}.pg-c>b{border:2px solid var(--line)}.pg-r.on>b{outline:2px solid var(--lemon);background:rgba(255,210,63,.16)}
+.pg-v{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:6px 2px;background:var(--panel-2)}.pg-v i{font-style:normal;font-size:19px;line-height:1.2}.pg-v b{font-size:15px}
+.pg-v.g{background:rgba(74,222,128,.15)}.pg-v.G{background:rgba(74,222,128,.32)}.pg-v.r{background:rgba(248,113,113,.2)}
 .hd-rw{position:relative;display:flex;flex-direction:column;gap:4px}.hd-rw .hd-row{padding-inline-end:44px}.hd-bin{position:absolute;left:34px;top:8px;font-size:15px;opacity:.75;padding:4px}
 .hd-del{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;padding:4px 2px 8px}
 .rd-row{display:flex;flex-direction:column;gap:3px;padding:9px 2px;border-bottom:1px solid var(--line)}.rd-row:last-child{border-bottom:none}.rd-row.me{background:rgba(255,210,63,.07);border-radius:8px;padding-inline:8px}
@@ -1557,7 +1563,7 @@ const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?g('אתה','את'):(name
   case 'vip':return `🎩 מבקר האוכל אצל ${n(e.stand)}: ${e.ok?'התלהב! 🌟':'התאכזב 😤'}`;
   case 'caught':{const ad=e.trick==='ads',mine=e.victim===meId,f=e.stand&&HOOD_G[e.stand]==='f',did=ad?(mine?(f?'מריצה נגדך קמפיין':'מריץ נגדך קמפיין'):(f?'מריצה קמפיין נגד ':'מריץ קמפיין נגד ')+n(e.victim)):(mine?(f?'מפיצה עליך שמועות':'מפיץ עליך שמועות'):(f?'מפיצה שמועות על ':'מפיץ שמועות על ')+n(e.victim));
    if(!e.stand)return mine?`🚨 האבטחה שלך עצרה ${TRICK_N[e.trick]} נגדך`:`🚨 האבטחה של ${n(e.victim)} עצרה ${TRICK_N[e.trick]}`;
-   return e.stand===meId?`🚨 נתפסת ${ad?g('מריץ קמפיין נגד','מריצה קמפיין נגד'):g('מפיץ שמועות על','מפיצה שמועות על')} ${n(e.victim)}`:`🚨 ${n(e.stand)} ${f?'נתפסה':'נתפס'} ${did}`;}
+   const C=NB.CAUGHT;return e.stand===meId?`🚨 נתפסת ${ad?g('מריץ קמפיין נגד','מריצה קמפיין נגד'):g('מפיץ שמועות על','מפיצה שמועות על')} ${n(e.victim)}: −${C.rep} מוניטין ופיצוי ₪${C.fine}`:`🚨 ${n(e.stand)} ${f?'נתפסה':'נתפס'} ${did}: −${C.rep} מוניטין ופיצוי ₪${C.fine} ${mine?'לך':'ל'+n(e.victim)}`;}
   case 'fund':return e.ok?`🎉 הקרן הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}): ${e.n} היום ברחוב!`:`😞 הקרן לא הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}). הכסף אבד`;default:return null;}};
 // The day's report from the server's numbers, in the shape of the regular game's report
 const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNames(st),op=(st.opened||{})[d],rows=(st.results||{})[d]||[],sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
@@ -1568,11 +1574,14 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  const nick=id=>names[id]?.nick||'?',C=NB.CAUGHT;
  r.attacks.forEach(a=>a.caught?T('good',`🚨 האבטחה תפסה את ${nick(a.by)} ב-${a.at}: ${TRICK_N[a.trick]}${a.all?' נגד כולם':''}. ${gd(a.by,'הוא נחשף לכל השכונה ושילם פיצוי','היא נחשפה לכל השכונה ושילמה פיצוי')}`):T('bad',`⚠️ מישהו הפעיל נגדך ${TRICK_N[a.trick]}, ולא ידוע מי`));
  if(r.comp)T('good',`💰 קיבלת ${fmt2(r.comp)} פיצוי ממי שתקף אותך`);
- r.myTricks.forEach(t=>t.caught?T('bad',`🚨 ה${TRICK_N[t.trick]} שלך${t.all?' נגד כולם':''} נתפס, וכל השכונה יודעת: −${C.rep} מוניטין ופיצוי ${fmt(C.fine)}`):T('good',`🎩 ${TRICK_N[t.trick]}${t.all?' נגד כולם':''} עבר בשקט`));
+ r.myTricks.forEach(t=>t.caught?T('bad',`🚨 ${t.trick==='ads'?'הקמפיין שלך':'השמועות שלך'}${t.all?' נגד כולם':''} ${t.trick==='ads'?'נתפס':'נתפסו'}, וכל השכונה יודעת: −${C.rep} מוניטין ופיצוי ${fmt(C.fine)}. זה בערך ${repPct(r.rep-r.repD,r.rep-r.repD-C.rep)}% פחות מבקרים בימים הקרובים, עד שהמוניטין יתאושש`):T('good',`🎩 ${TRICK_N[t.trick]}${t.all?' נגד כולם':''} עבר בשקט`));
+ // what the day did to reputation, in customers
+ if(Math.abs(r.repD)>=5)T(r.repD>0?'good':'warn',`⭐ המוניטין ${r.repD>0?'עלה':'ירד'} ב-${Math.abs(r.repD)}, ל-${r.rep}: בערך ${repPct(r.rep-r.repD,r.rep)}% ${r.repD>0?'יותר':'פחות'} מבקרים ביום הבא`);
  // the street fund
  if(r.fund&&op&&op.fund){const f=r.fund,o=op.fund;if(o.ok)T('good',f.gave?`🎉 ${o.n}: הקרן הגיעה ליעד. נתת ${fmt(f.gave)}, ו-${f.came} לקוחות מהאירוע קנו אצלך`:`🎉 ${o.n}: הקרן הגיעה ליעד בלעדיך. הרחוב היה מלא, אבל רוב הקהל הלך למי שתרם`);else if(f.gave)T('bad',`😞 הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target}), וה-${fmt(f.gave)} שלך אבדו`);else T('warn',`הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target})`);}
  // the coupons deal with tonight's neighbor
- if(r.coupon){const c=r.coupon,n=nick(c.with);T(c.got?'good':c.gave?'bad':'warn',c.gave&&c.got?`🎟️ ${g('אתה','את')} ו${n} חילקתם קופונים: ${c.came} לקוחות חדשים קנו אצלך`:c.got?`🗑️ זרקת את הקופונים של ${n}, ${gd(c.with,'והוא חילק','והיא חילקה')} את שלך: ${c.came} לקוחות חדשים קנו אצלך`:c.gave?`🗑️ ${n} ${gd(c.with,'זרק','זרקה')} את הקופונים שלך: שילמת על הדפוס, ${c.left} מהלקוחות שלך עברו ${gd(c.with,'אליו','אליה')}, ולא קיבלת כלום`:`🗑️ גם ${g('אתה','את')} וגם ${n} זרקתם את הקופונים: אף אחד לא הרוויח`);}
+ if(r.coupon){const c=r.coupon,n=nick(c.with);T(c.got?'good':c.gave?'bad':'warn',c.gave&&c.got?`🎟️ ${g('אתה','את')} ו${n} חילקתם קופונים: ${c.came} לקוחות חדשים קנו אצלך`:c.got?`🗑️ זרקת את הקופונים של ${n}, ${gd(c.with,'והוא חילק','והיא חילקה')} את שלך: ${c.came} לקוחות חדשים קנו אצלך`:c.gave?`🗑️ ${n} ${gd(c.with,'זרק','זרקה')} את הקופונים שלך: שילמת על הדפוס, ${c.left} מהלקוחות שלך עברו ${gd(c.with,'אליו','אליה')}, ולא קיבלת כלום`:`🗑️ גם ${g('אתה','את')} וגם ${n} זרקתם את הקופונים: אף אחד לא הרוויח`);
+  const w=(rows.find(o=>o.id===c.with)?.coupon||{}).said;if(typeof w==='boolean'&&w!==c.got)T(w?'bad':'good',w?`🤥 ${n} ${gd(c.with,'אמר שיחלק, ולא עמד במילה','אמרה שתחלק, ולא עמדה במילה')}`:`😮 ${n} ${gd(c.with,'אמר שיזרוק, ובכל זאת חילק','אמרה שתזרוק, ובכל זאת חילקה')}`);}
  // my price against the street's that day, and what it did to my sales
  {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
   T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
@@ -1592,6 +1601,18 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
   recipe:x.plan.recipe,price:x.plan.price,w:op&&op.weather.w,t:op&&op.weather.t,score:st.me.state.tot};};
 
 // The neighborhoods screen: my neighborhoods, open a new one, join with a code. Inside a neighborhood the regular game screens take over.
+// A dilemma at a glance: what I can do down the side, what the others may do across the top, and what comes of each. pick: the row I chose; on: makes the rows buttons
+// A stand's last coupon nights, as a small table: who it met and what that one did, what it said, what it did
+const CpRec=({st,id})=>{const rows=Object.entries(st.results||{}).flatMap(([d,rs])=>rs.filter(r=>r.id===id&&r.coupon).map(r=>({d:+d,c:r.coupon,o:rs.find(x=>x.id===r.coupon.with)}))).sort((a,b)=>a.d-b.d),last=rows.slice(-5),em=x=>(st.members.find(m=>m.id===x)||{}).em||'❔',ic=v=>v===true?'🎟️':v===false?'🗑️':'🤐',spoke=rows.filter(x=>typeof x.c.said==='boolean'),kept=spoke.filter(x=>x.c.said===x.c.gave).length;if(!last.length)return null;
+ return <div className="cr"><div className="cr-t" style={{gridTemplateColumns:`auto repeat(${last.length},1fr)`}}><i/>{last.map(x=><small key={x.d}>יום {x.d}</small>)}
+  <b>מול</b>{last.map(x=><span key={x.d}>{em(x.c.with)}{ic(x.o&&x.o.coupon?x.o.coupon.gave:null)}</span>)}
+  <b>מילה</b>{last.map(x=><span key={x.d}>{ic(x.c.said)}</span>)}
+  <b>מעשה</b>{last.map(x=><span key={x.d} className={typeof x.c.said==='boolean'&&x.c.said!==x.c.gave?'lie':''}>{ic(x.c.gave)}</span>)}</div>
+  <div className="hint">חלוקה ב-{rows.filter(x=>x.c.gave).length} מתוך {rows.length} ערבים{spoke.length>0&&` · עמידה במילה: ${kept} מתוך ${spoke.length}`}</div></div>;};
+const PayGrid=({cols,rows,pick,on})=><div className="pg"><div className="pg-r pg-h"><span/>{cols.map(c=><b key={c}>{c}</b>)}</div>
+ {rows.map((r,i)=>{const Row=on?'button':'div';return <Row key={r.n} className={"pg-r"+(on?' pg-c':'')+(pick===i?' on':'')} onClick={on?()=>on(i):undefined}><b>{r.n}</b>{r.v.map((v,k)=><span key={k} className={'pg-v '+v[1]}><i>{v[2]}</i><b className="num">{v[0]}</b></span>)}</Row>;})}</div>;
+// what reputation does: a stand's pull on the street, from the street's formula
+const repPull=r=>0.6+r/125,repPct=(from,to)=>Math.round(Math.abs(1-repPull(to)/repPull(from))*100);
 // a date some days from now, as the server wants it
 const startOn=d=>new Date(Date.now()+d*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Jerusalem'});
 function Hood({onExit,onOpen}){
@@ -1654,7 +1675,7 @@ function Hood({onExit,onOpen}){
 function Game(){
  const [seed,setSeed]=useState(()=>Date.now()%100000),[gameId,setGameId]=useState(null),[starting,setStarting]=useState(false);
  // Neighborhood mode: the same screens, with the day's world and the stand coming from the server ({id, st, skew})
- const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('price'),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
+ const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodSay,setHoodSay]=useState(null),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('price'),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
  const world=useMemo(()=>hood&&hood.st?hoodWorld(hood.st):buildWorld(seed),[seed,hood&&hood.st]);
  const [day,setDay]=useState(1);
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
@@ -1924,10 +1945,10 @@ function Game(){
  const hoodLiveOrder=c=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];return op.stands.map(s=>({id:s.id,v:((c[s.id]||{}).sold||0)*s.price})).sort((a,b)=>b.v-a.v).map(x=>x.id);};
  const hst=hood&&hood.st,hNow=hood?Date.now()+hood.skew:0;
  const hoodLoad=async(id=hood&&hood.id)=>{const st=await hoodRpc('lm_hood_state',{p_hood:id}),features=(hood&&hood.id===id&&hood.features)||await hoodRpc('lm_hood_features',{p_hood:id}).catch(()=>({}))||{};
-  const said=await hoodRpc('lm_hood_genders',{p_hood:id}).catch(()=>({}));HOOD_G={...Object.fromEntries(st.members.filter(m=>m.bot&&/^(נועה|סבתא)/.test(m.nick)).map(m=>[m.id,'f'])),...said};
+  const said=await hoodRpc('lm_hood_genders',{p_hood:id}).catch(()=>({})),says=st.deciding&&features.coupons!==false?await hoodRpc('lm_hood_says',{p_hood:id}).catch(()=>({})):{};HOOD_G={...Object.fromEntries(st.members.filter(m=>m.bot&&/^(נועה|סבתא)/.test(m.nick)).map(m=>[m.id,'f'])),...said};
   // the server runs the days every few minutes; a player who arrives first nudges it
   if((st.today&&!(st.opened||{})[st.today]&&st.hood.last_day<st.today)||(st.deciding&&!st.market))hoodTick(id);
-  setHood(h=>({...(h||{}),id,st,features,skew:Date.parse(st.now+'Z')-Date.now()}));return st;};
+  setHood(h=>({...(h||{}),id,st,features,says,skew:Date.parse(st.now+'Z')-Date.now()}));return st;};
  const openHood=id=>{if(cfg.gender)hoodRpc('lm_hood_set_gender',{p_hood:id,p_gender:cfg.gender}).catch(()=>{});setHood({id,st:null,skew:0});hoodKey.current='';setHoodMsg(null);setPhase('hoodwait');hoodLoad(id).catch(e=>setHoodMsg(hoodErr(e)));};
  // leaving a neighborhood: nothing of it may carry into a regular game
  const leaveHood=()=>{setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);hoodSnap.current='';
@@ -1947,7 +1968,7 @@ function Game(){
   if(ph==='evening'){const dec=st.me.decision||{},newUps=(dec.ups||[]).filter(u=>!S.ups.includes(u)),upCost=newUps.reduce((s,u)=>s+(ALL_UPS.find(x=>x.id===u)?.c||0),0),loanAdd=dec.loan&&!S.loan?dec.loan:0;
    setCash(S.cash-upCost+loanAdd);setUps([...S.ups,...newUps]);setLoan(S.loan+loanAdd);
    if(dec.recipe)setRecipe(dec.recipe);if(dec.price)setPrice(dec.price);if(dec.cups!=null)setCupsWanted(dec.cups);if(dec.loc!=null)setLoc(dec.loc);setHelper(!!dec.helper);
-   setActs([...(dec.mk||[]),...(dec.bh||[]).map(b=>b.id)]);setTargets(Object.fromEntries((dec.bh||[]).map(b=>[b.id,b.target])));setSec(dec.sec||0);setHoodCoupon(dec.coupon!==false);setHoodFund(dec.fund||0);
+   setActs([...(dec.mk||[]),...(dec.bh||[]).map(b=>b.id)]);setTargets(Object.fromEntries((dec.bh||[]).map(b=>[b.id,b.target])));setSec(dec.sec||0);setHoodCoupon(dec.coupon!==false);setHoodSay(typeof dec.say==='boolean'?dec.say:null);setHoodFund(dec.fund||0);
    setBuy(dec.buy||{l:0,h:0,i:0});setFcast(st.me.forecast?st.me.forecast.data:null);hoodSnap.current=st.me.decision?'restore':'';
    setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${d}`});return;}
   setCash(S.cash);setUps(S.ups);setLoan(S.loan);
@@ -1966,7 +1987,7 @@ function Game(){
  const hoodShort=hood&&phase==='evening'&&hoodWant>afterCups?(()=>{const have={l:lm+buy.l,h:sugar+buy.h,i:ice+buy.i},need={l:Math.max(0,hoodWant*recipe.l-have.l),h:Math.max(0,hoodWant*recipe.h-have.h),i:Math.max(0,hoodWant*recipe.i-have.i)};
   return{...need,cost:need.l*tP.l+need.h*tP.h+need.i*tP.i};})():null;
  const hoodDec=()=>{const S=hst.me.state;return{recipe,price,cups:hoodWant,autoStock:true,loc,helper,sec,buy,mk:acts.filter(id=>MKTG.some(m=>m.id===id)),
-  bh:acts.filter(id=>NB.TRICKS.includes(id)&&targets[id]).map(id=>({id,target:targets[id]})),coupon:hoodCoupon,fund:hf.fund?hoodFund:0,ups:ups.filter(u=>!S.ups.includes(u)),loan:loan>S.loan?Math.round(loan-S.loan):0};};
+  bh:acts.filter(id=>NB.TRICKS.includes(id)&&targets[id]).map(id=>({id,target:targets[id]})),coupon:hoodCoupon,say:hoodSay,fund:hf.fund?hoodFund:0,ups:ups.filter(u=>!S.ups.includes(u)),loan:loan>S.loan?Math.round(loan-S.loan):0};};
  const hoodCur=hood&&hst&&phase==='evening'?JSON.stringify(hoodDec()):'';
  if(hoodSnap.current==='restore'&&hoodCur)hoodSnap.current=hoodCur;
  const hoodDirty=!!hoodCur&&hoodCur!==hoodSnap.current;
@@ -1976,7 +1997,7 @@ function Game(){
  const hoodVs=p=>hoodAvg==null?'':p>hoodAvg+0.4?'יקר מהרחוב: פחות עוברים יבחרו בך':p<hoodAvg-0.4?'זול מהרחוב: יותר עוברים יבחרו בך':'בערך כמו הרחוב';
  // what yesterday says about tonight's choices, in a line each
  const hoodHint=(()=>{const h={};if(!hood||!hst||!hst.deciding)return h;const ds=Object.keys(hst.results||{}).map(Number).sort((a,b)=>a-b),y=ds[ds.length-1];if(!y)return h;
-  const rows=hst.results[y],me=hst.me.id,mine=rows.find(r=>r.id===me),prev=ds.length>1?hst.results[ds[ds.length-2]]:null,nm=hoodNames(hst),last=hst.deciding===hst.hood.days;if(!mine)return h;
+  const rows=hst.results[y],me=hst.me.id,mine=rows.find(r=>r.id===me),prev=ds.length>1?hst.results[ds[ds.length-2]]:null,nm=hoodNames(hst);if(!mine)return h;
   // the street: how crowded yesterday's places were, and who cut under me
   const here=rows.filter(r=>r.loc===loc&&r.id!==me&&!r.closed).length,free=[0,1,2].filter(z=>!rows.some(r=>r.loc===z&&r.id!==me&&!r.closed));
   if(here>=2)h.place=`אתמול עמדו ב${LOC[loc].n} עוד ${here} דוכנים, והקהל התחלק ביניהם${free.length?`. ב${LOC[free[0]].n} לא עמד אף יריב`:''}. אולי גם אחרים יברחו מהצפיפות`;
@@ -1985,7 +2006,7 @@ function Game(){
   if(cut)h.price=`${nm[cut.r.id]?.nick} ${gd(cut.r.id,'ירד','ירדה')} מ-₪${cut.was.price} ל-₪${cut.r.price}. להגיב, או להישאר גבוה ולקוות לחזרה למעלה?`;
   // the deals
   const m=mateOf(hst);if(m){const past=(hst.me.state.cp||[]).filter(x=>x.w===m.id),rec=Object.values(hst.results).flat().filter(r=>r.id===m.id&&r.coupon),gave=rec.filter(r=>r.coupon.gave).length;
-   h.coupon=last?'הערב האחרון: אין כבר נקמה מחר, אז הפיתוי לזרוק הכי גדול, בשני הצדדים':past.length?(past[past.length-1].o?`בפעם הקודמת ביניכם ${m.nick} ${gd(m.id,'חילק','חילקה')} לך`:`בפעם הקודמת ביניכם ${m.nick} ${gd(m.id,'זרק','זרקה')} לך`):rec.length?`עד עכשיו חלוקה ב-${gave} מתוך ${rec.length} פעמים`:null;}
+   h.coupon=past.length?(past[past.length-1].o?`בפעם הקודמת ביניכם ${m.nick} ${gd(m.id,'חילק','חילקה')} לך`:`בפעם הקודמת ביניכם ${m.nick} ${gd(m.id,'זרק','זרקה')} לך`):rec.length?`עד עכשיו חלוקה ב-${gave} מתוך ${rec.length} פעמים`:null;}
   const of=(hst.opened||{})[y]&&hst.opened[y].fund;if(hf.fund&&of)h.fund=(of.ok?'אתמול הקרן הגיעה ליעד':'אתמול הקרן לא הגיעה ליעד')+` (₪${of.gifts} מתוך ₪${of.target})`+(hoodFund?'. תרמת? כדאי להכין יותר כוסות':'');
   // the black hat
   if(hf.black){const top=Math.max(...rows.map(r=>r.score));if(mine.score>=top&&!sec)h.sec=g('אתה מוביל, ובלי אבטחה: אתה היעד הטבעי לתקיפה','את מובילה, ובלי אבטחה: את היעד הטבעי לתקיפה');else{const stopped=(hst.me.days&&hst.me.days[y]&&hst.me.days[y].res.attacks||[]).length;if(stopped&&!sec)h.sec='אתמול תקפו אותך. עוד פעם בלי אבטחה?';}}
@@ -2186,13 +2207,20 @@ function Game(){
  const Mkt=()=> <div className="pane">
   <Banner kind="ads" ic="📣" title="משרד הפרסום" sub="השקעות לטווח ארוך, וטקטיקות ליום אחד: כובע לבן וכובע שחור" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי להוצאות: <b className="num">{fmt(free)}</b>{committed>0&&<span> · כבר התחייבת ל-{fmt(committed)} שיורדים בסוף היום</span>}</div>
-  {hood&&hst&&hst.deciding&&hf.fund&&(()=>{const n=hst.members.length,o=fundOffer(hst.hood.id,hst.deciding,n),fair=Math.ceil(o.target/n),opts=[0,fair,fair*2,fair*3];return <section className="blk"><div className="blk-h"><h3>🎪 קרן הרחוב</h3><span className="tag">לשים או לקוות?</span></div>
-   <div className="note">הוועד מציע למחר: <b>{o.n}</b>. היעד <b>{fmt(o.target)}</b>, ואם מגיעים אליו יגיע קהל פי {o.boost}.<br/>כולם תורמים בסתר, ורק ב-08:00 יתברר אם הגיעו ליעד. אם לא, כל מי שתרם מאבד את הכסף.<br/>אם כן, רוב הקהל הנוסף הולך למי שתרם, לפי כמה שתרם. מי שלא תרם נהנה רק מהשאר. כדאי גם להכין יותר כוסות.</div>
+  {hood&&hst&&hst.deciding&&hf.fund&&(()=>{const n=hst.members.length,o=fundOffer(hst.hood.id,hst.deciding,n),fair=Math.ceil(o.target/n),opts=[0,fair,fair*2,fair*3],gain={1.3:[17,9],1.45:[23,14],1.6:[27,15]}[o.boost]||[20,10];return <section className="blk"><div className="blk-h"><h3>🎪 קרן הרחוב</h3><span className="tag">לשים או לקוות?</span></div>
+   <div className="note"><b>{o.n} מחר?</b> צריך {fmt(o.target)} מכל הרחוב יחד. אף אחד לא רואה כמה האחרים שמים. רק ב-08:00 יתברר אם הגיעו.</div>
+   <PayGrid cols={['🎉 הגיעו ליעד','😞 לא הגיעו']} pick={hoodFund?0:1} rows={[{n:'🎪 לתרום',v:[['+₪'+gain[0],'G','🤩'],['הכסף אבד','r','😭']]},{n:'🙅 לא לתרום',v:[['+₪'+gain[1],'g','😏'],['₪0','','😐']]}]}/>
+   <div className="hint">רווח בערך, ביום רגיל. אם מגיעים ליעד, רוב הקהל הולך למי שתרם. כדאי גם להכין יותר כוסות.</div>
    <div className="hd-chips" style={{marginTop:8}}>{opts.map(v=><button key={v} className={"chip"+(hoodFund===v?' on':'')} disabled={v>hoodFund&&v-hoodFund>free} onClick={()=>setHoodFund(v)}>{v?'🎪 ₪'+v:'לא לתרום'}</button>)}</div></section>;})()}
   {hood&&hst&&hst.deciding&&hf.coupons&&(()=>{const m=hoodMate(hst),past=m?Object.values(hst.results||{}).flat().filter(r=>r.id===m.id&&r.coupon):[];return <section className="blk"><div className="blk-h"><h3>🎟️ קופונים של שכנים</h3><span className="tag">לסמוך או לא?</span></div>
-   {m?<><div className="note">הלילה מחליפים קופונים עם <b>{m.em} {m.nick}</b>: "קנית אצלי? יש לך הנחה אצל השכן". מה לעשות עם הקופונים של השכן?<br/>🎟️ <b>לחלק:</b> הדפוס עולה {fmt(NB.COUPON.cost)}. השכן מקבל לקוחות חדשים, וגם קצת מהלקוחות שלך.<br/>🗑️ <b>לזרוק:</b> לא עולה כלום, ועדיין יגיעו אליך לקוחות אם השכן חילק את שלך.<br/>אם שניכם מחלקים, שניכם מרוויחים יפה. אם רק השכן מחלק, הכי הרבה רווח הולך אליך. מי שמחלק לבד, בלי שהשכן מחלק, מפסיד. מחר ב-17:00 כולם יראו מי זרק.</div>
-    {past.length>0&&<div className="hint">עד עכשיו אצל {m.nick}: חלוקה ב-{past.filter(r=>r.coupon.gave).length} מתוך {past.length} פעמים</div>}
-    <div className="hd-chips" style={{marginTop:8}}><button className={"chip"+(hoodCoupon?' on':'')} onClick={()=>setHoodCoupon(true)}>🎟️ לחלק · ₪{NB.COUPON.cost}</button><button className={"chip"+(!hoodCoupon?' on':'')} onClick={()=>setHoodCoupon(false)}>🗑️ לזרוק</button></div></>
+   {m?<><div className="note">שני דוכנים יכולים לשלוח לקוחות אחד לשני. <b>{m.em} {m.nick}</b> {gd(m.id,'קיבל','קיבלה')} ממך קופונים, ו{g('אתה קיבלת','את קיבלת')} {gd(m.id,'ממנו','ממנה')}. כל אחד מחליט בסתר: לחלק ללקוחות, או לזרוק לפח.</div>
+    <PayGrid cols={[gd(m.id,'🎟️ הוא מחלק','🎟️ היא מחלקת'),gd(m.id,'🗑️ הוא זורק','🗑️ היא זורקת')]} pick={hoodCoupon?0:1} on={i=>setHoodCoupon(i===0)} rows={[{n:'🎟️ לחלק',v:[['+₪24','G','🤩'],['−₪13','r','😭']]},{n:'🗑️ לזרוק',v:[['+₪14','g','😏'],['₪0','','😐']]}]}/>
+    <div className="hint">רווח שלך בערך, ביום רגיל. קופון עובד הכי טוב כשהוא הדדי: אם שניכם מחלקים, מגיעים הרבה לקוחות חדשים. מי שמחלק לבד משלם על הדפוס ומאבד לקוחות. אז השאלה היא אם אפשר לסמוך על השכן.</div>
+    <div className="note" style={{marginTop:8}}>💬 <b>{m.em} {m.nick}</b> {hood.says&&hood.says[m.id]===true?gd(m.id,'אומר לך: "אני מחלק"','אומרת לך: "אני מחלקת"'):hood.says&&hood.says[m.id]===false?gd(m.id,'אומר לך: "אני זורק"','אומרת לך: "אני זורקת"'):gd(m.id,'עוד לא אמר כלום','עוד לא אמרה כלום')}</div>
+    {past.length>0&&<CpRec st={hst} id={m.id}/>}
+    {past.length>0&&<div className="hint">לכל דמות ברחוב יש הרגל קבוע, ויש מי שמשקרים. הטבלה עוזרת לגלות אותו. באדום: ערב שבו המילה והמעשה היו שונים.</div>}
+    <div className="hint" style={{marginTop:10}}>מה להגיד ל{m.nick} הערב? מותר גם לשקר, אבל מחר כולם יראו אם עמדת במילה. {gd(m.id,'הוא יראה','היא תראה')} את זה אחרי השמירה.</div>
+    <div className="hd-chips" style={{marginTop:6}}>{[[null,'🤐 כלום'],[true,g('🎟️ "אני מחלק"','🎟️ "אני מחלקת"')],[false,g('🗑️ "אני זורק"','🗑️ "אני זורקת"')]].map(([v,t])=><button key={t} className={"chip"+(hoodSay===v?' on':'')} onClick={()=>setHoodSay(v)}>{t}</button>)}</div></>
     :<div className="note">הלילה בלי שכן: במספר אי זוגי של דוכנים, כל ערב מישהו אחר נשאר בלי שכן.</div>}</section>;})()}
   <section className="blk"><div className="blk-h"><h3>🏗️ השקעה לטווח ארוך</h3><span className="tag">משלמים פעם אחת · עובד עד סוף המשחק</span></div>
    <div className="shop">{UPG_MKT.map(u=>{const own=ups.includes(u.id);return <div key={u.id} className={"item"+(own?' own':'')}><span className="it-e">{u.em}</span><div className="it-t"><b>{u.n}</b><span>{u.d}</span></div>
