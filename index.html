@@ -40,7 +40,7 @@ body{padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,e
 button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 button:focus-visible{outline:2px solid var(--lemon);outline-offset:2px}
 button:disabled{cursor:not-allowed;opacity:.45}
-.num{font-variant-numeric:tabular-nums;font-family:var(--f-display);direction:ltr;unicode-bidi:isolate}
+.num{font-variant-numeric:tabular-nums;font-family:var(--f-display);direction:ltr;unicode-bidi:isolate}.num.he{direction:rtl}
 h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 
 .app{height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--night)}
@@ -2085,7 +2085,7 @@ function Game(){
     {n>3&&<div className="pod-rest">{rows.slice(3).map((x,i)=><span key={x.id} className={x.id===hst.me.id?'me':''}>{i+4}. {names[x.id]?.em} {names[x.id]?.nick} · <b className="num">{fmt(x.score)}</b></span>)}</div>}
    </section>
    {(()=>{const b=hoodBestDay(hst);return b&&b.r.profit>0&&<section className="blk"><div className="blk-h"><h3>🏅 היום הכי רווחי</h3><span className="tag">פרס העונה</span></div>
-    <div className={"lb"+(b.r.id===hst.me.id?' me':'')}><span className="lb-r">🏅</span><span className="lb-n">{names[b.r.id]?.em} {b.r.id===hst.me.id?g('אתה!','את!'):names[b.r.id]?.nick}</span><span className="num lb-s">יום {b.d} · {b.r.sold} כוסות</span><b className="num g">{fmt(b.r.profit)}</b></div></section>;})()}
+    <div className={"lb"+(b.r.id===hst.me.id?' me':'')}><span className="lb-r">🏅</span><span className="lb-n">{names[b.r.id]?.em} {b.r.id===hst.me.id?g('אתה!','את!'):names[b.r.id]?.nick}</span><span className="num he lb-s">יום {b.d} · {b.r.sold} כוסות</span><b className="num g">{fmt(b.r.profit)}</b></div></section>;})()}
    <section className="blk"><div className="blk-h"><h3>📊 העונה שלך</h3></div>
     <div className="fx-recs">
      <Fact ic="📅" label={best?`היום הכי טוב (יום ${best.d})`:'היום הכי טוב'} v={best?fmt(best.profit):'—'} delay={2.4}/>
@@ -2095,7 +2095,7 @@ function Game(){
     </div></section>
    {winners.length>0&&<section className="blk"><div className="blk-h"><h3>🗓️ מי ניצח בכל יום</h3></div><div className="hd-winners">
     {winners.map((x,i)=><div key={x.d} className={"lb"+(x.w.id===hst.me.id?' me':'')} style={{animation:'hdIn .4s var(--ease-out) both',animationDelay:3.2+i*0.12+'s'}}><span className="lb-r num">{x.d}</span>
-     <span className="lb-n">{names[x.w.id]?.em} {names[x.w.id]?.nick}</span><span className="num lb-s">{x.w.sold} כוסות</span><b className="num g">{fmt(x.w.profit)}</b></div>)}</div></section>}
+     <span className="lb-n">{names[x.w.id]?.em} {names[x.w.id]?.nick}</span><span className="num he lb-s">{x.w.sold} כוסות</span><b className="num g">{fmt(x.w.profit)}</b></div>)}</div></section>}
    <button className="btn ghost" onClick={leaveHood}>‹ השכונות שלי</button></div>;};
 
  /* ── Screens ── */
@@ -2304,7 +2304,7 @@ function Game(){
   </div>
   {hood&&hoodMoments&&hoodMoments.day===r.day&&hoodMoments.list.length>0&&<div className="rp-types"><div className="cl-h">⏱️ רגעי היום ברחוב</div>
    {hoodMoments.list.map((m,i)=><div key={i} className="hd-mom" style={{animationDelay:0.6+i*0.18+'s'}}><span className="num">{m.at}</span>{m.t}</div>)}</div>}
-  {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">הרחוב היום · לפי רווח</div>{[{em:g('👦','👧'),n:g('אתה','את'),profit:r.profit,sold:r.sold,me:true},...r.comps].sort((x,y)=>y.profit-x.profit).map((c,i)=><div key={i} className={"lb"+(c.me?' me':'')}><span className="lb-r num">{i+1}</span><span className="lb-n">{c.em} {c.n}</span><span className="num lb-s">{c.sold} כוסות</span><b className={"num "+(c.profit>=0?'g':'r')}>{fmt(c.profit)}</b></div>)}</div>}
+  {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">הרחוב היום · לפי רווח</div>{[{em:g('👦','👧'),n:g('אתה','את'),profit:r.profit,sold:r.sold,me:true},...r.comps].sort((x,y)=>y.profit-x.profit).map((c,i)=><div key={i} className={"lb"+(c.me?' me':'')}><span className="lb-r num">{i+1}</span><span className="lb-n">{c.em} {c.n}</span><span className="num he lb-s">{c.sold} כוסות</span><b className={"num "+(c.profit>=0?'g':'r')}>{fmt(c.profit)}</b></div>)}</div>}
   {r.comps&&r.comps.length>0&&<div className="rp-types"><div className="cl-h">🏙️ מה עשו המתחרים היום</div>{r.comps.map((c,i)=><div key={i} className="rv-day"><b>{c.em} {c.n}</b><span>{c.seen&&c.seen.length?seenTxt(c):'יום שקט, בלי שיווק'}</span>{c.hidden&&<em>🕵️ {hidTxt(c.hidden)||'לא קנה מודיעין'}</em>}</div>)}{!hood&&!r.comps.some(c=>c.hidden)&&<div className="hint">מה שהם עשו מאחורי הקלעים (מודיעין, שמועות) רואים רק עם ריגול</div>}</div>}
   {r.byType&&r.visitors>0&&<div className="rp-types"><div className="cl-h">מי קנה היום</div>{TYPES.map(k=>{const t=r.byType[k],w=r.whys?.[k];return <div key={k} className="rt-r">
    <span className="rt-n">{CT[k].em} {CT[k].nm}</span><span className="aud-b"><i className={t.vis&&t.buy/t.vis>=0.6?'g':t.vis&&t.buy/t.vis>=0.35?'y':'r'} style={{width:(t.vis?Math.round(t.buy/t.vis*100):0)+'%'}}/></span>
@@ -2341,7 +2341,7 @@ function Game(){
      <div className="hd-crowd" aria-hidden="true">{Array.from({length:Math.round(LOC[z].dm*5)}).map((_,i)=><i key={i} style={{animationDelay:(i*0.37%2)+'s'}}>🚶</i>)}</div>
      <div className="hd-zs">{here.map(s=>{const c=hoodCounts[s.id]||{},m=names[s.id]||{},me=s.id===hst.me.id;
       return <span key={s.id} className={"hd-zst"+(me?' me':'')+(c.out||c.sick||s.closed?' off':'')}><i>{m.em}</i><b>{me?g('אתה','את'):m.nick}</b>
-       <small className="num">₪{s.price}{s.closed?' · 🔒':c.sick?' · 🤒':c.out?' · 💨 אזל':` · ${c.sold||0}☕`}</small></span>;})}</div></div>;})}</div></section>;};
+       <small className="num he">₪{s.price}{s.closed?' · 🔒':c.sick?' · 🤒':c.out?' · 💨 אזל':` · ${c.sold||0}☕`}</small></span>;})}</div></div>;})}</div></section>;};
  const HoodLive=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst),order=hoodLiveOrder(hoodCounts),mv=hoodMoves.current;
   return <><section className="blk hd-live"><div className="blk-h"><h3>🏘️ הרחוב עכשיו</h3><span className="tag">{sim&&sim.live?'מתעדכן כל 15 שניות':'סוף היום'}</span></div>
    {order.map((id,i)=>{const s=op.stands.find(x=>x.id===id),c=hoodCounts[id]||{sold:0},m=names[id]||{},d=mv[id]||0;
@@ -2349,7 +2349,7 @@ function Game(){
      <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
      <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
      <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">🚨 נתפס</i>:null}{c.saved?<i>🚨 האבטחה עצרה</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
-     <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num">{c.sold} קנו מתוך {c.vis||0} · {fmt(c.sold*s.price)}</small></span>
+     <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num he">{c.sold} קנו מתוך {c.vis||0} · {fmt(c.sold*s.price)}</small></span>
      {d!==0&&<span className={"hd-mv "+(d>0?'up':'dn')}>{d>0?'⬆':'⬇'}</span>}</div>;})}</section>
    <section className="blk"><div className="blk-h"><h3>📰 מה קורה ברחוב</h3></div>
     {hoodAlerts.length?hoodAlerts.slice().reverse().map(a=><div key={a.m+a.t} className={"hd-ev "+a.type}><span className="num">{a.at}</span><p>{a.t}</p></div>):<div className="hint">עוד שקט ברחוב</div>}</section></>;};
@@ -2676,7 +2676,7 @@ const navIdx=k=>['news','product','stock','mkt','intel','biz'].indexOf(k);
    <div className="t-row">
     <div className="t-when"><span className="t-ph">{hood&&hst?'🏘️ '+hst.hood.name+' · ':''}{phase==='evening'?'🌙 ערב':phase==='morning'?'☀️ בוקר':phase==='sim'?'🍋 מכירות':'📊 דוח'}</span><b>{phase==='evening'?`לפני יום ${day}`:`יום ${day}`}<i>/{hood&&hst?hst.hood.days:DAYS}</i></b></div>
     <div className="t-side">{Gear()}{hood?<><button className="gear" aria-label="ניתוח המתחרים" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button><button className="gear" aria-label="השכונות שלי" onClick={()=>{leaveHood();sfx('tap');}}>🏘️</button></>
-     :<button data-tut="dash" className="gear" aria-label="הנתונים שלי" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button>}<div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num">פנוי {fmt(free)}</span>}</div></div>
+     :<button data-tut="dash" className="gear" aria-label="הנתונים שלי" onClick={()=>{setDashOpen(true);sfx('tap');}}>📊</button>}<div className="t-cash" data-hud="cash"><small>בקופה</small><b className="num"><Roll v={cash} f={fmt}/></b>{(committed>0||shopCost>0)&&<span className="num he">פנוי {fmt(free)}</span>}</div></div>
    </div>
    <div className="res">
     <span data-hud="l">🍋 <b className="num"><Roll v={lm}/></b>{phase==='evening'&&buy.l>0&&<i>←{lm+buy.l}</i>}</span>
