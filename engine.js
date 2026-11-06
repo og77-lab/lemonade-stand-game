@@ -245,9 +245,9 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
  ESCALATE:0.05,ESC_MAX:0.15, // every dirty trick earlier in the game makes the next one easier to catch (up to a limit)
  TRICKS:['ads','rumor'], // the street's dirty tricks: a campaign that steals customers, and a rumor (it hits the leader harder)
  // a rumor: some walkers stay away from the victim today, and its reputation drops
- EFFECT:{ads:0.2,rumor:5,rumorA:0.25},LEADER:1.6,TRICK_C:{ads:5,rumor:4},
+ EFFECT:{ads:0.4,rumor:8,rumorA:0.4},LEADER:1.6,TRICK_C:{ads:8,rumor:6},
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
- CAUGHT:{rep:15,fine:20}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
+ CAUGHT:{rep:10,fine:20}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
  // Neighbors' coupons: each evening the street is paired up. A stand that hands out pays for the printing (cost) and sends its neighbor some of its own customers (leak).
  // A coupon works when it's mutual: both handing out brings each many new customers (both), one side alone few (one). So what's best depends on the neighbor:
  // if it hands out, hand out; if it throws, throw. No move is always right, and the question each evening is trust (measured in tools/coupons.js)
@@ -256,8 +256,9 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
   noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: each evening the committee names an event, its target and the crowd it brings. Everyone gives in secret; at 08:00 either the target was met and the crowd comes,
- // most of it to the stands that gave (sponsors), or it wasn't and the money is gone. Every shekel brings the same customers to the stand that gave it, whatever the others gave, so a bigger gift is a bigger bet on the target. A bigger target brings a bigger event
- FUND:{sponsors:0.7,tiers:[{n:'🎵 הופעה קטנה',per:8,boost:1.3},{n:'🛍️ יריד רחוב',per:12,boost:1.45},{n:'🎪 פסטיבל',per:17,boost:1.6}],
+ // most of it to the stands that gave (sponsors), or it wasn't and the money is gone. Every shekel brings customers to the stand that gave it, whatever the others gave, and past a stand's share it brings more, so a bigger gift is a bigger bet on the target. A bigger target brings a bigger event
+ FUND:{sponsors:0.7,over:0.6, // a shekel past your share of the target pulls this much extra: the main sponsor's name is on the stage
+  tiers:[{n:'🎵 הופעה קטנה',per:8,boost:1.3},{n:'🛍️ יריד רחוב',per:12,boost:1.45},{n:'🎪 פסטיבל',per:17,boost:1.6}],
   jitter:0.15, // tonight's target, around the event's usual size
   luck:[0.7,1.3],fee:0.5, // how well the event really turns out, and what cancelling costs on top of the gifts (up to this share): neither is known in the evening
   floor:{easy:0.15,medium:0.1,hard:0.06},char:{premium:{give:0.85,size:1.1},steady:{give:0.82,size:1.15},veteran:{give:0.88,size:1.4},trendy:{give:0.75,size:1.15,herd:1},budget:{give:0.45,size:0.8},gambler:{give:0.55,size:1.7}}},
@@ -365,7 +366,8 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  walkers.sort((a,b)=>a-b);
  // the new customers a neighbor's coupons bring, at moments of the day
  const brought=[],[c0,c1]=NB.COUPON.luck;mate.forEach((t,s)=>{if(s.plan.coupon)for(let j=Math.round(street/Math.max(1,n)*(t.plan.coupon?NB.COUPON.both:NB.COUPON.one)*(c0+(c1-c0)*r()));j>0;j--)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to:t});});
- if(fundOn)for(let j=Math.round(street0*more*NB.FUND.sponsors*gifts/fund.target);j>0;j--){let x=r()*gifts,to=null;for(const s of S){x-=s.plan.fund||0;if(x<=0&&s.plan.fund){to=s;break;}}if(to)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to,fund:true});}
+ const fundPull=s=>{const v=s.plan.fund||0;return v+NB.FUND.over*Math.max(0,v-fund.target/n);},pulls=fundOn?S.reduce((x,s)=>x+fundPull(s),0):0;
+ if(fundOn)for(let j=Math.round(street0*more*NB.FUND.sponsors*pulls/fund.target);j>0;j--){let x=r()*pulls,to=null;for(const s of S){x-=fundPull(s);if(x<=0&&s.plan.fund){to=s;break;}}if(to)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to,fund:true});}
  brought.sort((a,b)=>a.m-b.m);
  const typeOf=s=>{let x=r(),typ='adult',cum=0;for(const t of TYPES){cum+=s.mix[t];if(x<cum){typ=t;break;}}return typ;};
  const couponIn=b=>{if(open(b.to,b.m)&&serve(b.to,b.m,typeOf(b.to))==='buy'){if(b.fund)b.to.fdIn++;else b.to.cpIn++;}};
