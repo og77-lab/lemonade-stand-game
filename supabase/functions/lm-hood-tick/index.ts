@@ -234,7 +234,10 @@ const makeForecast=(c,f)=>{const {seed,day,world,acAdj}=c;
 
 // ───────── Neighborhood (multiplayer): up to 10 equal stands on one street, a real day from 08:00 to 17:00 ─────────
 // The server runs the whole day at 08:00 and keeps every moment with its minute; players see each moment once its time has come.
-const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
+const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts with, and the walkers on a one-stand street on an ordinary day
+ // Cups a stand can serve in a day, and how much of the street a bot expects (tools/street-econ.js). About 40 people a day want to buy from an ordinary stand on a street of ten,
+ // so the first day's money has to cover that and still leave room for marketing, security and the dilemmas
+ CAP:{base:60,station:120},SHARE:0.9,
  HOURS:[0.5,0.6,0.75,0.95,1.2,1.1,1.3,1.5,1.8], // crowd by hour, 08:00–16:00 (the peak comes after school and work)
  CROWD:0.85,  // the street's crowd grows with the stands on it, a little slower than their number
  STAY:0.75,   // share of walkers who only look at the stands in their own part of the street
@@ -244,13 +247,13 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:80,
  ESCALATE:0.05,ESC_MAX:0.15, // every dirty trick earlier in the game makes the next one easier to catch (up to a limit)
  TRICKS:['ads','rumor'], // the street's dirty tricks: a campaign that steals customers, and a rumor (it hits the leader harder)
  // a rumor: some walkers stay away from the victim today, and its reputation drops
- EFFECT:{ads:0.4,rumor:5,rumorA:0.25},LEADER:1.6,TRICK_C:{ads:5,rumor:4},
+ EFFECT:{ads:0.2,rumor:5,rumorA:0.25},LEADER:1.6,TRICK_C:{ads:5,rumor:4},
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
- CAUGHT:{rep:15,fine:14}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
+ CAUGHT:{rep:15,fine:20}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
  // Neighbors' coupons: each evening the street is paired up. A stand that hands out pays for the printing (cost) and sends its neighbor some of its own customers (leak).
  // A coupon works when it's mutual: both handing out brings each many new customers (both), one side alone few (one). So what's best depends on the neighbor:
  // if it hands out, hand out; if it throws, throw. No move is always right, and the question each evening is trust (measured in tools/coupons.js)
- COUPON:{cost:6,one:0.12,both:0.7,leak:0.12,
+ COUPON:{cost:6,one:0.08,both:0.4,leak:0.12,
   noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: each evening the committee names an event, its target and the crowd it brings. Everyone gives in secret; at 08:00 either the target was met and the crowd comes,
@@ -287,7 +290,7 @@ const fundOffer=(id,day,n)=>{let h=7;for(const c of String(id))h=(h*31+c.charCod
 const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c=F.char[persona.id],seen=o.fd.slice(-3),rate=seen.length?seen.filter(x=>x.ok).length/seen.length:0.5,fair=o.offer.target/o.n,f=F.floor[diff];
  const p=Math.min(1-f,Math.max(f,c.give+(rate-0.5)*(c.herd?0.6:0.3)));return r()<p?Math.max(1,Math.round(fair*c.size*(0.75+r()*0.6))):0;};
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
-const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?CAP_STATION:CAP_BASE)+(helper?HELPER_B:0);
+const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?NB.CAP.station:NB.CAP.base)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
 const trickCost=(id,target,n)=>{const c=NB.TRICK_C[id]??BLACK.find(x=>x.id===id).c;return target==='all'?Math.round(c*NB.GENERAL.cost*Math.max(1,n-1)):c;};
 const nbAcAdj=(world,day)=>f=>Math.max(0.35,f.ac+((world[day-1].mev&&world[day-1].mev.acc)||0));
@@ -355,7 +358,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  // the crowd: 60 people on an ordinary street, more with more stands and with everyone's marketing (the difficulty is only the bots' level)
  // the street fund: did the gifts reach the target? The event's crowd is part open street, part sent to the sponsors
  const gifts=S.reduce((x,s)=>x+(s.plan.fund||0),0),fundOn=!!fund&&gifts>=fund.target,more=fundOn?fund.boost-1:0;
- const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street0=60*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift,street=street0*(1+more*(1-NB.FUND.sponsors));
+ const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street0=NB.WALK*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift,street=street0*(1+more*(1-NB.FUND.sponsors));
  const zw=LOC.map(l=>l.dm),zs=zw.reduce((a,b)=>a+b,0),walkers=[],HS=NB.HOURS.reduce((a,b)=>a+b,0);
  NB.HOURS.forEach((h,i)=>{const sur=W.sur&&i>=5?W.sur.f:1,cnt=Math.round(street*h/HS*sur);for(let j=0;j<cnt;j++)walkers.push(OPEN+i*60+Math.floor(r()*60));});
  walkers.sort((a,b)=>a-b);
@@ -476,8 +479,8 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  const sec=board.length&&st.tot>=Math.max(...board.map(b=>b.tot))&&rr()<0.5*S?2:rr()<0.25*S?1:0;if(sec&&spend(NB.SECURITY[sec].c))dec.sec=sec;
  // how many cups: their guess at their share of the street (a medium bot knows a cheaper stand sells more)
  const avgO=others.length?others.reduce((a,b)=>a+b,0)/others.length:dec.price;
- const share=60*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*0.6*(1+dec.bh.filter(x=>x.id==='ads').length*NB.EFFECT.ads*(dec.bh.some(x=>x.target==='all')?NB.GENERAL.power*2:1))*(S>=0.8?Math.max(0.5,Math.min(2,Math.exp(NB.PRICE_COMP*(avgO-dec.price)/Math.max(1,usualP)))):1);
- dec.helper=share>CAP_BASE*0.9&&rr()<ai.hp*S*1.5&&spend(HELPER_C);
+ const share=NB.WALK*softEnv(Test,WE[fc?fc.w:'nice'].fm,1)*Math.pow(n,NB.CROWD)/n*NB.SHARE*(1+dec.bh.filter(x=>x.id==='ads').length*NB.EFFECT.ads*(dec.bh.some(x=>x.target==='all')?NB.GENERAL.power*2:1))*(S>=0.8?Math.max(0.5,Math.min(2,Math.exp(NB.PRICE_COMP*(avgO-dec.price)/Math.max(1,usualP)))):1);
+ dec.helper=share>NB.CAP.base*0.9&&rr()<ai.hp*S*1.5&&spend(HELPER_C);
  const cap=nbCap([...st.ups,...dec.ups],dec.helper),unit=rec.l*P.l+rec.h*P.h+rec.i*P.i,guess=S>=0.8?1.15:0.6+rr()*1.0,cups=Math.max(0,Math.min(cap,Math.round(share*guess),Math.floor(Math.max(0,cash-LOC[dec.loc].rent)/Math.max(0.01,unit))));
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
  dec.buy={l:Math.max(0,cups*rec.l-lm),h:Math.max(0,cups*rec.h-st.sugar),i:Math.max(0,cups*rec.i-(st.ups.includes('cooler')?st.ice:0))};dec.cups=cups;

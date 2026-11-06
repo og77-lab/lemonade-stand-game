@@ -92,7 +92,7 @@ begin
 end $$;
 
 create or replace function public.lm_new_stand() returns jsonb language sql immutable as $$
-  select '{"cash":80,"lemons":[{"q":40,"d":1}],"sugar":0,"ice":0,"rep":50,"ups":[],"loan":0,"tot":0,"tricks":0,"paper":false}'::jsonb $$;
+  select '{"cash":200,"lemons":[{"q":40,"d":1}],"sugar":0,"ice":0,"rep":50,"ups":[],"loan":0,"tot":0,"tricks":0,"paper":false}'::jsonb $$;
 create or replace function public.lm_me(p_hood uuid) returns public.lm_members language sql stable security definer set search_path = public as $$
   select * from lm_members where hood = p_hood and user_id = auth.uid() $$;
 revoke all on function public.lm_me(uuid) from public, anon;
