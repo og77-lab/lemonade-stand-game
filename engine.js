@@ -256,7 +256,7 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
   noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: each evening the committee names an event, its target and the crowd it brings. Everyone gives in secret; at 08:00 either the target was met and the crowd comes,
- // most of it to the stands that gave, by how much they gave (sponsors), or it wasn't and the money is gone. A bigger target brings a bigger event
+ // most of it to the stands that gave (sponsors), or it wasn't and the money is gone. Every shekel brings the same customers to the stand that gave it, whatever the others gave, so a bigger gift is a bigger bet on the target. A bigger target brings a bigger event
  FUND:{sponsors:0.7,tiers:[{n:'🎵 הופעה קטנה',per:8,boost:1.3},{n:'🛍️ יריד רחוב',per:12,boost:1.45},{n:'🎪 פסטיבל',per:17,boost:1.6}],
   jitter:0.15, // tonight's target, around the event's usual size
   luck:[0.7,1.3],fee:0.5, // how well the event really turns out, and what cancelling costs on top of the gifts (up to this share): neither is known in the evening
@@ -357,7 +357,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  const attr=(s,m)=>standAttr(s.plan.recipe,s.plan.price,repNow(s,m),T)*Math.exp(-NB.PRICE_COMP*(s.plan.price-avgP)/pMs)*s.boost*tricks.filter(t=>t.id==='rumor'&&t.vs.includes(s)&&live(t,s,m)).reduce((x,t)=>x*Math.max(0.2,1-NB.EFFECT.rumorA*lead(t,s)),1);
  const open=(s,m)=>!s.closed&&(s.sick===null||m<s.sick);
  // the crowd: 60 people on an ordinary street, more with more stands and with everyone's marketing (the difficulty is only the bots' level)
- // the street fund: did the gifts reach the target? The event's crowd is part open street, part sent to the sponsors
+ // the street fund: did the gifts reach the target? The event's crowd is part open street, part sent to the sponsors, and gifts past the target send more
  const gifts=S.reduce((x,s)=>x+(s.plan.fund||0),0),fundOn=!!fund&&gifts>=fund.target,FR=rng(seed*53+day*211+5),[l0,l1]=NB.FUND.luck,fundLuck=l0+(l1-l0)*FR(),fundFee=fund&&!fundOn?Math.round(FR()*NB.FUND.fee*100)/100:0,more=fundOn?(fund.boost-1)*fundLuck:0;
  const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street0=NB.WALK*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift,street=street0*(1+more*(1-NB.FUND.sponsors));
  const zw=LOC.map(l=>l.dm),zs=zw.reduce((a,b)=>a+b,0),walkers=[],HS=NB.HOURS.reduce((a,b)=>a+b,0);
@@ -365,7 +365,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  walkers.sort((a,b)=>a-b);
  // the new customers a neighbor's coupons bring, at moments of the day
  const brought=[],[c0,c1]=NB.COUPON.luck;mate.forEach((t,s)=>{if(s.plan.coupon)for(let j=Math.round(street/Math.max(1,n)*(t.plan.coupon?NB.COUPON.both:NB.COUPON.one)*(c0+(c1-c0)*r()));j>0;j--)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to:t});});
- if(fundOn)for(let j=Math.round(street0*more*NB.FUND.sponsors);j>0;j--){let x=r()*gifts,to=null;for(const s of S){x-=s.plan.fund||0;if(x<=0&&s.plan.fund){to=s;break;}}if(to)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to,fund:true});}
+ if(fundOn)for(let j=Math.round(street0*more*NB.FUND.sponsors*gifts/fund.target);j>0;j--){let x=r()*gifts,to=null;for(const s of S){x-=s.plan.fund||0;if(x<=0&&s.plan.fund){to=s;break;}}if(to)brought.push({m:walkers[Math.floor(r()*walkers.length)]??OPEN,to,fund:true});}
  brought.sort((a,b)=>a.m-b.m);
  const typeOf=s=>{let x=r(),typ='adult',cum=0;for(const t of TYPES){cum+=s.mix[t];if(x<cum){typ=t;break;}}return typ;};
  const couponIn=b=>{if(open(b.to,b.m)&&serve(b.to,b.m,typeOf(b.to))==='buy'){if(b.fund)b.to.fdIn++;else b.to.cpIn++;}};
