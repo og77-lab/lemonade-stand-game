@@ -2,7 +2,7 @@
 // Pages and the game engine are network-first (a new deploy shows up right away); libraries, fonts, icons and music are cache-first.
 // Supabase (community records) is never cached.
 const CACHE = 'lemonade-v2';
-const CORE = ['./', 'index.html', 'engine.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
+const CORE = ['./', 'index.html', 'engine.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'art/sheet.webp',
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js'];

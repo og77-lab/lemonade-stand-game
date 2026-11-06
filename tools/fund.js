@@ -2,7 +2,7 @@
 // Margin = revenue less the ingredients of the cups sold, less the gift, against the same day with no fund at all.
 // usage: node tools/fund.js [days=600]   (env SPONSORS tries another share of the crowd for the givers)
 const E = require('../engine.js');
-const N = +process.argv[2] || 600, n = 6;
+const N = +process.argv[2] || 600, n = +process.env.STANDS || 6;
 if (process.env.SPONSORS) E.NB.FUND.sponsors = +process.env.SPONSORS;
 function day(seed, offer, gifts, extraCups) {
   const world = E.buildWorld(seed, 7), d = 3, P = world[d - 1].p;
@@ -21,6 +21,9 @@ for (const t of E.NB.FUND.tiers) {
   console.log(`  everyone gives ₪${fair}             giver ${(all[0] - base).toFixed(1).padStart(6)}   (with 30% more cups ${(allP[0] - base).toFixed(1)})`);
   console.log(`  four give ₪${four}, two don't       giver ${(most[1] - base).toFixed(1).padStart(6)}   (with 30% more cups ${(mostP[1] - base).toFixed(1)})   free rider ${(most[0] - base).toFixed(1)}`);
   console.log(`  I alone give ₪${fair}, target missed  giver ${(lost[0] - base).toFixed(1).padStart(6)}`);
+  // what a bigger gift is worth to me when the others give their share (the rows on the card)
+  const others = Array(n - 1).fill(fair);
+  console.log('  the others give their share, I give: ' + [0, 1, 2, 3].map(k => `₪${k * fair}: ${(avg(offer, [k * fair, ...others])[0] - base).toFixed(1)}`).join(' · '));
 }
 // how often the bots alone get there, in random streets
 let ok = 0, tot = 0, gave = 0; const r = E.rng(77);
