@@ -1717,7 +1717,7 @@ function Hood({onExit,onOpen}){
 function Game(){
  const [seed,setSeed]=useState(()=>Date.now()%100000),[gameId,setGameId]=useState(null),[starting,setStarting]=useState(false);
  // Neighborhood mode: the same screens, with the day's world and the stand coming from the server ({id, st, skew})
- const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodMk,setHoodMk]=useState('up'),[hoodSt,setHoodSt]=useState('fund'),[hoodTg,setHoodTg]=useState(null),[hoodSay,setHoodSay]=useState(null),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('price'),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
+ const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodMk,setHoodMk]=useState('up'),[hoodSt,setHoodSt]=useState('fund'),[hoodTg,setHoodTg]=useState(null),[hoodSay,setHoodSay]=useState(null),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('rep'),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
  const world=useMemo(()=>hood&&hood.st?hoodWorld(hood.st):buildWorld(seed),[seed,hood&&hood.st]);
  const [day,setDay]=useState(1);
  const [homeHoods,setHomeHoods]=useState([]);
@@ -2578,8 +2578,8 @@ function Game(){
   const moves=r=>{const s=op.stands.find(z=>z.id===r.id)||{mk:[]};return[...s.mk.map(id=>MK_EM[id]+' '+MKTG.find(m=>m.id===id).n),s.helper&&'🧑‍💼 עוזר',r.closed&&'🔒 סגור',r.sick&&'🤒 חלה ב-'+r.sick,r.soldAt&&'💨 אזל ב-'+r.soldAt,r.vip===true&&'🎩 המבקר התלהב',r.vip===false&&'🎩 המבקר התאכזב',r.caught&&'🚨 תפיסה',r.fund&&'🎪 תרומה ₪'+r.fund,r.coupon&&cpSeen(r,d)&&(r.coupon.gave?'🎟️ חלוקה':'🗑️ זריקה')+(r.coupon.with===me?' מולך':' מול '+nm(r.coupon.with))].filter(Boolean).join(' · ');};
   const inside=r=>{const x=r.id===me?(mine&&mine.plan):spy&&spy[r.id];if(!x)return null;const c=x.recipe||{},sc=NB.SECURITY[x.sec||0];return `${c.l}🍋 ${c.h}🍬 ${c.i}🧊 · הכין ${x.cups} כוסות · ${sc.em} ${sc.n}`;};
   // the season, day by day
-  const M=[['price','מחיר'],['loc','מקום'],['sold','נמכרו'],['profit','רווח']],m=hoodDashM,order=hst.results[ds[ds.length-1]].slice().sort((a,b)=>b.score-a.score).map(r=>r.id);
-  const cell=(x,id)=>{const r=hst.results[x].find(z=>z.id===id);if(!r)return '';return r.closed?'🔒':m==='price'?'₪'+r.price:m==='loc'?LOC[r.loc].em:m==='sold'?r.sold:Math.round(r.profit);};
+  const M=[['rep','⭐ מוניטין'],['score','רווח מצטבר'],['profit','רווח ביום'],['rev','הכנסות'],['sold','נמכרו'],['price','מחיר'],['loc','מקום']],m=hoodDashM,order=hst.results[ds[ds.length-1]].slice().sort((a,b)=>m==='rep'?b.rep-a.rep:b.score-a.score).map(r=>r.id);
+  const cell=(x,id)=>{const r=hst.results[x].find(z=>z.id===id);if(!r)return '';return m==='rep'?r.rep:m==='score'?Math.round(r.score):r.closed?'🔒':m==='price'?'₪'+r.price:m==='loc'?LOC[r.loc].em:m==='sold'?r.sold:m==='rev'?Math.round(r.rev):Math.round(r.profit);};
   const best=(x,id)=>{if(m==='loc')return false;const o=hst.results[x].filter(z=>!z.closed),r=o.find(z=>z.id===id);if(!r)return false;const v=z=>m==='price'?-z.price:z[m];return v(r)===Math.max(...o.map(v));};
   // how each stand tends to play
   const style=id=>{const my=ds.map(x=>({x,r:hst.results[x].find(z=>z.id===id)})).filter(o=>o.r&&!o.r.closed);if(!my.length)return null;
@@ -2602,11 +2602,12 @@ function Game(){
      :<button className="btn sm" style={{marginTop:8}} disabled={free<SPY_C} onClick={hoodSpy}>{free<SPY_C?`חסר ${fmt(SPY_C-free)}`:<>לקנות את הדוח על יום {last} · ₪{SPY_C}</>}</button>)
      :<div className="hint">אפשר לקנות בערב, על היום שהסתיים.</div>}
     {hoodMsg&&<div className="note">{hoodMsg}</div>}</section>
-   <section className="blk"><div className="blk-h"><h3>לאורך העונה</h3></div>
+   <section className="blk"><div className="blk-h"><h3>📋 טבלאות העונה</h3><span className="tag">יום אחר יום</span></div>
     <div className="hd-chips" style={{marginBottom:8}}>{M.map(([k,n])=><button key={k} className={"chip"+(k===m?' on':'')} onClick={()=>setHoodDashM(k)}>{n}</button>)}</div>
     <div className="rd-scroll"><table className="rd-tbl"><thead><tr><th></th>{ds.map(x=><th key={x}>{x}</th>)}</tr></thead>
      <tbody>{order.map(id=><tr key={id} className={id===me?'me':''}><th>{em(id)} {nm(id)}</th>{ds.map(x=><td key={x} className={"num"+(best(x,id)?' top':'')}>{cell(x,id)}</td>)}</tr>)}</tbody></table></div>
-    {m!=='loc'&&<div className="hint">{m==='price'?'מודגש: הכי זול באותו יום':'מודגש: הכי גבוה באותו יום'}</div>}</section>
+    {m!=='loc'&&<div className="hint">{m==='price'?'מודגש: הכי זול באותו יום':'מודגש: הכי גבוה באותו יום'}</div>}
+    {m==='rep'&&<div className="hint">המוניטין בסוף כל יום. הוא קובע כמה קונים בוחרים בדוכן: בין שני דוכנים באותו מקום, עם אותו מחיר ומתכון, דוכן עם מוניטין 70 מוכר בערך 60% מהכוסות, ודוכן עם 30 בערך 40%.</div>}</section>
    <section className="blk"><div className="blk-h"><h3>איך כל אחד משחק</h3></div>
     {order.filter(id=>id!==me).map(id=>{const s=style(id);return s&&<div key={id} className="rd-row"><b>{em(id)} {nm(id)}</b><small>{s}</small></div>;})}
     <div className="hint">לפי הימים שעברו. כדאי לשים לב מי מגיבים למחיר שלך, ומי עוזבים מקום צפוף.</div></section>
