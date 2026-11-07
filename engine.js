@@ -248,9 +248,9 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
  EFFECT:{ads:0.5,rumor:8,rumorA:0.4},LEADER:1.6,TRICK_C:{ads:8,rumor:4},
  GENERAL:{cost:0.6,power:0.5}, // a trick against everyone: 60% of the price per rival, half the effect on each
  CAUGHT:{rep:2,fine:15}, // caught: the street hears at once; reputation lost and damages to whoever caught it, once a day however many caught it
- // Neighbors' coupons: a prisoner's dilemma in cash, paid by the supplier and apart from the cups. Each evening the street is paired up, and each stand hands out or throws.
- // Throwing always pays more on the night, both throwing pays nobody, and the street remembers (measured in tools/coupons.js)
- COUPON:{cost:0,pay:{both:30,tempt:40,sucker:-10,none:0},luck:[0.8,1.2], // what each night really pays
+ // Neighbors' coupons: a game of nerve in cash, paid by the supplier and apart from the cups. Each evening the street is paired up, and each stand hands out or throws.
+ // No move is always best: on one who hands out it pays to throw, on one who throws it pays to hand out, and the street remembers (measured in tools/coupons.js)
+ COUPON:{cost:0,pay:{both:30,tempt:60,sucker:20,none:0},luck:[0.8,1.2], // what each night really pays
   noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: a contest over a shared pot. Each evening the committee names an event and a target, and everyone gives in secret. At 08:00: below the target, part of each gift comes back.

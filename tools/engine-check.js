@@ -57,7 +57,7 @@ check('a campaign against me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'ads
 check('my campaign against a rival', base, avg({ dec: k => k ? {} : { bh: [{ id: 'ads', target: 's1' }] } }), 'up');
 check('a rumor about me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'rumor', target: 's0' }] } : {} }), 'down');
 { const P = [['s0', 's1']], D2 = (a, b) => ({ pairs: P, dec: k => k === 0 ? { coupon: a } : k === 1 ? { coupon: b } : {} }), both = avg(D2(true, true)), tempt = avg(D2(false, true)), none = avg(D2(false, false)), sucker = avg(D2(true, false));
-  check('coupons: throwing on one who hands out pays more than sharing', both, tempt, 'up', 'p'); check('coupons: sharing pays more than both throwing', none, both, 'up', 'p'); check('coupons: handing out alone loses', none, sucker, 'down', 'p'); }
+  check('coupons: throwing on one who hands out pays more than sharing', both, tempt, 'up', 'p'); check('coupons: sharing pays more than both throwing', none, both, 'up', 'p'); check('coupons: handing out alone pays more than both throwing', none, sucker, 'up', 'p'); }
 { const F = { n: 'x', boost: 1.5, target: 30 }; check('fund met: the street fills', base, avg({ fund: F, dec: () => ({ fund: 5 }) }), 'up'); const miss = avg({ fund: F, dec: k => k ? {} : { fund: 5 } }); check('fund missed: the street stays the same', base, miss, 'same'); if (Math.abs(miss.p - 5 * E.NB.FUND.back) > 0.01) { fails++; console.log('  FAIL fund missed: part of the gift comes back'); }
   const met = avg({ fund: F, dec: k => k ? { fund: 6 } : {} }), gave = avg({ fund: F, dec: k => k ? { fund: 6 } : { fund: 6 } }); check('fund met: givers share the pot, others do not', met, gave, 'up', 'p'); }
 // the books, over whole seasons with everything on

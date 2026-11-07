@@ -18,7 +18,7 @@ const avgDeal = (a, b) => { let s = 0; const M = Math.min(N, 1500); for (let g =
 const base = avgDeal(null, null), T = avgDeal(false, true) - base, R = avgDeal(true, true) - base, Pn = avgDeal(false, false) - base, Sk = avgDeal(true, false) - base;
 console.log(`the deal in the street (${JSON.stringify(E.NB.COUPON.pay)}), a day's margin against no deal at all:`);
 console.log(`  T I throw, the neighbor hands out  ${T.toFixed(1)}\n  R both hand out                    ${R.toFixed(1)}\n  P both throw                       ${Pn.toFixed(1)}\n  S I hand out, the neighbor throws  ${Sk.toFixed(1)}`);
-console.log(T > R && R > Pn && Pn > Sk ? '  => a prisoner\'s dilemma: throwing pays on the night, sharing pays together\n' : '  => something else is off\n');
+console.log(T > R && Sk > Pn ? '  => no move is always best: throw on one who hands out, hand out on one who throws\n' : '  => something else is off\n');
 
 const PAY = { T, R, P: Pn, S: Sk };
 // ways a person might play stand 0. me: its own record; w: tonight's neighbor and its record
