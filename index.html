@@ -2714,7 +2714,7 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
  // in a neighborhood: save tonight's choices, watch the day, and move on from the report when it has been read
  const hoodOpenLeft=hst&&hst.deciding?openMs(hst.hood.start,hst.deciding)-hNow:0;
  const hoodCtaLabel=!hood?'':phase==='evening'?(shopCost>cash?'אין מספיק כסף':hoodDirty?'💾 לשמור את ההחלטות':'✓ נשמר · אפשר לשנות עד 08:00')
-  :phase==='sim'?(sim?.done?'לדוח היום ›':sim&&sim.shown.length<sim.list.length?'⏩ להציג את כל הלקוחות עד עכשיו':'🍋 הדוכנים פתוחים')
+  :phase==='sim'?(sim?.done?'לדוח היום ›':'⏩ להציג את כל הלקוחות עד עכשיו')
   :phase==='report'?(hst&&hst.deciding?`לערב · לפני יום ${hst.deciding} ›`:'לטבלה הסופית ›'):'';
  const hoodCta=()=>{if(phase==='evening'){if(shopCost<=cash)hoodSave();return;}
   if(phase==='sim'){if(sim?.done)hoodLoad().then(st=>hoodSync(st,true)).catch(()=>{});else{simFast.current=true;setSim(s=>({...s}));}return;}
@@ -2777,7 +2777,7 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
     tab==='lastrep'&&report?<div className="pane"><button className="chip back" onClick={()=>setTab('news')}>‹ חזרה למרכז הבקרה</button>{Report()}</div>:
     tab==='news'?News():tab==='product'?Product():tab==='stock'?Stock():tab==='mkt'?Mkt():tab==='street'?Street():tab==='intel'?Intel():Biz()}
   </main>
-  {phase!=='over'&&<div className="cta-bar">
+  {phase!=='over'&&!(hood&&phase==='sim'&&!(sim?.done||(sim&&sim.shown.length<sim.list.length)))&&<div className="cta-bar">
    {phase==='morning'&&<div className="cta-info">{research?<>~{buyers} יקנו מתוך ~{visitors} · ~{fmt(Math.min(buyers,cups)*price)}</>:<>{cups} כוסות × ₪{price}{committed>0?` · הוצאות היום ${fmt(committed)}`:''}</>}</div>}
    {phase==='evening'&&hood&&<div className="cta-info">⏰ הדוכנים נפתחים בעוד <b className="num">{clockTxt(hoodOpenLeft)}</b>{shopCost>0?<> · קניות {fmt2(shopCost)}</>:''}</div>}
    {phase==='evening'&&!hood&&<div className="cta-info">{shopCost>0?<>קניות {fmt2(shopCost)} · נשאר {fmt(cash-shopCost)}</>:'עוד לא קנית כלום הערב'}</div>}
