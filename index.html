@@ -225,6 +225,7 @@ h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
 .rp-big{font-size:52px;font-weight:600;line-height:1.05}
 .rp-big.g{color:#C8FFD9}.rp-big.r{color:#FFD0D8}
 .rp-sub{font-size:13px;color:rgba(255,255,255,.85)}
+.led-r{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.led-r:first-of-type{border-top:0}.led-e{text-align:center}.led-n{display:flex;flex-direction:column;min-width:0}.led-n b{font-weight:600}.led-n small{font-size:12px;color:var(--dim);line-height:1.35}.led-v{font-size:15px;font-weight:600;white-space:nowrap}.led-v.g{color:#7CE8A5}.led-v.r{color:#FF9A8B}.led-t{border-top:2px solid var(--line);font-size:15px}.led-t .led-v{font-size:17px}
 .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .rp-grid div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column}
 .rp-grid small{font-size:12px;color:var(--dim)}
@@ -1584,7 +1585,7 @@ const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?g('אתה','את'):(name
   case 'caught':{const ad=e.trick==='ads',mine=e.victim===meId,f=e.stand&&HOOD_G[e.stand]==='f',did=ad?(mine?(f?'מריצה נגדך קמפיין':'מריץ נגדך קמפיין'):(f?'מריצה קמפיין נגד ':'מריץ קמפיין נגד ')+n(e.victim)):(mine?(f?'מפיצה עליך שמועות':'מפיץ עליך שמועות'):(f?'מפיצה שמועות על ':'מפיץ שמועות על ')+n(e.victim));
    if(!e.stand)return mine?`🚨 האבטחה שלך עצרה ${TRICK_N[e.trick]} נגדך`:`🚨 האבטחה של ${n(e.victim)} עצרה ${TRICK_N[e.trick]}`;
    const C=NB.CAUGHT;return e.stand===meId?`🚨 נתפסת ${ad?g('מריץ קמפיין נגד','מריצה קמפיין נגד'):g('מפיץ שמועות על','מפיצה שמועות על')} ${n(e.victim)}: −${C.rep} מוניטין ופיצוי ₪${C.fine}`:`🚨 ${n(e.stand)} ${f?'נתפסה':'נתפס'} ${did}: −${C.rep} מוניטין ופיצוי ₪${C.fine} ${mine?'לך':'ל'+n(e.victim)}`;}
-  case 'fund':return e.ok?`🎉 הקרן הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}): ${e.n} היום ברחוב!`:`😞 הקרן לא הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}). הכסף אבד`;default:return null;}};
+  case 'fund':return e.ok?`🎉 הקרן הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}): ${e.n} היום ברחוב!`:`😞 הקרן לא הגיעה ליעד (₪${e.gifts} מתוך ₪${e.target}). כל תורם מקבל חזרה ${Math.round(NB.FUND.back*100)}% ממה שנתן`;default:return null;}};
 // The day's report from the server's numbers, in the shape of the regular game's report
 const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNames(st),op=(st.opened||{})[d],rows=(st.results||{})[d]||[],sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
  const tips=[];const T=(k,t)=>tips.push({k,t});
@@ -1599,15 +1600,15 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  // what the day did to reputation, in customers
  if(Math.abs(r.repD)>=5)T(r.repD>0?'good':'warn',`⭐ המוניטין ${r.repD>0?'עלה':'ירד'} ב-${Math.abs(r.repD)}, ל-${r.rep}: בערך ${repPct(r.rep-r.repD,r.rep)}% ${r.repD>0?'יותר':'פחות'} מבקרים ביום הבא`);
  // the street fund
- if(r.fund&&op&&op.fund){const f=r.fund,o=op.fund;if(o.ok)T('good',f.gave?`🎉 ${o.n}: הקרן הגיעה ליעד (₪${o.gifts}). נתת ${fmt(f.gave)} וקיבלת ${fmt2(f.paid)}, כלומר ${f.paid>=f.gave?'רווח':'הפסד'} נקי של ${fmt2(Math.abs(f.paid-f.gave))}${o.luck<=0.9?'. האירוע יצא חלש מהמצופה':o.luck>=1.1?'. האירוע הצליח מעל המצופה':''}`:`🎉 ${o.n}: הקרן הגיעה ליעד בלעדיך. הרחוב היה מלא יותר, אבל הקופה התחלקה בין התורמים`);else if(f.gave)T('bad',`😞 הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target}). מתוך ${fmt(f.gave)} חזרו לך ${fmt2(f.paid)}`);else T('warn',`הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target})`);}
+ if(r.fund&&op&&op.fund){const f=r.fund,o=op.fund;if(f.gave&&f.paid==null)T(o.ok?'good':'bad',`${o.n}: ${o.ok?'הקרן הגיעה ליעד':'הקרן לא הגיעה ליעד'}. נתת ${fmt(f.gave)}`);else if(o.ok)T('good',f.gave?`🎉 ${o.n}: הקרן הגיעה ליעד (₪${o.gifts}). נתת ${fmt(f.gave)} וקיבלת ${fmt2(f.paid)}, כלומר ${f.paid>=f.gave?'רווח':'הפסד'} נקי של ${fmt2(Math.abs(f.paid-f.gave))}${o.luck<=0.9?'. האירוע יצא חלש מהמצופה':o.luck>=1.1?'. האירוע הצליח מעל המצופה':''}`:`🎉 ${o.n}: הקרן הגיעה ליעד בלעדיך. הרחוב היה מלא יותר, אבל הקופה התחלקה בין התורמים`);else if(f.gave)T('bad',`😞 הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target}). מתוך ${fmt(f.gave)} חזרו לך ${fmt2(f.paid)}`);else T('warn',`הקרן לא הגיעה ליעד (₪${o.gifts} מתוך ₪${o.target})`);}
  // the coupons deal with tonight's neighbor
- if(r.coupon){const c=r.coupon,n=nick(c.with),m=c.cash?(c.cash<0?'שילמת '+fmt2(-c.cash):'קיבלת מהספק '+fmt2(c.cash)):'';T(c.cash>0?'good':c.cash<0?'bad':'warn',c.gave&&c.got?`🎟️ ${g('אתה','את')} ו${n} חילקתם קופונים: ${m}`:c.got?`🗑️ זרקת את הקופונים, ו${n} ${gd(c.with,'חילק','חילקה')}: ${m}`:c.gave?`🗑️ ${n} ${gd(c.with,'זרק','זרקה')} את הקופונים, ורק ${g('אתה','את')} ${g('עבדת','עבדת')}: ${m}`:`🗑️ גם ${g('אתה','את')} וגם ${n} זרקתם את הקופונים: אף אחד לא קיבל כלום`);
+ if(r.coupon){const c=r.coupon,n=nick(c.with),m=c.cash==null?(c.came?'הגיעו אליך '+c.came+' לקוחות':'לא הגיעו לקוחות נוספים'):c.cash?(c.cash<0?'שילמת '+fmt2(-c.cash):'קיבלת מהספק '+fmt2(c.cash)):'לא קיבלת כלום';T(c.cash>0||c.came?'good':c.cash<0?'bad':'warn',c.gave&&c.got?`🎟️ ${g('אתה','את')} ו${n} חילקתם קופונים: ${m}`:c.got?`🗑️ זרקת את הקופונים, ו${n} ${gd(c.with,'חילק','חילקה')}: ${m}`:c.gave?`🗑️ ${n} ${gd(c.with,'זרק','זרקה')} את הקופונים, ורק ${g('אתה','את')} ${g('עבדת','עבדת')}: ${m}`:`🗑️ גם ${g('אתה','את')} וגם ${n} זרקתם את הקופונים: אף אחד לא קיבל כלום`);
   const w=(rows.find(o=>o.id===c.with)?.coupon||{}).said;if(typeof w==='boolean'&&w!==c.got)T(w?'bad':'good',w?`🤥 ${n} ${gd(c.with,'אמר שיחלק, ולא עמד במילה','אמרה שתחלק, ולא עמדה במילה')}`:`😮 ${n} ${gd(c.with,'אמר שיזרוק, ובכל זאת חילק','אמרה שתזרוק, ובכל זאת חילקה')}`);}
  // my price against the street's that day, and what it did to my sales
  {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
   T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
  if(r.stole)T('good',`📢 ${r.stole} לקוחות עברו אליך מהקמפיין`);
- if(r.soldAt)T('warn',`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו: כדאי להכין יותר מחר`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות לא נמכרו. הלימון והסוכר שלהן נשארים למחר, והקרח נמס: כדאי להכין פחות, או להוריד מחיר`);
+ if(r.soldAt)T('warn',r.miss?`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו, וזה הוריד ${Math.min(6,r.miss*2)} מוניטין: כדאי להכין יותר מחר`:`💨 הכוסות נגמרו ב-${r.soldAt}, ואף לקוח לא נשאר בלי כוס`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות לא נמכרו. הלימון והסוכר שלהן נשארים למחר, והקרח נמס: כדאי להכין פחות, או להוריד מחיר`);
  if(x.autoBuy)T('warn',`🛒 לא היה מספיק מלאי, אז ב-08:00 קנינו בשבילך ${[x.autoBuy.l&&x.autoBuy.l+'🍋',x.autoBuy.h&&x.autoBuy.h+'🍬',x.autoBuy.i&&x.autoBuy.i+'🧊'].filter(Boolean).join(' ')} (${fmt2(x.autoBuy.cost)})`);
  if(r.insp)T('warn','🏛️ פיקוח עירוני: ₪8');if(x.spoiled>0)T('warn',`${x.spoiled} לימונים התקלקלו`);
  if(x.skipped&&x.skipped.length)T('warn','⚠️ לא היה מספיק כסף, ולכן לא בוצעו: '+x.skipped.map(skipN).join(', '));
@@ -1617,7 +1618,17 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
    seen:[...(o.auto==='autopilot'?['auto']:[]),...(o.sick?['sick']:[]),...(o.vip===true?['vip+']:o.vip===false?['vip-']:[]),...s.mk,...(s.helper?['helper']:[]),...(o.caught?['exposed']:[]),...(o.coupon?[o.coupon.gave?'cp+':'cp-']:[]),...(o.fund?['fd'+o.fund]:[])]};});
  // place in the season table after this day, and before it
  const placeOn=k=>{const rs=((st.results||{})[k]||[]).slice().sort((a,b)=>b.score-a.score);const i=rs.findIndex(o=>o.id===me);return i<0?null:i+1;};
- return{dil:{fund:r.fund&&op&&op.fund?{o:op.fund,gave:r.fund.gave}:null,coupon:r.coupon?{mine:r.coupon.gave,theirs:r.coupon.got,n:nick(r.coupon.with)}:null,black:(r.myTricks||[]).length?{caught:r.myTricks.some(t=>t.caught)}:null},day:d,place:placeOn(d),prevPlace:d>1?placeOn(d-1):null,n:rows.length,
+ // the day's balance, line by line. It always adds up to the day's profit: whatever has no line of its own (a loan's interest) gets one at the end
+ const L=[],line=(em,n,v,note)=>L.push({em,n,v:Math.round(v*100)/100,note}),cs=r.costs||{},sp=x.spent||{},cpNet=r.coupon?(r.coupon.cash||0)-(cs.coupon||0):0,fdNet=r.fund&&r.fund.gave?(r.fund.paid||0)-r.fund.gave:0,caught=(r.myTricks||[]).some(t=>t.caught),insp=r.insp?8:0;
+ if(r.rev)line('🍋','מכירות',r.rev,r.sold+' כוסות × ₪'+x.plan.price);
+ if(r.coupon){const c=r.coupon,w=nick(c.with).split(' ')[0];line('🎟️','קופונים',cpNet,'מול '+w+': '+(c.gave&&c.got?'שניכם חילקתם':c.got?'זרקת, והשכן חילק':c.gave?'חילקת, והשכן זרק':'שניכם זרקתם')+(c.cash==null&&c.came?'. הביאו '+c.came+' לקוחות, והם כבר בתוך המכירות':''));}
+ if(r.fund&&r.fund.gave)line('🎪','קרן הרחוב',fdNet,r.fund.paid==null?'נתת '+fmt(r.fund.gave):'נתת '+fmt(r.fund.gave)+', חזרו '+fmt2(r.fund.paid));
+ if(r.comp)line('💰','פיצוי ממי שתקף אותך',r.comp);
+ if(sp.stock)line('🛒','קניות למלאי',-sp.stock,'מה שלא נוצל נשאר ליום הבא');
+ if(cs.rent)line('📍','שכירות',-cs.rent);if(cs.helper)line('🧑‍💼','עוזר',-cs.helper);if(cs.mkt)line('📣','שיווק',-cs.mkt);if(sp.ups)line('🔧','ציוד',-sp.ups);if(sp.intel)line('🔮','תחזית',-sp.intel);if(sp.security)line('🛡️','אבטחה',-sp.security);
+ if(cs.bh)line('🎩','מחיר התרגיל',-cs.bh);if(insp)line('🏛️','פיקוח עירוני',-insp);if((cs.fine||0)>insp)line(caught?'🚨':'📅',caught?'פיצוי ששילמת':'הוצאה מאירוע היום',-(cs.fine-insp));
+ {const rest=Math.round((x.profit-L.reduce((a,l)=>a+l.v,0))*100)/100;if(Math.abs(rest)>=0.01)line('🏦',x.before&&x.before.loan>0?'ריבית על ההלוואה':'אחר',rest);}
+ return{ledger:L,dil:{fund:r.fund&&op&&op.fund?{o:op.fund,gave:r.fund.gave,net:r.fund.paid==null?null:fdNet}:null,coupon:r.coupon?{mine:r.coupon.gave,theirs:r.coupon.got,n:nick(r.coupon.with),net:r.coupon.cash==null?null:cpNet}:null,black:(r.myTricks||[]).length?{caught:r.myTricks.some(t=>t.caught)}:null},day:d,place:placeOn(d),prevPlace:d>1?placeOn(d-1):null,n:rows.length,
   profit:x.profit,rev:r.rev,extra:(r.prize||0)+(r.comp||0),exp:sum(x.spent)+sum(r.costs),sold:r.sold,cups:r.cups,visitors:r.visitors,walk:r.walk,miss:r.miss,repD:r.repD,rep:r.rep,tips,byType:r.byType,whys:null,comps,
   recipe:x.plan.recipe,price:x.plan.price,w:op&&op.weather.w,t:op&&op.weather.t,score:st.me.state.tot};};
 
@@ -2365,14 +2376,16 @@ function Game(){
 
  const seenTxt=c=>c.seen.map(k=>k==='auto'?'😴 לא החליט (טייס אוטומטי)':k==='exposed'?'🚨 נתפסו בתרגיל מלוכלך':k==='cp+'?'🎟️ חלוקת קופונים':k==='cp-'?'🗑️ זריקת קופונים':k.startsWith('fd')?'🎪 תרומה של ₪'+k.slice(2)+' לקרן':k.startsWith('caught:')?'🚨 נתפס: '+TRICK_N[k.slice(7)]:k==='sick'?'🤒 חלה ונסגר באמצע היום':k==='vip+'?'🎩 המבקר התלהב ממנו':k==='vip-'?'🎩 המבקר התאכזב ממנו':k==='helper'?'🧑‍💼 עוזר':k[0]==='+'?'🆕 '+ALL_UPS.find(u=>u.id===k.slice(1)).em+' '+ALL_UPS.find(u=>u.id===k.slice(1)).n:k[0]==='!'?(k==='!ads'?'📢 קמפיין נגד':k==='!rumor'?'🚨 נתפס בשמועות':'🚨 נתפס מוריד שלטים'):MK_EM[k]+' '+MKTG.find(m=>m.id===k).n).join(' · ');
  const hidTxt=h=>[h.fc?['','👂','📡','🛰️'][h.fc]+' תחזית':null,h.rs?'📋 סקר שוק':null,h.spy?'🔭 ריגל':null,...h.bh.map(x=>{const[id,t]=x.split(':');return MK_EM[id]+' '+(id==='rumor'?'שמועות':'הסרת שלטים')+' נגד '+(t==='me'?g('אתה','את'):t);})].filter(Boolean).join(' · ');
+ const ledV=v=>(v>0?'+':v<0?'−':'')+'₪'+(Number.isInteger(v)?Math.abs(v):Math.abs(v).toFixed(2));
  const Report=()=>{const r=report;return <div className="report">
   <div className="rp-hero">
    <div className="rp-coins" aria-hidden="true">{Array.from({length:Math.min(14,Math.max(0,Math.ceil(r.rev/12)))}).map((_,i)=><span key={i} style={{left:(8+i*6.3)%92+'%',animationDelay:(0.1+i*0.08)+'s'}}>🪙</span>)}</div>
    {r.profit>=60&&<div className="confetti" aria-hidden="true">{Array.from({length:26}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',background:['#FFD23F','#4ADE80','#FF8FB1','#5CC8F0'][i%4],animationDelay:(i%8)*0.09+'s'}}/>)}</div>}
    <div className="rp-day"><span className="register">🧾</span> סיום יום {r.day}</div><div className={"rp-big num "+(r.profit>=0?'g':'r')}>{r.profit>=0?'+':'−'}₪<CountTo v={Math.abs(Math.round(r.profit))}/></div>
-   <div className="rp-sub">הכנסות {fmt(r.rev)}{r.extra?<> · דילמות ופיצויים <bdi dir="ltr">{sgn(Math.round(r.extra))}</bdi></>:null} · הוצאות {fmt(r.exp)}</div></div>
-  {r.dil&&r.dil.fund&&<div className="rp-sc"><FundArt o={r.dil.fund.o} gift={r.dil.fund.gave} ok={r.dil.fund.o.ok}/><small>{r.dil.fund.o.n}: {r.dil.fund.o.ok?'האירוע התקיים':'האירוע בוטל'}</small></div>}
-  {r.dil&&r.dil.coupon&&<div className="rp-sc"><CouponArt a={g('אתה','את')} b={r.dil.coupon.n.split(' ')[0]} mine={r.dil.coupon.mine} theirs={r.dil.coupon.theirs}/><small>{r.dil.coupon.mine&&r.dil.coupon.theirs?'שניכם חילקתם':r.dil.coupon.theirs?g('זרקת, והשכן חילק','זרקת, והשכן חילק'):r.dil.coupon.mine?'חילקת, והשכן זרק':'שניכם זרקתם'}</small></div>}
+   {!r.ledger&&<div className="rp-sub">הכנסות {fmt(r.rev)}{r.extra?<> · דילמות ופיצויים <bdi dir="ltr">{sgn(Math.round(r.extra))}</bdi></>:null} · הוצאות {fmt(r.exp)}</div>}</div>
+  {r.ledger&&<div className="rp-types"><div className="cl-h">💰 המאזן של היום</div>{r.ledger.map((l,i)=><div key={i} className="led-r"><span className="led-e">{l.em}</span><span className="led-n"><b>{l.n}</b>{l.note&&<small>{l.note}</small>}</span><b className={"num led-v "+(l.v>0?'g':l.v<0?'r':'')}><bdi dir="ltr">{ledV(l.v)}</bdi></b></div>)}<div className="led-r led-t"><span className="led-e">🧾</span><span className="led-n"><b>{r.profit>=0?'רווח היום':'הפסד היום'}</b></span><b className={"num led-v "+(r.profit>=0?'g':'r')}><bdi dir="ltr">{ledV(Math.round(r.profit*100)/100)}</bdi></b></div></div>}
+  {r.dil&&r.dil.fund&&<div className="rp-sc"><FundArt o={r.dil.fund.o} gift={r.dil.fund.gave} ok={r.dil.fund.o.ok}/><small>{r.dil.fund.o.n}: {r.dil.fund.o.ok?'האירוע התקיים':'האירוע בוטל'}{r.dil.fund.gave>0&&r.dil.fund.net!=null?<> · <bdi dir="ltr">{ledV(Math.round(r.dil.fund.net*100)/100)}</bdi></>:null}</small></div>}
+  {r.dil&&r.dil.coupon&&<div className="rp-sc"><CouponArt a={g('אתה','את')} b={r.dil.coupon.n.split(' ')[0]} mine={r.dil.coupon.mine} theirs={r.dil.coupon.theirs}/><small>{r.dil.coupon.mine&&r.dil.coupon.theirs?'שניכם חילקתם':r.dil.coupon.theirs?g('זרקת, והשכן חילק','זרקת, והשכן חילק'):r.dil.coupon.mine?'חילקת, והשכן זרק':'שניכם זרקתם'}{r.dil.coupon.net!=null?<> · <bdi dir="ltr">{ledV(Math.round(r.dil.coupon.net*100)/100)}</bdi></>:null}</small></div>}
   {r.dil&&r.dil.black&&<div className="rp-sc"><BlackArt on caught={r.dil.black.caught}/><small>{r.dil.black.caught?'נתפסת':'הטריק עבר בשקט'}</small></div>}
   <div className="rp-grid">
    <div><small>מבקרים</small><b className="num">{r.visitors}</b></div>
