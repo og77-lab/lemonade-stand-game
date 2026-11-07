@@ -3,14 +3,14 @@
 // usage: node tools/fund.js [days=600]   (env SPONSORS tries another share of the crowd for the givers)
 const E = require('../engine.js');
 const N = +process.argv[2] || 600, n = +process.env.STANDS || 6;
-if (process.env.SPONSORS) E.NB.FUND.sponsors = +process.env.SPONSORS;
+if (process.env.OPEN) E.NB.FUND.open = +process.env.OPEN;
 function day(seed, offer, gifts, extraCups) {
   const world = E.buildWorld(seed, 7), d = 3, P = world[d - 1].p;
   const S = Array.from({ length: n }, (_, k) => ({ id: 's' + k, p: E.PERSONAS[2], st: { ...E.newStand(), cash: 200, lemons: [{ q: 90, d: 3 }], sugar: 40, ice: 0 } }));
   const decs = S.map((s, k) => { const x = E.botDecision(s.p, s.st, { seed, world, day: d, diff: 'medium', n, board: S.map(q => ({ id: q.id, tot: 0 })), me: s.id, k, prev: null, street: [] }); x.bh = []; x.sec = 0; x.autoStock = true; x.fund = gifts[k]; if (extraCups && gifts[k]) x.cups = Math.round(x.cups * extraCups); return x; });
   const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, d, n));
   const out = E.runNeighborhoodDay({ seed, world, day: d, fund: offer, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
-  return out.results.map((r, k) => { const p = prep[k].plan; return r.rev - r.sold * (p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i) - gifts[k]; });
+  return out.results.map((r, k) => { const p = prep[k].plan; return r.rev + (r.prize || 0) - r.sold * (p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i) - gifts[k]; });
 }
 const avg = (offer, gifts, x) => { const t = Array(n).fill(0); for (let g = 1; g <= N; g++) day(g * 7919 + 31, offer, gifts, x).forEach((v, k) => { t[k] += v; }); return t.map(v => v / N); };
 const none = avg(null, Array(n).fill(0));

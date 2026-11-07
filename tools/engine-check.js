@@ -14,7 +14,7 @@ function day(seed, { world: wf, dec: df, st: sf, pairs, fund, stands = n } = {})
   const out = E.runNeighborhoodDay({ seed, world, day: D, pairs, fund, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
   return { out, prep, S, world };
 }
-const avg = (o, pick) => { let v = 0, b = 0, m = 0; for (let g = 1; g <= N; g++) { const rs = day(g * 7919 + 3, o).out.results, r = pick ? pick(rs) : [rs[0]]; r.forEach(x => { v += x.visitors; b += x.sold; m += x.miss; }); } return { v: v / N, b: b / N, m: m / N }; };
+const avg = (o, pick) => { let v = 0, b = 0, m = 0, p = 0; for (let g = 1; g <= N; g++) { const rs = day(g * 7919 + 3, o).out.results, r = pick ? pick(rs) : [rs[0]]; r.forEach(x => { v += x.visitors; b += x.sold; m += x.miss; p += x.prize || 0; }); } return { v: v / N, b: b / N, m: m / N, p: p / N }; };
 let fails = 0;
 const check = (name, a, b, want, key = 'v') => { const up = b[key] > a[key] * 1.01, down = b[key] < a[key] * 0.99, good = want === 'up' ? up : want === 'down' ? down : !up && !down; if (!good) fails++;
   console.log(`  ${good ? 'ok  ' : 'FAIL'} ${name.padEnd(44)} ${a[key].toFixed(1).padStart(6)} → ${b[key].toFixed(1).padStart(6)}  (${want})`); };
@@ -56,8 +56,10 @@ console.log('\ntricks and deals');
 check('a campaign against me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'ads', target: 's0' }] } : {} }), 'down');
 check('my campaign against a rival', base, avg({ dec: k => k ? {} : { bh: [{ id: 'ads', target: 's1' }] } }), 'up');
 check('a rumor about me', base, avg({ dec: k => k === 1 ? { bh: [{ id: 'rumor', target: 's0' }] } : {} }), 'down');
-{ const P = [['s0', 's1']]; check('coupons: my neighbor hands out', base, avg({ pairs: P, dec: k => k === 1 ? { coupon: true } : k === 0 ? { coupon: false } : {} }), 'up'); check('coupons: both hand out brings more', avg({ pairs: P, dec: k => k === 1 ? { coupon: true } : k === 0 ? { coupon: false } : {} }), avg({ pairs: P, dec: k => k < 2 ? { coupon: true } : {} }), 'up'); check('coupons: both throw changes nothing', base, avg({ pairs: P, dec: k => k < 2 ? { coupon: false } : {} }), 'same'); }
-{ const F = { n: 'x', boost: 1.5, target: 30 }; check('fund met, I gave', base, avg({ fund: F, dec: () => ({ fund: 5 }) }), 'up'); check('fund missed, I gave', base, avg({ fund: F, dec: k => k ? {} : { fund: 5 } }), 'same'); const met = avg({ fund: F, dec: k => k ? { fund: 6 } : {} }), gave = avg({ fund: F, dec: k => k ? { fund: 6 } : { fund: 6 } }); check('fund met: givers get more than one who did not', met, gave, 'up'); }
+{ const P = [['s0', 's1']], D2 = (a, b) => ({ pairs: P, dec: k => k === 0 ? { coupon: a } : k === 1 ? { coupon: b } : {} }), both = avg(D2(true, true)), tempt = avg(D2(false, true)), none = avg(D2(false, false)), sucker = avg(D2(true, false));
+  check('coupons: throwing on one who hands out pays more than sharing', both, tempt, 'up', 'p'); check('coupons: sharing pays more than both throwing', none, both, 'up', 'p'); check('coupons: handing out alone loses', none, sucker, 'down', 'p'); }
+{ const F = { n: 'x', boost: 1.5, target: 30 }; check('fund met: the street fills', base, avg({ fund: F, dec: () => ({ fund: 5 }) }), 'up'); const miss = avg({ fund: F, dec: k => k ? {} : { fund: 5 } }); check('fund missed: the street stays the same', base, miss, 'same'); if (Math.abs(miss.p - 5 * E.NB.FUND.back) > 0.01) { fails++; console.log('  FAIL fund missed: part of the gift comes back'); }
+  const met = avg({ fund: F, dec: k => k ? { fund: 6 } : {} }), gave = avg({ fund: F, dec: k => k ? { fund: 6 } : { fund: 6 } }); check('fund met: givers share the pot, others do not', met, gave, 'up', 'p'); }
 // the books, over whole seasons with everything on
 console.log('\nthe books: whole seasons, bots, every feature on');
 let days = 0, bad = {}; const fail = k => { bad[k] = (bad[k] || 0) + 1; };
@@ -71,7 +73,7 @@ for (let g = 1; g <= 150; g++) { const seed = g * 104729 + 7, DAYS = 7, world = 
     S = S.map((s, k) => { const r = out.results[k], p = prep[k], set = E.settleStand(p.st, p.plan, r, p.spent, d), cost = Object.values(r.costs).reduce((a, b) => a + b, 0), interest = Math.round(p.st.loan * E.LOAN_INT * 100) / 100;
       if (r.sold > r.cups) fail('sold more cups than made'); if (Math.abs(r.rev - r.sold * p.plan.price) > 0.01) fail('revenue = cups × price'); if (r.sold + r.walk + r.miss !== r.visitors + (r.vip !== null && r.vip !== undefined ? 1 : 0) && !(r.vip === false && r.sold + r.walk + r.miss === r.visitors)) fail('every visitor bought, walked on or missed');
       const paidBack = set.st.loan === 0 && p.st.loan > 0 ? Math.round(p.st.loan * (1 + E.LOAN_INT) * 100) / 100 : 0;
-      if (Math.abs(set.st.cash - (p.st.cash + r.rev + (r.comp || 0) - cost - interest - paidBack)) > 0.02) fail('cash adds up');
+      if (Math.abs(set.st.cash - (p.st.cash + r.rev + (r.comp || 0) + (r.prize || 0) - cost - interest - paidBack)) > 0.02) fail('cash adds up');
       if (set.st.sugar < 0 || set.st.ice < 0 || set.st.lemons.some(b => b.q <= 0)) fail('no negative stock'); if (set.st.rep < 0 || set.st.rep > 100) fail('reputation stays 0–100');
       if (Object.values(set.st).some(v => typeof v === 'number' && !Number.isFinite(v))) fail('no broken numbers');
       return { ...s, st: set.st, prev: { dec: decs[k], res: r } }; });

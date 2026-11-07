@@ -9,7 +9,7 @@ function day(seed, opt) {
   const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, d, n));
   const out = E.runNeighborhoodDay({ seed, world, day: d, fund: opt.fund || null, pairs: opt.coupon ? [['s0', 's1']] : [], stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
   const r = out.results[0], p = prep[0].plan;
-  return r.rev - (r.costs.fundFee || 0) - r.sold * (p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i) - (r.costs.coupon || 0) - ((opt.gifts || [])[0] || 0);
+  return r.rev + (r.prize || 0) - r.sold * (p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i) - (r.costs.coupon || 0) - ((opt.gifts || [])[0] || 0);
 }
 const range = opt => { const v = []; for (let g = 1; g <= N; g++) { const s = g * 7919 + 31; v.push(day(s, opt) - day(s, {})); } v.sort((a, b) => a - b); const q = p => Math.round(v[Math.floor(p * v.length)] / 5) * 5; return `${q(0.2)}..${q(0.8)} (avg ${(v.reduce((a, b) => a + b, 0) / v.length).toFixed(0)})`; };
 console.log(`${n} stands, ${N} days`);

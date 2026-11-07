@@ -2,9 +2,6 @@
 // usage: node tools/coupons.js [seasons=3000] [days=7] [stands=6] [level=medium]   (env BRING, LEAK try other strengths)
 const E = require('../engine.js');
 const [N = 3000, DAYS = 7, STANDS = 6, LEVEL = 'medium'] = process.argv.slice(2).map((x, i) => i === 3 ? x : +x);
-if (process.env.ONE) E.NB.COUPON.one = +process.env.ONE;
-if (process.env.BOTH) E.NB.COUPON.both = +process.env.BOTH;
-if (process.env.LEAK) E.NB.COUPON.leak = +process.env.LEAK;
 
 // one ordinary day on a street of six: stands 0 and 1 are paired, the others stay out of it. Margin = revenue less the ingredients of the cups sold
 function deal(gives0, gives1, seed) {
@@ -15,13 +12,13 @@ function deal(gives0, gives1, seed) {
   const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, d, n));
   const out = E.runNeighborhoodDay({ seed, world, day: d, pairs: gives0 === null ? [] : [['s0', 's1']], stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
   const r = out.results[0], p = prep[0].plan, unit = p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i;
-  return r.rev - r.sold * unit - (r.costs.coupon || 0);
+  return r.rev + (r.prize || 0) - r.sold * unit - (r.costs.coupon || 0);
 }
 const avgDeal = (a, b) => { let s = 0; const M = Math.min(N, 1500); for (let g = 1; g <= M; g++) s += deal(a, b, g * 7919 + 29); return s / M; };
 const base = avgDeal(null, null), T = avgDeal(false, true) - base, R = avgDeal(true, true) - base, Pn = avgDeal(false, false) - base, Sk = avgDeal(true, false) - base;
-console.log(`the deal in the street (one ${E.NB.COUPON.one}, both ${E.NB.COUPON.both}, leak ${E.NB.COUPON.leak}), a day's margin against no deal at all:`);
+console.log(`the deal in the street (${JSON.stringify(E.NB.COUPON.pay)}), a day's margin against no deal at all:`);
 console.log(`  T I throw, the neighbor hands out  ${T.toFixed(1)}\n  R both hand out                    ${R.toFixed(1)}\n  P both throw                       ${Pn.toFixed(1)}\n  S I hand out, the neighbor throws  ${Sk.toFixed(1)}`);
-console.log(R > T && T > Pn && Pn > Sk ? '  => a question of trust: no move is always best\n' : '  => one move is always best, or something else is off\n');
+console.log(T > R && R > Pn && Pn > Sk ? '  => a prisoner\'s dilemma: throwing pays on the night, sharing pays together\n' : '  => something else is off\n');
 
 const PAY = { T, R, P: Pn, S: Sk };
 // ways a person might play stand 0. me: its own record; w: tonight's neighbor and its record
