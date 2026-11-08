@@ -796,6 +796,9 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-pass .st-leg1 { animation: stLeg 0.5s ease-in-out infinite alternate; transform-origin: 8px 30px; }
     .st-pass .st-leg2 { animation: stLeg 0.5s ease-in-out infinite alternate-reverse; transform-origin: 12px 30px; }
     @keyframes stPassR { from { left: -30px; } to { left: calc(100% + 30px); } }
+    .st-pass.st-pz { animation-name: stPassZR; } .st-pass.st-pz.rev { animation-name: stPassZL; }
+    @keyframes stPassZR { from { left: var(--a); } to { left: var(--b); } }
+    @keyframes stPassZL { from { left: var(--b); } to { left: var(--a); } }
     @keyframes stPassL { from { left: calc(100% + 30px); } to { left: -30px; } }
     @keyframes stPBob { from { translate: 0 0; } to { translate: 0 -1.5px; } }
     @keyframes stLeg { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
@@ -835,8 +838,60 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-comp-wrap { position: absolute; bottom: 110px; z-index: 2; transform: scale(0.7); transform-origin: bottom center; }
     .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; transition: opacity .6s, filter .6s; }
     .st-comp-off { opacity: 0.6; filter: grayscale(0.7); }
-    .st-cq { position: absolute; bottom: 0; left: 100%; margin-left: -6px; display: flex; gap: 1px; }
-    .st-cq i { display: block; width: 20px; animation: stPBob 1.1s ease-in-out infinite alternate; }
+    .st-spr { display: block; background-repeat: no-repeat; }
+    .st-zbg { position: absolute; top: 0; bottom: 0; z-index: 1; background-repeat: repeat-x; background-size: auto 100%; background-position: left bottom;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 52px, #000 calc(100% - 52px), transparent); mask-image: linear-gradient(90deg, transparent, #000 52px, #000 calc(100% - 52px), transparent); }
+    .st-zbg.first { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 52px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 52px), transparent); }
+    .st-zbg.last { -webkit-mask-image: linear-gradient(90deg, transparent, #000 52px); mask-image: linear-gradient(90deg, transparent, #000 52px); }
+    .st-zbg.first.last { -webkit-mask-image: none; mask-image: none; }
+    .st-img .st-track { background: linear-gradient(0deg, #7A6F86 0, #8F8399 27px, #DCC0AA 27px, #E9D2BF 57px, transparent 57px); }
+    .st-img .st-sidewalk { display: none; }
+    .st-img .st-road { background: none; height: 30px; }
+    .st-img .st-lane { display: none; }
+    .st-img .st-comp-wrap.st-at { bottom: 50px; transform: translateX(-50%) scale(0.7); }
+    .st-img .st-passers { bottom: 62px; z-index: 2; }
+    .st-img .st-stand { bottom: 46px; }
+    .st-img .st-actor { bottom: 40px; }
+    .st-stand-img { position: absolute; left: 4px; bottom: 0; z-index: 2; filter: drop-shadow(0 5px 4px rgba(30,27,58,0.2)); }
+    .st-seller-img { left: 42px; top: 34px; }
+    .st-left { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 3; white-space: nowrap; font: 800 10px Rubik, sans-serif; color: #fff; background: rgba(60,35,15,0.62); border-radius: 8px; padding: 1px 7px; }
+    .st-closed-img { position: absolute; left: 50%; top: 58px; transform: translateX(-50%) rotate(-4deg); z-index: 4; font: 900 13px Rubik, sans-serif; color: #fff; background: #E63946; border: 2px solid #fff; border-radius: 6px; padding: 1px 10px; }
+    .st-face-l { display: block; transform: scaleX(-1); }
+    .st-cup { position: absolute; top: 34px; left: -6px; font-size: 15px; }
+    .st-comp-wrap.st-at { cursor: pointer; }
+    .st-comp-price.cheap, .st-me.cheap { box-shadow: 0 2px 0 #3FBF7F; color: #137A43; }
+    .st-comp-price.dear, .st-me.dear { box-shadow: 0 2px 0 #FF7A8A; color: #B42335; }
+    .st-card { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); width: min(290px, 88%); z-index: 48; background: rgba(255,255,255,0.97); color: #1E1B3A; border-radius: 16px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); font-family: 'Rubik', sans-serif; animation: stCardIn .25s ease both; }
+    @keyframes stCardIn { from { opacity: 0; transform: translate(-50%, -8px); } }
+    .st-card-h { display: flex; justify-content: space-between; align-items: center; font-size: 15px; margin-bottom: 4px; }
+    .st-card-h span { color: #8A86A6; }
+    .st-card-r { display: grid; grid-template-columns: 86px auto 1fr; gap: 6px; align-items: baseline; font-size: 13px; padding: 3px 0; border-top: 1px solid #EEE; }
+    .st-card-r span { color: #6B6788; } .st-card-r small { color: #8A86A6; font-size: 11.5px; }
+    .st-card-r b.cheap { color: #137A43; } .st-card-r b.dear { color: #B42335; }
+    .st-edge { position: absolute; bottom: 58px; z-index: 47; border: 0; border-radius: 999px; background: rgba(30,27,58,0.72); color: #fff; font: 800 13px Rubik, sans-serif; padding: 5px 10px; cursor: pointer; }
+    .st-edge.l { left: 8px; } .st-edge.r { right: 8px; }
+    .st-edge.home { bottom: 92px; background: #FFE14D; color: #1E1B3A; }
+    .st-scroll { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
+    .st-scroll.on { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .st-scroll.on::-webkit-scrollbar { display: none; }
+    .st-track { position: relative; height: 100%; min-width: 100%; overflow: hidden; }
+    .st-tile { position: absolute; top: 0; bottom: 0; }
+    .st-comp-wrap.st-at { transform: translateX(-50%) scale(0.7); }
+    .st-comp-name i { font-style: normal; font-weight: 700; color: #4B4870; margin-right: 6px; }
+    .st-comp-name { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 14px; font-weight: 800; color: #1E1B3A; background: rgba(255,255,255,0.88); border-radius: 9px; padding: 1px 8px; }
+    .st-zsign { position: absolute; bottom: 112px; z-index: 2; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); margin-left: 20px; font-family: 'Rubik', sans-serif; }
+    .st-zsign b { font-size: 17px; line-height: 1; }
+    .st-zsign span { font-size: 10px; font-weight: 800; color: #fff; background: #2F3B35; border: 2px solid #8C6A4F; border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+    .st-zsign::after { content: ''; width: 3px; height: 22px; background: #8C6A4F; }
+    .st-me { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 900; color: #1E1B3A; background: #FFE14D; border-radius: 9px; padding: 1px 9px; box-shadow: 0 2px 0 #E0A400; z-index: 6; animation: stPBob 1.2s ease-in-out infinite alternate; }
+    .st-cw { position: absolute; left: 50%; bottom: -4px; width: 0; height: 44px; z-index: 2; }
+    .st-cwk { position: absolute; bottom: 0; left: 0; width: 20px; animation: stCust 2.7s linear both; }
+    .st-cwk > i { display: block; transform: scaleX(-1); animation: stPBob 0.5s ease-in-out infinite alternate; }
+    .st-cwk b { position: absolute; top: 12px; right: -6px; font-size: 11px; opacity: 0; animation: stCup 2.7s linear both; }
+    .st-cwk:not(.buys) > i { animation: stPBob 0.5s ease-in-out infinite alternate, stNo 2.7s linear both; }
+    @keyframes stCust { 0% { transform: translateX(70px); } 38% { transform: translateX(14px); } 62% { transform: translateX(14px); } 100% { transform: translateX(-80px); } }
+    @keyframes stCup { 0%, 55% { opacity: 0; } 62%, 100% { opacity: 1; } }
+    @keyframes stNo { 0%, 48% { filter: none; } 52%, 100% { filter: saturate(0.4); } }
     .st-comp-price { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #fff; color: #5B21B6; font-weight: 900; font-size: 13px; padding: 1px 8px; border-radius: 8px; box-shadow: 0 2px 0 #C4B5FD; white-space: nowrap; }
     .st-board { position: absolute; bottom: 56px; z-index: 6; animation: stSway 4s ease-in-out infinite; transform-origin: bottom center; }
     .st-stand { position: absolute; bottom: 56px; width: 140px; height: 150px; z-index: 5; }
@@ -1119,24 +1174,45 @@ const StSeller=({serving,closed})=>(
 const StCloud=({w=70,o=1})=>(<svg viewBox="0 0 70 34" width={w} height={w*34/70} style={{opacity:o}} aria-hidden="true">
   <path d="M14 30 Q2 30 4 21 Q6 13 15 15 Q17 4 30 5 Q41 3 45 13 Q55 9 60 17 Q69 19 66 27 Q64 31 56 30 Z" fill="#fff"/></svg>);
 
-const StComp=({c})=>(<div className={"st-comp"+(c.off?' st-comp-off':'')}>
-  {c.q>0&&<div className="st-cq" aria-hidden="true">{ST_PASS.slice(3,3+c.q).map((p,i)=><i key={i} style={{animationDelay:i*0.3+'s'}}><StPasser p={p}/></i>)}</div>}
-  <svg viewBox="0 0 64 60" width="64" height="60" aria-hidden="true">
+const StComp=({c})=>{const evs=c.evs||[],at=useRef(null),[walk,setWalk]=useState([]),[,tick]=useState(0);
+  // on first sight: only its last couple of customers, the rest of its day already happened
+  if(at.current===null)at.current=Math.max(0,evs.length-2);
+  useEffect(()=>{if(at.current>=evs.length)return;
+    // the same pace as the owner's own screen: what was missed plays fast, then one customer at an easy pace
+    const t=setTimeout(()=>{const e=evs[at.current];at.current++;
+      setWalk(w=>w.length>=4?w:[...w,{...e,p:ST_PASS[(e.id.length*7+at.current)%ST_PASS.length]}]);
+      setTimeout(()=>setWalk(w=>w.filter(x=>x.id!==e.id)),2700);tick(x=>x+1);},evs.length-at.current>4?220:1100);
+    return()=>clearTimeout(t);},[evs.length,at.current]);
+  return <div className={"st-comp"+(c.off?' st-comp-off':'')} onClick={()=>c.onTap&&c.onTap(c.id)} role="button" aria-label={c.n}>
+  <div className="st-cw" aria-hidden="true">{walk.map(w=><span key={w.id} className={"st-cwk"+(w.buys?' buys':'')}><i><Spr i={w.p.sp} k={0.17}/></i>{w.buys&&<b>🥤</b>}</span>)}</div>
+  {c.col!=null?<StandSpr col={c.col} h={124}/>:<svg viewBox="0 0 64 60" width="64" height="60" aria-hidden="true">
     <rect x="5" y="18" width="4" height="24" fill="#8C6A4F"/><rect x="55" y="18" width="4" height="24" fill="#8C6A4F"/>
     {[0,1,2,3,4,5,6,7].map(i=><rect key={i} x={i*8} y="8" width="8" height="10" fill={i%2?'#fff':'#A78BFA'}/>)}
     {[0,1,2,3,4,5,6,7].map(i=><circle key={i} cx={i*8+4} cy="18" r="4" fill={i%2?'#fff':'#A78BFA'}/>)}
     <rect x="2" y="40" width="60" height="20" rx="3" fill="#C9A27A"/><rect x="0" y="38" width="64" height="4" rx="2" fill="#9C7A58"/>
-  </svg>
-  <span className="st-comp-price">₪{c.pr}</span>
-  {c.fx&&<span className="st-comp-fx">{c.fx}</span>}
-</div>);
+  </svg>}
+  {c.em&&<span className="st-comp-name" dir="rtl">{c.em} {c.n}{c.rate!=null&&<i>{c.off?c.offTxt:'👥 '+c.rate+' בשעה'}</i>}</span>}
+  <span className={"st-comp-price"+(c.cmp?' '+c.cmp:'')} dir="rtl">₪{c.pr}{c.rep!=null&&<> · ⭐{c.rep}</>}</span>
+  {c.rate==null&&c.fx&&<span className="st-comp-fx">{c.fx}</span>}
+</div>;};
 
+// The street's illustrations (art/): each part of the street, twelve people and six stands, cut by their place in the sheet
+const ST_ZONE=['zone-corner','zone-side','zone-center'];
+const SP_P=[[64,183,145,275],[288,147,158,311],[509,160,170,298],[751,154,256,302],[1058,174,164,284],[1319,129,169,330],[50,590,158,293],[281,591,124,292],[485,599,238,284],[787,612,143,271],[1003,593,247,291],[1330,595,156,288]];
+const SP_S=[[51,19,409,465],[562,20,410,464],[1074,19,412,465],[51,533,409,464],[562,533,410,464],[1074,533,413,464]];
+// who comes to a stand, by kind of customer: children, sporty, the chef, and everyone else
+const SP_BY={child:[0,7],athlete:[2,8,1],foodie:[5,11,6]},SP_ADULT=[1,3,4,6,9,10,11];
+const spOf=(type,id)=>{const pool=SP_BY[type]||SP_ADULT;let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;return pool[h%pool.length];};
+const Spr=({i,k,sheet='people',box=SP_P})=>{const b=box[i];return <span className="st-spr" style={{width:b[2]*k,height:b[3]*k,backgroundImage:`url(art/${sheet}.webp)`,backgroundSize:`${1536*k}px ${1024*k}px`,backgroundPosition:`${-b[0]*k}px ${-b[1]*k}px`}}/>;};
+const StandSpr=({col=0,h})=><Spr i={col%6} k={h/465} sheet="stands" box={SP_S}/>;
 // people walking past on the far sidewalk: their number follows how busy the street is right now
-const ST_PASS=Array.from({length:12}).map((_,i)=>({d:9+((i*7)%8),dl:-((i*5.3)%14),c:['#FF7A8A','#5CC8F0','#8E7CF8','#3FBF7F','#FFB84D','#4D6BFF','#E86BC9','#2FB3A8'][i%8],h:['#3A2A20','#1E1B3A','#7A4A26','#C98A3D'][i%4],rev:i%3===1,s:0.74+((i*3)%4)*0.06,b:((i*11)%3)*3}));
+const ST_PASS=Array.from({length:12}).map((_,i)=>({sp:(i*5)%12,d:9+((i*7)%8),dl:-((i*5.3)%14),c:['#FF7A8A','#5CC8F0','#8E7CF8','#3FBF7F','#FFB84D','#4D6BFF','#E86BC9','#2FB3A8'][i%8],h:['#3A2A20','#1E1B3A','#7A4A26','#C98A3D'][i%4],rev:i%3===1,s:0.74+((i*3)%4)*0.06,b:((i*11)%3)*3}));
 const StPasser=({p})=><svg viewBox="0 0 20 44" width="20" height="44" aria-hidden="true"><g className="st-legs"><path className="st-leg1" d="M8 30 L6 43" stroke="#3B3550" strokeWidth="3" strokeLinecap="round"/><path className="st-leg2" d="M12 30 L14 43" stroke="#3B3550" strokeWidth="3" strokeLinecap="round"/></g><rect x="4" y="13" width="12" height="19" rx="5" fill={p.c}/><circle cx="10" cy="7.5" r="5.5" fill="#F5C9A0"/><path d="M4.6 6.5 Q10 0 15.4 6.5 Q10 3.5 4.6 6.5Z" fill={p.h}/></svg>;
 // the light of the hour: cool in the morning, clear at noon, golden in the late afternoon
 const stLight=t=>t==null?null:t<0.18?`rgba(150,190,255,${(0.18-t)*1.1})`:t>0.55?`rgba(255,150,60,${Math.min(0.3,(t-0.55)*0.62)})`:null;
-const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[],tod=null,busy=0.4,fest=false,flash=null})=>{
+const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[],tod=null,busy=0.4,fest=false,flash=null,street=null})=>{
+  const scrollRef=useRef(null),[sl,setSl]=useState(0),[card,setCard]=useState(null);
+  const avgP=street&&street.stands.length?street.stands.reduce((a,t)=>a+(t.pr||0),0)/street.stands.length:0,cmpOf=p=>p<avgP-0.4?'cheap':p>avgP+0.4?'dear':'';
   const wrapRef=useRef(null);const [W,setW]=useState(343);
   useEffect(()=>{if(flash&&['caught','vip','fund','soldout'].includes(flash.type))buzz(flash.type==='caught'?[30,60,30,60,30]:[20,40,20]);},[flash&&flash.k]);
   const actorsRef=useRef(new Map()),queueRef=useRef([]),seenRef=useRef(null),timersRef=useRef([]);
@@ -1149,8 +1225,21 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
     return()=>{if(ro)ro.disconnect();else window.removeEventListener('resize',upd);};},[]);
   useEffect(()=>()=>{timersRef.current.forEach(clearTimeout);timersRef.current=[];},[]);
   const later=(fn,ms)=>{const t=setTimeout(fn,ms);timersRef.current.push(t);if(timersRef.current.length>200)timersRef.current=timersRef.current.slice(-120);};
-  // Geometry (px, ltr): stand centred at 40% of the width; the queue forms to its right
-  const geo=()=>{const w=WRef.current,sx=w*0.4;return{serve:sx+74,gap:38,inX:w+20,outL:-50,outR:w+50};};
+  // The street, left to right: the corner, the side, the centre. Mine takes room for its board on the left and its queue on the right
+  const lay=useMemo(()=>{if(!street)return null;const out=[],zones=[],RIV=118,MINE=380,GAP=34;let x=24,myX=0;
+    [0,1,2].forEach(z=>{const here=street.stands.filter(t=>t.zone===z);if(!here.length)return;const x0=x;out.push({sign:z,x});x+=46;
+      here.forEach(t=>{if(t.me){myX=x+130;x+=MINE;}else{out.push({id:t.id,st:true,x:x+RIV/2});x+=RIV;}});zones.push({z,x0:x0-10,x1:x+GAP/2});x+=GAP;});
+    return{items:out,zones,myX,T:x+10};},[street&&street.stands.map(t=>t.id+':'+t.zone).join(',')]);
+  const layRef=useRef(lay);layRef.current=lay;
+  const T=lay?Math.max(W,lay.T):W;
+  // Geometry (px, ltr): my stand (at 40% of the width alone, in its place on the street in the league); the queue forms to its right
+  const geo=()=>{const w=WRef.current,L=layRef.current,sx=L?L.myX:w*0.4;return L?{serve:sx+74,gap:38,inX:sx+74+Math.min(w*0.62,280),outL:sx-Math.min(w*0.5,220),outR:Math.min(L.T+40,sx+74+560)}:{serve:sx+74,gap:38,inX:w+20,outL:-50,outR:w+50};};
+  // the camera starts on my stand; a tap on a stand in the live table brings it into view
+  const centred=useRef(false);
+  useEffect(()=>{const el=scrollRef.current;if(!el||!lay||centred.current||!W)return;el.scrollLeft=Math.max(0,lay.myX+30-W/2);centred.current=true;},[lay,W]);
+  useEffect(()=>{if(!street)return;const go=e=>{const el=scrollRef.current,L=layRef.current;if(!el||!L)return;const it=L.items.find(i=>i.st&&i.id===e.detail),x=it?it.x:L.myX+30;
+    el.scrollTo({left:Math.max(0,x-WRef.current/2),behavior:'smooth'});wrapRef.current&&wrapRef.current.scrollIntoView({behavior:'smooth',block:'center'});};
+    window.addEventListener('st-goto',go);return()=>window.removeEventListener('st-goto',go);},[!!street]);
   const speed=()=>150/Math.max(260,spdRef.current*0.85); // px per ms — faster days walk faster
   const moveTo=(a,x)=>{const d=Math.abs(x-a.x);a.dur=Math.max(160,d/speed());a.x=x;a.moving=true;const tok=(a.mt=(a.mt||0)+1);
     later(()=>{if(a.mt!==tok)return;a.moving=false;bump();step();},a.dur);};
@@ -1185,7 +1274,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
   const drops=useMemo(()=>Array.from({length:wid==="hRain"?46:30}).map((_,i)=>({l:(i*37)%100+((i*13)%7),d:((i*17)%10)/10,t:0.5+((i*7)%5)/10})),[wid]);
   const actors=[...actorsRef.current.values()];
   const g=geo();
-  return <div ref={wrapRef} className={"st-scene st-w-"+wid+(done?' st-done':'')} dir="ltr">
+  return <div ref={wrapRef} className={"st-scene st-w-"+wid+(done?' st-done':'')+(lay?' st-img':'')} dir="ltr">
     {/* sky */}
     {(()=>{const t=tod==null?null:Math.max(0,Math.min(1,tod)),pos=t==null?null:{left:`calc(${4+t*78}% - 8px)`,top:62-Math.sin(Math.PI*(0.12+t*0.76))*52};
       return sunny?<div className="st-sun st-sun-move" style={pos||undefined}><div className="st-rays"/><div className="st-sun-core"/></div>:<div className="st-sun st-sun-dim st-sun-move" style={pos||undefined}><div className="st-sun-core"/></div>;})()}
@@ -1195,6 +1284,9 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
     <div className="st-cloud" style={{top:44,animationDuration:'70s',animationDelay:'-40s'}}><StCloud w={46} o={0.8}/></div>
     {cloudy&&<><div className="st-cloud" style={{top:8,animationDuration:'38s',animationDelay:'-25s'}}><StCloud w={90} o={0.95}/></div>
       <div className="st-cloud" style={{top:30,animationDuration:'56s',animationDelay:'-5s'}}><StCloud w={78} o={0.9}/></div></>}
+    <div className={"st-scroll"+(lay?' on':'')} ref={scrollRef} onScroll={e=>setSl(e.currentTarget.scrollLeft)}><div className="st-track" style={{width:T}}>
+    {lay&&lay.zones.map((Z,zi)=><div key={'bg'+Z.z} className={"st-zbg"+(zi===0?' first':'')+(zi===lay.zones.length-1?' last':'')} style={{left:zi===0?0:Z.x0-26,width:(zi===lay.zones.length-1?T:Z.x1+26)-(zi===0?0:Z.x0-26),backgroundImage:`url(art/${ST_ZONE[Z.z]}.webp)`}}/>)}
+    {!lay&&Array.from({length:Math.max(1,Math.ceil(T/Math.max(1,W)))}).map((_,ti)=><div key={ti} className="st-tile" style={{left:ti*W,width:W}}>
     {/* far skyline */}
     <svg className="st-skyline" viewBox="0 0 400 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       <g opacity="0.55">
@@ -1205,12 +1297,16 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
     </svg>
     <svg className="st-trees" viewBox="0 0 400 80" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       {[[18,46],[70,40],[190,44],[232,50],[318,42],[376,48]].map(([x,r],i)=><g key={i}><rect x={x-3} y="52" width="6" height="28" fill="#8C6A4F"/><circle cx={x} cy={80-r} r={r*0.42} fill={i%2?'#6BCB77':'#4FB06A'}/><circle cx={x-8} cy={86-r} r={r*0.3} fill={i%2?'#5DBE6B':'#45A35F'}/></g>)}
-    </svg>
-    {/* competitors, back layer */}
-    {comps.slice(0,3).map((c,i)=><div key={i} className="st-comp-wrap" style={i===0?{left:'1%'}:i===1?{right:'1%'}:{left:'64%'}}><StComp c={c}/></div>)}
+    </svg></div>)}
+    {/* competitors, back layer: alone, three around me; in the league, every stand in its part of the street */}
+    {lay?lay.items.map(it=>it.sign!=null?<div key={'z'+it.sign} className="st-zsign" style={{left:it.x}} dir="rtl"><b>{LOC[it.sign].em}</b><span>{LOC[it.sign].n}</span></div>
+      :(c=>c&&<div key={it.id} className="st-comp-wrap st-at" style={{left:it.x}}><StComp c={{...c,cmp:cmpOf(c.pr),onTap:setCard}}/></div>)(street.stands.find(t=>t.id===it.id)))
+     :comps.slice(0,3).map((c,i)=><div key={c.id||i} className="st-comp-wrap" style={i===0?{left:'1%'}:i===1?{right:'1%'}:{left:'64%'}}><StComp c={c}/></div>)}
     {/* ground */}
     <div className="st-sidewalk"/>
-    <div className="st-passers" aria-hidden="true">{ST_PASS.slice(0,done?0:Math.round(1+Math.max(0,Math.min(1,busy))*11)).map((p,i)=><span key={i} className={"st-pass"+(p.rev?' rev':'')} style={{animationDuration:(p.d*(rainy?0.8:1))+'s',animationDelay:p.dl+'s',bottom:p.b,transform:`scale(${p.s})`}}><i style={{animationDuration:(0.5+i%3*0.08)+'s'}}><StPasser p={p}/></i></span>)}</div>
+    {lay?<div className="st-passers" aria-hidden="true">{lay.zones.flatMap(Z=>{const w=Z.x1-Z.x0,n=done?0:Math.max(1,Math.round(LOC[Z.z].dm*(0.4+Math.max(0,Math.min(1,busy)))*w/90));
+      return ST_PASS.slice(0,Math.min(12,n)).map((p,i)=><span key={Z.z+'-'+i} className={"st-pass st-pz"+(p.rev?' rev':'')} style={{'--a':Z.x0+'px','--b':Z.x1+'px',animationDuration:(p.d*(rainy?0.8:1)*w/300)+'s',animationDelay:(p.dl*w/300)+'s',bottom:p.b,transform:`scale(${0.9+p.s*0.12})`}}><i style={{animationDuration:(0.5+i%3*0.08)+'s'}}><Spr i={p.sp} k={0.125}/></i></span>);})}</div>
+    :<div className="st-passers" aria-hidden="true">{ST_PASS.slice(0,done?0:Math.round(1+Math.max(0,Math.min(1,busy))*11)).map((p,i)=><span key={i} className={"st-pass"+(p.rev?' rev':'')} style={{animationDuration:(p.d*(rainy?0.8:1)*T/Math.max(1,W))+'s',animationDelay:p.dl+'s',bottom:p.b,transform:`scale(${0.9+p.s*0.12})`}}><i style={{animationDuration:(0.5+i%3*0.08)+'s'}}><Spr i={p.sp} k={0.125}/></i></span>)}</div>}
     <div className="st-road"><div className="st-lane"/><div className="st-car"><svg viewBox="0 0 60 26" width="60" height="26" aria-hidden="true"><rect x="2" y="10" width="56" height="11" rx="5" fill="#FF5C7A"/><path d="M14 10 Q18 2 28 2 L38 2 Q45 2 48 10 Z" fill="#FF5C7A"/><path d="M18 9.5 Q21 4 28 4 L30 4 L30 9.5 Z M32 4 L37 4 Q42 4 45 9.5 L32 9.5 Z" fill="#CDEBFF"/><circle cx="15" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="45" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="15" cy="21" r="1.8" fill="#C9C6E0"/><circle cx="45" cy="21" r="1.8" fill="#C9C6E0"/><rect x="54" y="12" width="4" height="3" rx="1" fill="#FFE14D"/></svg></div></div>
     {rainy&&<div className="st-rain">{drops.map((d,i)=><span key={i} style={{left:d.l+'%',animationDelay:d.d+'s',animationDuration:d.t+'s'}}/>)}</div>}
     {/* price board */}
@@ -1227,6 +1323,13 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
     {acts.includes('social')&&<div className="st-hearts" style={{left:g.serve-74-20}}>{[0,1,2].map(k=><span key={k} style={{animationDelay:k*0.9+'s',left:k*14}}>{['❤️','👍','📱'][k]}</span>)}</div>}
     {/* the stand */}
     <div className="st-stand" style={{left:g.serve-74-70}}>
+      {lay&&(m=>m&&<span className={"st-me"+(cmpOf(m.pr)?' '+cmpOf(m.pr):'')} dir="rtl">⬇ אתה{m.rep!=null?' · ⭐'+m.rep:''}{m.rate!=null?' · 👥 '+m.rate+' בשעה':''}</span>)(street.stands.find(t=>t.me))}
+      {lay?<>
+      <div className="st-seller-wrap st-seller-img"><StSeller key={serveKey} serving={serveKey>0&&!done} closed={done}/></div>
+      <div className="st-stand-img"><StandSpr col={(street.stands.find(t=>t.me)||{}).col||0} h={150}/></div>
+      <span className="st-left" dir="rtl">{cupsLeft>0?`נשארו ${cupsLeft} כוסות`:'נגמרו הכוסות'}</span>
+      {done&&<span className="st-closed-img">סגור</span>}
+      </>:<>
       <svg className="st-stand-back" viewBox="0 0 140 150" width="140" height="150" aria-hidden="true">
         <rect x="14" y="42" width="112" height="56" fill="#FFF3D6"/>
         <rect x="8" y="34" width="7" height="72" fill="#B07A44"/><rect x="125" y="34" width="7" height="72" fill="#B07A44"/>
@@ -1260,6 +1363,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
         <text x="70" y="142" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#fff" fontFamily="Rubik,sans-serif">{cupsLeft>0?`נשארו ${cupsLeft} כוסות`:'נגמרו הכוסות'}</text>
         {done&&<g className="st-closed"><line x1="52" y1="38" x2="58" y2="56" stroke="#5B4636" strokeWidth="1.5"/><line x1="88" y1="38" x2="82" y2="56" stroke="#5B4636" strokeWidth="1.5"/><rect x="44" y="54" width="52" height="22" rx="4" fill="#E63946" stroke="#fff" strokeWidth="2"/><text x="70" y="70" textAnchor="middle" fontSize="12" fontWeight="900" fill="#fff" fontFamily="Rubik,sans-serif">סגור</text></g>}
       </svg>
+      </>}
       <div className="st-coins">{coins.map(c=><span key={c.id} className="st-coin">🪙 +₪{c.p}</span>)}</div>
     </div>
     {/* customers */}
@@ -1269,10 +1373,24 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
         {a.bubble&&<div className={"st-bubble st-b-"+stMood(a.ev.rx)+(a.ev.isVip?' st-b-vip':'')} style={{bottom:kid?86:104}} dir="rtl"><span className="st-b-em">{ST_EM[a.ev.rx]||a.ev.rx}</span><span className="st-b-tx">{txt}</span></div>}
         <div className={"st-flip"+(a.flip?' st-flipped':'')}>
           <div className={"st-body"+(kid?' st-kid':'')+(a.shake?' st-shake':'')+(a.ev.isVip?' st-vip':'')}>
-            <StPerson ev={a.ev} mood={a.mood||'flat'} hasCup={!!a.hasCup} rainy={rainy} branded={ups.includes('cups')}/>
+            {lay?<><span className="st-face-l"><Spr i={a.ev.isVip?5:spOf(a.ev.type,a.id)} k={kid?0.22:0.27}/></span>{a.hasCup&&<b className="st-cup">🥤</b>}</>
+             :<StPerson ev={a.ev} mood={a.mood||'flat'} hasCup={!!a.hasCup} rainy={rainy} branded={ups.includes('cups')}/>}
           </div>
         </div>
       </div>;})}
+    </div></div>
+    {lay&&(()=>{const st=lay.items.filter(i=>i.st),lf=st.filter(i=>i.x<sl+16).length,rt=st.filter(i=>i.x>sl+W-16).length,go=d=>scrollRef.current&&scrollRef.current.scrollBy({left:d*W*0.8,behavior:'smooth'});
+      const meL=lay.myX+70<sl,meR=lay.myX-70>sl+W,home=()=>scrollRef.current&&scrollRef.current.scrollTo({left:Math.max(0,lay.myX+30-W/2),behavior:'smooth'});
+      return <>{lf>0&&<button className="st-edge l" onClick={()=>go(-1)} aria-label={lf+' דוכנים משמאל'}>◀ {lf}</button>}{rt>0&&<button className="st-edge r" onClick={()=>go(1)} aria-label={rt+' דוכנים מימין'}>{rt} ▶</button>}
+       {(meL||meR)&&<button className={"st-edge home "+(meL?'l':'r')} onClick={home}>{meL?'◀ ':''}🍋 הדוכן שלך{meR?' ▶':''}</button>}</>;})()}
+    {card&&(c=>c&&<div className="st-card" dir="rtl" onClick={()=>setCard(null)}>
+      <div className="st-card-h"><b>{c.em} {c.n}</b><span>✕</span></div>
+      <div className="st-card-r"><span>מחיר</span><b className={cmpOf(c.pr)}>₪{c.pr}</b><small>{cmpOf(c.pr)==='cheap'?'זול מהממוצע':cmpOf(c.pr)==='dear'?'יקר מהממוצע':'כמו הממוצע'} (₪{Math.round(avgP*10)/10})</small></div>
+      <div className="st-card-r"><span>מוניטין</span><b>⭐ {c.rep}</b><small>{c.rep>=70?'קונים סומכים עליו':c.rep<45?'קונים נזהרים ממנו':'בינוני'}</small></div>
+      <div className="st-card-r"><span>עד עכשיו</span><b>{c.vis} הגיעו · {c.sold} קנו</b><small>{c.vis?Math.round(100*c.sold/c.vis)+'% קנו':''}</small></div>
+      <div className="st-card-r"><span>בשעה האחרונה</span><b>👥 {c.rate}</b><small>{c.off?c.offTxt:''}</small></div>
+      {c.mk&&<div className="st-card-r"><span>שיווק היום</span><b>{c.mk}</b></div>}
+    </div>)(street&&street.stands.find(t=>t.id===card))}
     {stLight(tod)&&!done&&<div className="st-light" style={{background:stLight(tod)}}/>}
     {flash&&<div key={flash.k} className={"st-flash st-f-"+flash.type}>{flash.type==='fund'&&Array.from({length:18}).map((_,i)=><b key={i} style={{left:(i*37)%100+'%',background:['#FF5C7A','#FFC800','#5CC8F0','#8E7CF8','#3FBF7F'][i%5],animationDelay:(i%6)*0.08+'s'}}/>)}</div>}
     {done&&<div className="st-dusk"/>}
@@ -1493,7 +1611,7 @@ const loadCfg=()=>{try{return{...CFG0,...JSON.parse(localStorage.getItem('lm-cfg
 const reduced=()=>document.documentElement.classList.contains('reduce');
 // Short synthesized sound effects (no files needed)
 const SFX={on:true,ac:null};
-const buzz=p=>{try{if(SFX.on&&navigator.vibrate)navigator.vibrate(p);}catch(_){}};
+const buzz=p=>{try{if(SFX.on&&navigator.vibrate&&(!navigator.userActivation||navigator.userActivation.hasBeenActive))navigator.vibrate(p);}catch(_){}};
 const NOTES={coin:[[988,.05],[1319,.12,.05]],pop:[[520,.07,0,'sine',900]],sell:[[880,.09],[1175,.12,.07]],tap:[[1100,.025,0,'sine']],
  register:[[1568,.07,0,'square'],[2093,.28,.08,'triangle']],fanfare:[[523,.12],[659,.12,.12],[784,.12,.24],[1047,.35,.36]],
  stamp:[[110,.18,0,'square',60]],whoosh:[[420,.35,0,'sawtooth',90]],sparkle:[[1568,.06],[2093,.06,.06],[2637,.12,.12]]};
@@ -2025,7 +2143,7 @@ function Game(){
  const forecastBuy=(e,f)=>{if(hood){hoodForecast(e,f);return;}if(fcast||free<f.c)return;pay(f.c,'intel');flyCoin(e,'−₪'+f.c);setFcast(LemonEngine.makeForecast(G,f));};
 
  /* ── Neighborhood mode: the server's day shown in these same screens ── */
- const [,hoodClock]=useState(0),[hoodMsg,setHoodMsg]=useState(null),[hoodAlerts,setHoodAlerts]=useState([]),[hoodCounts,setHoodCounts]=useState({});
+ const [,hoodClock]=useState(0),[hoodMsg,setHoodMsg]=useState(null),[hoodAlerts,setHoodAlerts]=useState([]),[hoodCounts,setHoodCounts]=useState({}),[hoodStreet,setHoodStreet]=useState([]);
  const hoodKey=useRef(''),hoodAfter=useRef(-1),hoodMoves=useRef({}),[hoodMoments,setHoodMoments]=useState(null);
  // the live table: every stand by its takings so far (prices are public from 08:00, sales are counted as they happen)
  const hoodLiveOrder=c=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];return op.stands.map(s=>({id:s.id,v:((c[s.id]||{}).sold||0)*s.price})).sort((a,b)=>b.v-a.v).map(x=>x.id);};
@@ -2039,7 +2157,7 @@ function Game(){
  // leaving a neighborhood: nothing of it may carry into a regular game
  // the leagues still running, for the home screen. Only for someone who already has a neighborhood account
  useEffect(()=>{if(phase!=='title'||!sbLoad())return;hoodRpc('lm_my_hoods',{}).then(l=>setHomeHoods((l||[]).filter(h=>h.status!=='done'))).catch(()=>{});},[phase]);
- const leaveHood=()=>{setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);hoodSnap.current='';
+ const leaveHood=()=>{setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);setHoodStreet([]);hoodSnap.current='';
   setDay(1);setCash(80);setLoan(0);setLemons([{q:40,d:1}]);setSugar(0);setIce(0);setRep(50);setBuy({l:0,h:0,i:0});setRecipe({l:3,h:1,i:1});setPrice(6);setCupsWanted(20);setLoc(1);setHelper(false);
   setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');setPhase('hood');};
  useEffect(()=>{if(!hood||!hood.id)return;const t=setInterval(()=>hoodLoad().catch(()=>{}),30000),c=setInterval(()=>hoodClock(x=>x+1),1000);return()=>{clearInterval(t);clearInterval(c);};},[hood&&hood.id]);
@@ -2063,7 +2181,7 @@ function Game(){
   // during the day: the plan the server ran (or, if it didn't send one, the decision this device saved)
   if(ph==='sim'){let p=st.me.plan;if(!p){try{p=JSON.parse(localStorage.getItem('lm-hood-dec-'+hood.id+'-'+d)||'null');}catch(_){}}p=p||{};
    if(p.recipe)setRecipe(p.recipe);if(p.price)setPrice(p.price);setCupsWanted(p.cups||0);setHoodCups(p.cups!=null?p.cups:null);if(p.loc!=null)setLoc(p.loc);setHelper(!!p.helper);
-   setActs([...(p.mk||[]),...(p.bh||[]).map(b=>b.id)]);hoodAfter.current=-1;setHoodAlerts([]);setHoodCounts({});simFast.current=false;
+   setActs([...(p.mk||[]),...(p.bh||[]).map(b=>b.id)]);hoodAfter.current=-1;setHoodAlerts([]);setHoodStreet([]);setHoodCounts({});simFast.current=false;
    setSim({list:[],shown:[],sold:0,rev:0,walk:0,done:false,live:true,mid:null,midSur:null,meSick:false,sickR:[]});setPhase('sim');
    const op=(st.opened||{})[st.today];setShow({kind:'dawn',wx:op?op.weather.w:'sunny',l1:`יום ${d}`,l2:'הדוכנים נפתחו'});return;}
   if(ph==='report'&&st.me.days&&st.me.days[d]){setReport(hoodReport(st,d));setPhase('report');return;}
@@ -2129,6 +2247,7 @@ function Game(){
      if(e.type==='caught')b.caught=1;if(e.type==='vip')b.vip=e.ok?'🌟':'😤';});
     // who moved up or down the live table since the last update
     const before=hoodLiveOrder(c),after=hoodLiveOrder(n);hoodMoves.current=!Object.keys(c).length?{}:Object.fromEntries(after.map((id,i)=>[id,before.indexOf(id)<0?0:before.indexOf(id)-i]));return n;});
+   setHoodStreet(a=>[...a,...ev.filter(e=>e.stand&&['sale','walk','miss'].includes(e.type)).map((e,k)=>({id:e.stand+'-'+e.m+'-'+k+'-'+hoodAfter.current,stand:e.stand,buys:e.type==='sale',m:e.m}))]);
    setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,m:e.m,t,type:e.type,ok:e.ok};}).filter(Boolean)].slice(-12));
    const closed=ev.some(e=>e.type==='close');setSim(s=>s?{...s,list:[...s.list,...mine],live:!closed}:s);}catch(_){}};
   pull();const t=setInterval(pull,15000);return()=>{alive=false;clearInterval(t);};},[hood&&hood.id,phase,hst&&hst.today]);
@@ -2439,13 +2558,21 @@ function Game(){
 
  // in a neighborhood the other stands are the players' (their price and place came out at 08:00; their sales are counted live)
  const hoodComps=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];const names=hoodNames(hst);
-  const top=Math.max(1,...op.stands.map(x=>(hoodCounts[x.id]||{}).sold||0));
-  return op.stands.filter(x=>x.id!==hst.me.id).slice().sort((a,b)=>((hoodCounts[b.id]||{}).sold||0)-((hoodCounts[a.id]||{}).sold||0)).map(x=>{const c=hoodCounts[x.id]||{sold:0},off=!!(x.closed||c.sick||c.out);return{n:names[x.id]?.nick||'?',pr:x.price,off,q:off?0:Math.round(3*(c.sold||0)/top),
+  const prev=((hst.results||{})[hst.today-1])||[],nowM=Math.max(NB.OPEN*60,hoodAfter.current||0);
+  return op.stands.filter(x=>x.id!==hst.me.id).map(x=>{const c=hoodCounts[x.id]||{sold:0},off=!!(x.closed||c.sick||c.out),mine=hoodStreet.filter(e=>e.stand===x.id);
+   return{id:x.id,col:op.stands.indexOf(x),zone:x.loc,em:names[x.id]?.em,n:(names[x.id]?.nick||'?').split(' ')[0],pr:x.price,off,evs:mine,rep:(prev.find(r=>r.id===x.id)||{}).rep??50,vis:c.vis||0,sold:c.sold||0,rate:mine.filter(e=>e.m>nowM-60).length,
+    offTxt:x.closed?'🔒 סגור':c.sick?'🤒 סגר':c.out?'💨 אזלו הכוסות':'',mk:[...x.mk.map(id=>MK_EM[id]),...x.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em),...(x.helper?['🧑‍💼']:[])].join(''),
    fx:c.sick?'🤒 סגור':c.out?'💨 אזל':[...x.mk.map(id=>MK_EM[id]),...x.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em),...(x.helper?['🧑‍💼']:[]),c.caught?'🚨':''].join('')+` · ${c.sold}☕`};});};
  // the hour of the day as 0..1 (08:00 to 17:00), and how busy the street is in that hour
  const stMin=at=>{const m=/^(\d+):(\d+)/.exec(at||'');return m?+m[1]*60+ +m[2]:null;};
  const stTod=(last,s)=>{const m=hood&&last?stMin(last.at):null;if(m!=null)return(m-NB.OPEN*60)/((NB.CLOSE-NB.OPEN)*60);if(hood&&!last)return 0;return s.list.length?s.shown.length/s.list.length:0;};
  const stBusy=(last,s)=>{const t=Math.max(0,Math.min(0.999,stTod(last,s)??0)),h=NB.HOURS[Math.floor(t*NB.HOURS.length)],top=Math.max(...NB.HOURS);return Math.min(1,(h/top)*Math.min(1.15,0.45+s.list.length/60));};
+ const soloStreet=s=>{const t=s.list.length?s.shown.length/s.list.length:0,fx=c=>[...c.mk.map(id=>MK_EM[id]),...c.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(x=>x.id===u).em),...(c.helper?['🧑‍💼']:[])].join('');
+  const nShown=s.shown.length,hr=Math.max(0,Math.floor(s.list.length*(t-1/9)));
+  return{stands:[{id:'me',me:true,col:0,zone:loc,pr:price,rep:Math.round(rep),vis:nShown,sold:s.sold,rate:Math.max(0,nShown-hr)},...rivalsToday.map((b,i)=>{let d={vis:0,sold:0};try{const d0=b.cups>0?LemonEngine.rivalDemand(G,b,plans,temp,wInfo.fm,W.ev?.dm,false):d,sick=!!(W.sick||[])[b.i+1],aft=0.5+0.5*(sick?0:(W.sur?W.sur.f:1));d={vis:Math.round(d0.vis*aft),sold:Math.min(b.cups||0,Math.round(d0.sold*aft))};}catch(_){}
+   const sickNow=!!(W.sick||[])[b.i+1]&&s.mid!=null&&s.shown.length>=s.mid,evs=[];for(let k=0;k<d.vis;k++){const at=(k+0.5)/Math.max(1,d.vis);if(at>t)break;evs.push({id:'r'+i+'-'+day+'-'+k,at,buys:Math.floor((k+1)*d.sold/Math.max(1,d.vis))>Math.floor(k*d.sold/Math.max(1,d.vis))});}
+   const sold=evs.filter(e=>e.buys).length,out=b.cups>0&&sold>=b.cups&&t>0.2;return{id:'r'+i,col:i+1,zone:loc,em:b.em,n:(b.n||'').split(' ')[0],pr:b.pr,rep:b.st?Math.round(b.st.rep):null,vis:evs.length,sold,rate:evs.filter(e=>e.at>t-1/9).length,
+    off:sickNow||out||b.cups===0,offTxt:sickNow?'🤒 סגר':b.cups===0?'🔒 סגור':out?'💨 אזלו הכוסות':'',mk:fx(b),evs:sickNow?[]:evs};})]};};
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1],aft=s.mid!=null&&s.shown.length>=s.mid&&(s.midSur||s.meSick||(s.sickR||[]).some(Boolean));
   const behind=hood&&s.live&&s.list.length-s.shown.length>4;
   return <div className="simwrap">
@@ -2454,7 +2581,8 @@ function Game(){
   {aft&&<div className={"sim-alert"+(s.meSick||(s.midSur&&s.midSur.f<1)?' bad':' good')} key="aft">{s.meSick?'🤒 חטפת חום! סוגרים את הדוכן מוקדם':s.midSur?s.midSur.n+'!':''}{(s.sickR||[]).map((x,i)=>x?<span key={i}> · 🤒 {rivalsToday[i]?.n} חלה וסגר</span>:null)}</div>}
   {(!hood||(hst&&hst.today&&(hst.opened||{})[hst.today]))&&(()=>{const wx=WE[aft&&s.midSur?s.midSur.wx:W.w]||wInfo,op=hood&&(hst.opened||{})[hst.today],mine=x=>(hoodCounts[x.id]?.sold||0)*x.price,me=op&&op.stands.find(x=>x.id===hst.me.id),place=me?1+op.stands.filter(x=>x.id!==me.id&&mine(x)>mine(me)).length:0;
    return <div className="sim-info"><span>{wx.em} {wx.n} <b className="num">{aft&&s.midSur&&s.midSur.f>1?temp+4:temp}°</b></span><span>מחיר <b className="num">₪{price}</b></span><span>מתכון <b>{recipe.l}🍋{recipe.h}🍬{recipe.i}🧊</b></span>{me&&<span>מקום בהכנסות היום <b className="num">{place}/{op.stands.length}</b></span>}{W.ev&&<span>{W.ev.n}</span>}{op&&op.fund&&<span>🎪 קרן הרחוב: <b>{op.fund.ok?'הגיעה ליעד':'לא הגיעה ליעד'}</b></span>}</div>;})()}
-  <StreetScene tod={stTod(last,s)} busy={stBusy(last,s)} fest={!!(hood&&hst&&((hst.opened||{})[hst.today]||{}).fund&&hst.opened[hst.today].fund.ok)} flash={hood&&hoodAlerts.length?{k:hoodAlerts.length+'-'+hoodAlerts[hoodAlerts.length-1].m,type:(a=>a.type==='fund'&&!a.ok?'fundno':a.type)(hoodAlerts[hoodAlerts.length-1])}:null} events={s.shown.slice(-12)} spd={s.live?(behind?220:1100):s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,(hood?hoodCups||0:cups)-s.sold)} cupsTotal={hood?hoodCups||0:cups}
+  <StreetScene street={hood?(()=>{const op=hst&&(hst.opened||{})[hst.today],mine=op&&op.stands.find(x=>x.id===hst.me.id);const nowM=Math.max(NB.OPEN*60,hoodAfter.current||0),c=hoodCounts[hst.me.id]||{};
+    return op&&mine?{stands:[{id:hst.me.id,me:true,col:op.stands.indexOf(mine),zone:mine.loc,pr:mine.price,rep:(hst.me.state||{}).rep,vis:c.vis||0,sold:c.sold||0,rate:hoodStreet.filter(e=>e.stand===hst.me.id&&e.m>nowM-60).length},...hoodComps()]}:null;})():soloStreet(s)} tod={stTod(last,s)} busy={stBusy(last,s)} fest={!!(hood&&hst&&((hst.opened||{})[hst.today]||{}).fund&&hst.opened[hst.today].fund.ok)} flash={hood&&hoodAlerts.length?{k:hoodAlerts.length+'-'+hoodAlerts[hoodAlerts.length-1].m,type:(a=>a.type==='fund'&&!a.ok?'fundno':a.type)(hoodAlerts[hoodAlerts.length-1])}:null} events={s.shown.slice(-12)} spd={s.live?(behind?220:1100):s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,(hood?hoodCups||0:cups)-s.sold)} cupsTotal={hood?hoodCups||0:cups}
    weather={{id:aft&&s.midSur?s.midSur.wx:W.w,temp:aft&&s.midSur&&s.midSur.f>1?temp+4:temp}} comps={hood?hoodComps():rivalsToday.map((c,i)=>({n:c.n,pr:c.pr,fx:aft&&(s.sickR||[])[i]?'🤒 סגור':[...c.mk.map(id=>MK_EM[id]),...c.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(x=>x.id===u).em),...(c.helper?['🧑‍💼']:[])].join('')}))} done={s.done||(aft&&s.meSick)} ups={ups} acts={acts}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}{!hood?<i>/{cups}</i>:hoodCups!=null?<i>/{hoodCups}</i>:null}</b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
    {hood?<div><small>{s.live?'נסגר בעוד':'הדוכנים'}</small><b className="num">{s.live&&hst&&hst.today?clockTxt(openMs(hst.hood.start,hst.today)+9*36e5-hNow):'נסגרו'}</b></div>:<div><small>לא קנו</small><b className="num r">{s.walk}</b></div>}</div>
@@ -2475,7 +2603,7 @@ function Game(){
  const HoodLive=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return null;const names=hoodNames(hst),order=hoodLiveOrder(hoodCounts),mv=hoodMoves.current;
   return <><section className="blk hd-live"><div className="blk-h"><h3>🏘️ הרחוב עכשיו</h3><span className="tag">{sim&&sim.live?'מתעדכן כל 15 שניות':'סוף היום'}</span></div>
    {order.map((id,i)=>{const s=op.stands.find(x=>x.id===id),c=hoodCounts[id]||{sold:0},m=names[id]||{},d=mv[id]||0;
-    return <div key={id} className={"hd-lrow"+(id===hst.me.id?' me':'')+(d>0?' up':d<0?' dn':'')}>
+    return <div key={id} className={"hd-lrow"+(id===hst.me.id?' me':'')+(d>0?' up':d<0?' dn':'')} role="button" onClick={()=>window.dispatchEvent(new CustomEvent('st-goto',{detail:id===hst.me.id?null:id}))}>
      <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
      <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
      <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">🚨 נתפס</i>:null}{c.saved?<i>🚨 האבטחה עצרה</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
