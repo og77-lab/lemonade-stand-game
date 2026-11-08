@@ -785,6 +785,32 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-w-hRain { background: linear-gradient(180deg, #4D5D72 0%, #8392A5 60%, #B5C0CC 100%); }
     .st-w-cold { background: linear-gradient(180deg, #8FA7C2 0%, #C5D3E3 60%, #E8EEF5 100%); }
     .st-sun { position: absolute; top: 14px; left: 16px; width: 70px; height: 70px; z-index: 0; }
+    .st-sun-move { transition: left 2.5s linear, top 2.5s linear; }
+    .st-bunting { position: absolute; left: 0; top: 0; width: 100%; height: 40px; z-index: 6; animation: stBunt 3.2s ease-in-out infinite alternate; transform-origin: top center; }
+    @keyframes stBunt { from { transform: rotate(-0.6deg); } to { transform: rotate(0.6deg); } }
+    .st-passers { position: absolute; left: 0; right: 0; bottom: 104px; height: 40px; z-index: 4; pointer-events: none; }
+    .st-pass { position: absolute; left: 0; bottom: 0; transform-origin: bottom center; animation: stPassR linear infinite; opacity: 0.92; filter: saturate(0.85); }
+    .st-pass.rev { animation-name: stPassL; }
+    .st-pass.rev > i { transform: scaleX(-1); }
+    .st-pass > i { display: block; animation: stPBob 0.5s ease-in-out infinite alternate; }
+    .st-pass .st-leg1 { animation: stLeg 0.5s ease-in-out infinite alternate; transform-origin: 8px 30px; }
+    .st-pass .st-leg2 { animation: stLeg 0.5s ease-in-out infinite alternate-reverse; transform-origin: 12px 30px; }
+    @keyframes stPassR { from { left: -30px; } to { left: calc(100% + 30px); } }
+    @keyframes stPassL { from { left: calc(100% + 30px); } to { left: -30px; } }
+    @keyframes stPBob { from { translate: 0 0; } to { translate: 0 -1.5px; } }
+    @keyframes stLeg { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+    .st-light { position: absolute; inset: 0; z-index: 44; pointer-events: none; mix-blend-mode: multiply; transition: background 3s linear; }
+    .st-flash { position: absolute; inset: 0; z-index: 46; pointer-events: none; }
+    .st-f-caught { animation: stSiren 0.5s steps(1) 4; }
+    @keyframes stSiren { 0% { box-shadow: inset 0 0 60px 20px rgba(255,40,60,0.7); } 50% { box-shadow: inset 0 0 60px 20px rgba(40,110,255,0.7); } 100% { box-shadow: none; } }
+    .st-f-vip { background: radial-gradient(circle at 46% 62%, rgba(255,240,170,0.55), transparent 42%); animation: stGlow 2.4s ease-out both; }
+    .st-f-surprise, .st-f-event { background: rgba(255,255,255,0.7); animation: stBlink 0.9s ease-out both; }
+    .st-f-soldout, .st-f-sick, .st-f-fundno { background: rgba(40,30,60,0.35); animation: stGlow 1.8s ease-out both; }
+    @keyframes stGlow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes stBlink { 0% { opacity: 1; } 100% { opacity: 0; } }
+    .st-f-fund b { position: absolute; top: -10px; width: 7px; height: 11px; border-radius: 2px; animation: stConf 2.2s ease-in both; }
+    @keyframes stConf { to { transform: translateY(340px) rotate(540deg); opacity: 0.6; } }
+    @media (prefers-reduced-motion: reduce) { .st-pass, .st-pass > i, .st-pass path, .st-bunting, .st-flash, .st-flash b { animation: none !important; } .st-pass { display: none; } }
     .st-rays { position: absolute; inset: -18px; border-radius: 50%; background: repeating-conic-gradient(rgba(255,236,140,0.55) 0deg 9deg, transparent 9deg 22deg); -webkit-mask: radial-gradient(circle, #000 35%, transparent 70%); mask: radial-gradient(circle, #000 35%, transparent 70%); animation: stSpin 30s linear infinite; }
     .st-sun-core { position: absolute; inset: 12px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #FFFBD0 0%, #FFE14D 45%, #FFB800 100%); box-shadow: 0 0 36px 10px rgba(255,210,60,0.55); }
     .st-sun-dim { opacity: 0.35; filter: blur(1px); }
@@ -807,7 +833,10 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-w-lRain .st-trees, .st-w-hRain .st-trees { filter: saturate(0.6) brightness(0.85); }
     .st-w-lRain .st-sun, .st-w-hRain .st-sun { display: none; }
     .st-comp-wrap { position: absolute; bottom: 110px; z-index: 2; transform: scale(0.7); transform-origin: bottom center; }
-    .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; transition: opacity .6s, filter .6s; }
+    .st-comp-off { opacity: 0.6; filter: grayscale(0.7); }
+    .st-cq { position: absolute; bottom: 0; left: 100%; margin-left: -6px; display: flex; gap: 1px; }
+    .st-cq i { display: block; width: 20px; animation: stPBob 1.1s ease-in-out infinite alternate; }
     .st-comp-price { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #fff; color: #5B21B6; font-weight: 900; font-size: 13px; padding: 1px 8px; border-radius: 8px; box-shadow: 0 2px 0 #C4B5FD; white-space: nowrap; }
     .st-board { position: absolute; bottom: 56px; z-index: 6; animation: stSway 4s ease-in-out infinite; transform-origin: bottom center; }
     .st-stand { position: absolute; bottom: 56px; width: 140px; height: 150px; z-index: 5; }
@@ -1090,7 +1119,8 @@ const StSeller=({serving,closed})=>(
 const StCloud=({w=70,o=1})=>(<svg viewBox="0 0 70 34" width={w} height={w*34/70} style={{opacity:o}} aria-hidden="true">
   <path d="M14 30 Q2 30 4 21 Q6 13 15 15 Q17 4 30 5 Q41 3 45 13 Q55 9 60 17 Q69 19 66 27 Q64 31 56 30 Z" fill="#fff"/></svg>);
 
-const StComp=({c})=>(<div className="st-comp">
+const StComp=({c})=>(<div className={"st-comp"+(c.off?' st-comp-off':'')}>
+  {c.q>0&&<div className="st-cq" aria-hidden="true">{ST_PASS.slice(3,3+c.q).map((p,i)=><i key={i} style={{animationDelay:i*0.3+'s'}}><StPasser p={p}/></i>)}</div>}
   <svg viewBox="0 0 64 60" width="64" height="60" aria-hidden="true">
     <rect x="5" y="18" width="4" height="24" fill="#8C6A4F"/><rect x="55" y="18" width="4" height="24" fill="#8C6A4F"/>
     {[0,1,2,3,4,5,6,7].map(i=><rect key={i} x={i*8} y="8" width="8" height="10" fill={i%2?'#fff':'#A78BFA'}/>)}
@@ -1101,8 +1131,14 @@ const StComp=({c})=>(<div className="st-comp">
   {c.fx&&<span className="st-comp-fx">{c.fx}</span>}
 </div>);
 
-const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[]})=>{
+// people walking past on the far sidewalk: their number follows how busy the street is right now
+const ST_PASS=Array.from({length:12}).map((_,i)=>({d:9+((i*7)%8),dl:-((i*5.3)%14),c:['#FF7A8A','#5CC8F0','#8E7CF8','#3FBF7F','#FFB84D','#4D6BFF','#E86BC9','#2FB3A8'][i%8],h:['#3A2A20','#1E1B3A','#7A4A26','#C98A3D'][i%4],rev:i%3===1,s:0.74+((i*3)%4)*0.06,b:((i*11)%3)*3}));
+const StPasser=({p})=><svg viewBox="0 0 20 44" width="20" height="44" aria-hidden="true"><g className="st-legs"><path className="st-leg1" d="M8 30 L6 43" stroke="#3B3550" strokeWidth="3" strokeLinecap="round"/><path className="st-leg2" d="M12 30 L14 43" stroke="#3B3550" strokeWidth="3" strokeLinecap="round"/></g><rect x="4" y="13" width="12" height="19" rx="5" fill={p.c}/><circle cx="10" cy="7.5" r="5.5" fill="#F5C9A0"/><path d="M4.6 6.5 Q10 0 15.4 6.5 Q10 3.5 4.6 6.5Z" fill={p.h}/></svg>;
+// the light of the hour: cool in the morning, clear at noon, golden in the late afternoon
+const stLight=t=>t==null?null:t<0.18?`rgba(150,190,255,${(0.18-t)*1.1})`:t>0.55?`rgba(255,150,60,${Math.min(0.3,(t-0.55)*0.62)})`:null;
+const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id:'sunny',temp:25},comps=[],done=false,ups=[],acts=[],tod=null,busy=0.4,fest=false,flash=null})=>{
   const wrapRef=useRef(null);const [W,setW]=useState(343);
+  useEffect(()=>{if(flash&&['caught','vip','fund','soldout'].includes(flash.type))buzz(flash.type==='caught'?[30,60,30,60,30]:[20,40,20]);},[flash&&flash.k]);
   const actorsRef=useRef(new Map()),queueRef=useRef([]),seenRef=useRef(null),timersRef=useRef([]);
   const [,setTick]=useState(0);const bump=()=>setTick(t=>t+1);
   const [serveKey,setServeKey]=useState(0),[coins,setCoins]=useState([]);
@@ -1151,8 +1187,10 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
   const g=geo();
   return <div ref={wrapRef} className={"st-scene st-w-"+wid+(done?' st-done':'')} dir="ltr">
     {/* sky */}
-    {sunny&&<div className="st-sun"><div className="st-rays"/><div className="st-sun-core"/></div>}
-    {!sunny&&<div className="st-sun st-sun-dim"><div className="st-sun-core"/></div>}
+    {(()=>{const t=tod==null?null:Math.max(0,Math.min(1,tod)),pos=t==null?null:{left:`calc(${4+t*78}% - 8px)`,top:62-Math.sin(Math.PI*(0.12+t*0.76))*52};
+      return sunny?<div className="st-sun st-sun-move" style={pos||undefined}><div className="st-rays"/><div className="st-sun-core"/></div>:<div className="st-sun st-sun-dim st-sun-move" style={pos||undefined}><div className="st-sun-core"/></div>;})()}
+    {fest&&<svg className="st-bunting" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 Q200 34 400 6" stroke="#8C6A4F" strokeWidth="1.4" fill="none"/>
+      {Array.from({length:15}).map((_,i)=>{const x=13+i*26.5,y=6+Math.sin(Math.PI*x/400)*14;return <path key={i} d={`M${x-8} ${y} L${x+8} ${y} L${x} ${y+13} Z`} fill={['#FF5C7A','#FFC800','#5CC8F0','#8E7CF8','#3FBF7F'][i%5]}/>;})}</svg>}
     <div className="st-cloud" style={{top:18,animationDuration:'48s',animationDelay:'-12s'}}><StCloud w={64} o={0.95}/></div>
     <div className="st-cloud" style={{top:44,animationDuration:'70s',animationDelay:'-40s'}}><StCloud w={46} o={0.8}/></div>
     {cloudy&&<><div className="st-cloud" style={{top:8,animationDuration:'38s',animationDelay:'-25s'}}><StCloud w={90} o={0.95}/></div>
@@ -1172,6 +1210,7 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
     {comps.slice(0,3).map((c,i)=><div key={i} className="st-comp-wrap" style={i===0?{left:'1%'}:i===1?{right:'1%'}:{left:'64%'}}><StComp c={c}/></div>)}
     {/* ground */}
     <div className="st-sidewalk"/>
+    <div className="st-passers" aria-hidden="true">{ST_PASS.slice(0,done?0:Math.round(1+Math.max(0,Math.min(1,busy))*11)).map((p,i)=><span key={i} className={"st-pass"+(p.rev?' rev':'')} style={{animationDuration:(p.d*(rainy?0.8:1))+'s',animationDelay:p.dl+'s',bottom:p.b,transform:`scale(${p.s})`}}><i style={{animationDuration:(0.5+i%3*0.08)+'s'}}><StPasser p={p}/></i></span>)}</div>
     <div className="st-road"><div className="st-lane"/><div className="st-car"><svg viewBox="0 0 60 26" width="60" height="26" aria-hidden="true"><rect x="2" y="10" width="56" height="11" rx="5" fill="#FF5C7A"/><path d="M14 10 Q18 2 28 2 L38 2 Q45 2 48 10 Z" fill="#FF5C7A"/><path d="M18 9.5 Q21 4 28 4 L30 4 L30 9.5 Z M32 4 L37 4 Q42 4 45 9.5 L32 9.5 Z" fill="#CDEBFF"/><circle cx="15" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="45" cy="21" r="4.5" fill="#1E1B3A"/><circle cx="15" cy="21" r="1.8" fill="#C9C6E0"/><circle cx="45" cy="21" r="1.8" fill="#C9C6E0"/><rect x="54" y="12" width="4" height="3" rx="1" fill="#FFE14D"/></svg></div></div>
     {rainy&&<div className="st-rain">{drops.map((d,i)=><span key={i} style={{left:d.l+'%',animationDelay:d.d+'s',animationDuration:d.t+'s'}}/>)}</div>}
     {/* price board */}
@@ -1234,6 +1273,8 @@ const StreetScene=({events=[],spd=600,price=5,cupsLeft=0,cupsTotal=0,weather={id
           </div>
         </div>
       </div>;})}
+    {stLight(tod)&&!done&&<div className="st-light" style={{background:stLight(tod)}}/>}
+    {flash&&<div key={flash.k} className={"st-flash st-f-"+flash.type}>{flash.type==='fund'&&Array.from({length:18}).map((_,i)=><b key={i} style={{left:(i*37)%100+'%',background:['#FF5C7A','#FFC800','#5CC8F0','#8E7CF8','#3FBF7F'][i%5],animationDelay:(i%6)*0.08+'s'}}/>)}</div>}
     {done&&<div className="st-dusk"/>}
   </div>;
 };
@@ -1452,6 +1493,7 @@ const loadCfg=()=>{try{return{...CFG0,...JSON.parse(localStorage.getItem('lm-cfg
 const reduced=()=>document.documentElement.classList.contains('reduce');
 // Short synthesized sound effects (no files needed)
 const SFX={on:true,ac:null};
+const buzz=p=>{try{if(SFX.on&&navigator.vibrate)navigator.vibrate(p);}catch(_){}};
 const NOTES={coin:[[988,.05],[1319,.12,.05]],pop:[[520,.07,0,'sine',900]],sell:[[880,.09],[1175,.12,.07]],tap:[[1100,.025,0,'sine']],
  register:[[1568,.07,0,'square'],[2093,.28,.08,'triangle']],fanfare:[[523,.12],[659,.12,.12],[784,.12,.24],[1047,.35,.36]],
  stamp:[[110,.18,0,'square',60]],whoosh:[[420,.35,0,'sawtooth',90]],sparkle:[[1568,.06],[2093,.06,.06],[2637,.12,.12]]};
@@ -1851,7 +1893,7 @@ function Game(){
   // browsers only allow sound after the first tap
   const go=()=>{if(cfg.music)au.play().catch(()=>{});};document.addEventListener('pointerdown',go,{once:true});return()=>document.removeEventListener('pointerdown',go);},[cfg.music,cfg.vol]);
  const lastSold=useRef(0);
- useEffect(()=>{const s=sim?sim.sold:0;if(s>lastSold.current&&!simFast.current)sfx('sell');lastSold.current=s;},[sim&&sim.sold]);
+ useEffect(()=>{const s=sim?sim.sold:0;if(s>lastSold.current&&!simFast.current){sfx('sell');buzz(8);}lastSold.current=s;},[sim&&sim.sold]);
  useEffect(()=>{if(phase==='report')setTimeout(()=>sfx('register'),1100);},[phase]);
  const setGender=v=>{setCfg({gender:v});PG=v;if(hood&&hood.id)hoodRpc('lm_hood_set_gender',{p_hood:hood.id,p_gender:v}).then(()=>hoodLoad()).catch(()=>{});};
  const setRemind=async(k,v)=>{const n={remEve:cfg.remEve,remMorn:cfg.remMorn,[k]:v};setPushMsg(null);
@@ -2087,7 +2129,7 @@ function Game(){
      if(e.type==='caught')b.caught=1;if(e.type==='vip')b.vip=e.ok?'🌟':'😤';});
     // who moved up or down the live table since the last update
     const before=hoodLiveOrder(c),after=hoodLiveOrder(n);hoodMoves.current=!Object.keys(c).length?{}:Object.fromEntries(after.map((id,i)=>[id,before.indexOf(id)<0?0:before.indexOf(id)-i]));return n;});
-   setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,m:e.m,t,type:e.type};}).filter(Boolean)].slice(-12));
+   setHoodAlerts(a=>[...a,...ev.map(e=>{const t=hoodMoment(e,me,names);return t&&{at:e.at,m:e.m,t,type:e.type,ok:e.ok};}).filter(Boolean)].slice(-12));
    const closed=ev.some(e=>e.type==='close');setSim(s=>s?{...s,list:[...s.list,...mine],live:!closed}:s);}catch(_){}};
   pull();const t=setInterval(pull,15000);return()=>{alive=false;clearInterval(t);};},[hood&&hood.id,phase,hst&&hst.today]);
  // the day's moments for its report (once the stands close the whole day is out)
@@ -2397,8 +2439,13 @@ function Game(){
 
  // in a neighborhood the other stands are the players' (their price and place came out at 08:00; their sales are counted live)
  const hoodComps=()=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];const names=hoodNames(hst);
-  return op.stands.filter(x=>x.id!==hst.me.id).map(x=>{const c=hoodCounts[x.id]||{sold:0};return{n:names[x.id]?.nick||'?',pr:x.price,
+  const top=Math.max(1,...op.stands.map(x=>(hoodCounts[x.id]||{}).sold||0));
+  return op.stands.filter(x=>x.id!==hst.me.id).slice().sort((a,b)=>((hoodCounts[b.id]||{}).sold||0)-((hoodCounts[a.id]||{}).sold||0)).map(x=>{const c=hoodCounts[x.id]||{sold:0},off=!!(x.closed||c.sick||c.out);return{n:names[x.id]?.nick||'?',pr:x.price,off,q:off?0:Math.round(3*(c.sold||0)/top),
    fx:c.sick?'🤒 סגור':c.out?'💨 אזל':[...x.mk.map(id=>MK_EM[id]),...x.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em),...(x.helper?['🧑‍💼']:[]),c.caught?'🚨':''].join('')+` · ${c.sold}☕`};});};
+ // the hour of the day as 0..1 (08:00 to 17:00), and how busy the street is in that hour
+ const stMin=at=>{const m=/^(\d+):(\d+)/.exec(at||'');return m?+m[1]*60+ +m[2]:null;};
+ const stTod=(last,s)=>{const m=hood&&last?stMin(last.at):null;if(m!=null)return(m-NB.OPEN*60)/((NB.CLOSE-NB.OPEN)*60);if(hood&&!last)return 0;return s.list.length?s.shown.length/s.list.length:0;};
+ const stBusy=(last,s)=>{const t=Math.max(0,Math.min(0.999,stTod(last,s)??0)),h=NB.HOURS[Math.floor(t*NB.HOURS.length)],top=Math.max(...NB.HOURS);return Math.min(1,(h/top)*Math.min(1.15,0.45+s.list.length/60));};
  const Sim=()=>{const s=sim;const last=s.shown[s.shown.length-1],aft=s.mid!=null&&s.shown.length>=s.mid&&(s.midSur||s.meSick||(s.sickR||[]).some(Boolean));
   const behind=hood&&s.live&&s.list.length-s.shown.length>4;
   return <div className="simwrap">
@@ -2407,7 +2454,7 @@ function Game(){
   {aft&&<div className={"sim-alert"+(s.meSick||(s.midSur&&s.midSur.f<1)?' bad':' good')} key="aft">{s.meSick?'🤒 חטפת חום! סוגרים את הדוכן מוקדם':s.midSur?s.midSur.n+'!':''}{(s.sickR||[]).map((x,i)=>x?<span key={i}> · 🤒 {rivalsToday[i]?.n} חלה וסגר</span>:null)}</div>}
   {(!hood||(hst&&hst.today&&(hst.opened||{})[hst.today]))&&(()=>{const wx=WE[aft&&s.midSur?s.midSur.wx:W.w]||wInfo,op=hood&&(hst.opened||{})[hst.today],mine=x=>(hoodCounts[x.id]?.sold||0)*x.price,me=op&&op.stands.find(x=>x.id===hst.me.id),place=me?1+op.stands.filter(x=>x.id!==me.id&&mine(x)>mine(me)).length:0;
    return <div className="sim-info"><span>{wx.em} {wx.n} <b className="num">{aft&&s.midSur&&s.midSur.f>1?temp+4:temp}°</b></span><span>מחיר <b className="num">₪{price}</b></span><span>מתכון <b>{recipe.l}🍋{recipe.h}🍬{recipe.i}🧊</b></span>{me&&<span>מקום בהכנסות היום <b className="num">{place}/{op.stands.length}</b></span>}{W.ev&&<span>{W.ev.n}</span>}{op&&op.fund&&<span>🎪 קרן הרחוב: <b>{op.fund.ok?'הגיעה ליעד':'לא הגיעה ליעד'}</b></span>}</div>;})()}
-  <StreetScene events={s.shown.slice(-12)} spd={s.live?(behind?220:1100):s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,(hood?hoodCups||0:cups)-s.sold)} cupsTotal={hood?hoodCups||0:cups}
+  <StreetScene tod={stTod(last,s)} busy={stBusy(last,s)} fest={!!(hood&&hst&&((hst.opened||{})[hst.today]||{}).fund&&hst.opened[hst.today].fund.ok)} flash={hood&&hoodAlerts.length?{k:hoodAlerts.length+'-'+hoodAlerts[hoodAlerts.length-1].m,type:(a=>a.type==='fund'&&!a.ok?'fundno':a.type)(hoodAlerts[hoodAlerts.length-1])}:null} events={s.shown.slice(-12)} spd={s.live?(behind?220:1100):s.list.length>40?380:s.list.length>20?550:800} price={price} cupsLeft={Math.max(0,(hood?hoodCups||0:cups)-s.sold)} cupsTotal={hood?hoodCups||0:cups}
    weather={{id:aft&&s.midSur?s.midSur.wx:W.w,temp:aft&&s.midSur&&s.midSur.f>1?temp+4:temp}} comps={hood?hoodComps():rivalsToday.map((c,i)=>({n:c.n,pr:c.pr,fx:aft&&(s.sickR||[])[i]?'🤒 סגור':[...c.mk.map(id=>MK_EM[id]),...c.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(x=>x.id===u).em),...(c.helper?['🧑‍💼']:[])].join('')}))} done={s.done||(aft&&s.meSick)} ups={ups} acts={acts}/>
   <div className="sim-stats"><div><small>נמכרו</small><b className="num g">{s.sold}{!hood?<i>/{cups}</i>:hoodCups!=null?<i>/{hoodCups}</i>:null}</b></div><div><small>הכנסות</small><b className="num y">₪{s.rev}</b></div>
    {hood?<div><small>{s.live?'נסגר בעוד':'הדוכנים'}</small><b className="num">{s.live&&hst&&hst.today?clockTxt(openMs(hst.hood.start,hst.today)+9*36e5-hNow):'נסגרו'}</b></div>:<div><small>לא קנו</small><b className="num r">{s.walk}</b></div>}</div>
