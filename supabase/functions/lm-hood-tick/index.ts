@@ -522,7 +522,7 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fun
    const set=settleStand(p.st,p.plan,r,spent,day);states[m.id]=set.st;prev[m.id]={dec:decs[k].dec,res:r};
    open.push({id:m.id,price:p.plan.price,loc:p.plan.loc,ups:p.st.ups,mk:p.plan.mk,helper:p.plan.helper,closed:r.closed});
    results.push({id:m.id,price:r.price,loc:r.loc,sold:r.sold,rev:r.rev,profit:set.profit,score:nbScore(set.st),rep:set.st.rep,closed:r.closed,sick:r.sick,soldAt:r.soldAt,vip:r.vip,insp:r.insp,
-    caught:r.myTricks.filter(t=>t.caught).length,coupon:r.coupon&&{with:r.coupon.with,gave:r.coupon.gave,said:r.coupon.said},fund:r.fund?r.fund.gave:0,auto:decs[k].auto});
+    caught:r.myTricks.filter(t=>t.caught).length,coupon:r.coupon&&{with:r.coupon.with,gave:r.coupon.gave,said:r.coupon.said},auto:decs[k].auto});
    privates.push({member:m.id,data:{before:p.st,dec:decs[k].dec,plan:p.plan,spent,skipped:p.skipped,autoBuy:p.auto,res:r,profit:set.profit,spoiled:set.spoiled,auto:decs[k].auto}});});
   street=open.map(x=>({id:x.id,price:x.price,loc:x.loc}));
   runs.push({day,open:{weather:out.weather,ev:out.ev,stands:open,fund:out.fund},events:out.events,results,privates});

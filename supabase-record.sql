@@ -1,4 +1,4 @@
--- A stand's coupon record is intel: for ₪2 in the evening, what that stand did and said on its past nights.
+-- A stand's coupon record is intel: for ₪4 in the evening, what that stand did and said on its past nights.
 -- Run once in the SQL editor, after supabase-neighborhood.sql.
 
 create table if not exists public.lm_records (      -- records bought: the evening it was bought shows every night before it
@@ -11,7 +11,7 @@ create table if not exists public.lm_records (      -- records bought: the eveni
 alter table public.lm_records enable row level security;
 
 create or replace function public.lm_buy_record(p_hood uuid, p_day int, p_target uuid) returns json language plpgsql security definer set search_path = public as $$
-declare h lm_hoods; me lm_members; cost numeric := 2;
+declare h lm_hoods; me lm_members; cost numeric := 4;
 begin
   select * into me from lm_members where hood = p_hood and user_id = auth.uid() for update;
   if not found then raise exception 'not a member'; end if;
