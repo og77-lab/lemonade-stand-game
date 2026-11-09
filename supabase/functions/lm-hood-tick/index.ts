@@ -257,10 +257,14 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
  // The street fund: a contest over a shared pot. Each evening the committee names an event and a target, and everyone gives in secret. At 08:00: below the target, part of each gift comes back.
  // At the target the event pays a pot, split by what each stand gave, so giving too little risks the target and everyone giving a lot leaves each a thin slice. The event also fills the street a little, for givers and others alike
- FUND:{pot:1.3,back:0.65,open:0.15,moods:[0.5,1,1.3],tiers:[{n:'🎵 הופעה קטנה',per:16,boost:1.3},{n:'🛍️ יריד רחוב',per:24,boost:1.45},{n:'🎪 פסטיבל',per:34,boost:1.6}],
-  jitter:0.15, // tonight's target, around the event's usual size
-  luck:[0.8,1.2], // how well the event really turns out, unknown in the evening
-  floor:{easy:0.15,medium:0.1,hard:0.06},char:{premium:{hope:1.1,fear:1.1},steady:{hope:1.05,fear:1.2},veteran:{hope:1.15,fear:1},trendy:{hope:1,fear:1,herd:1},budget:{hope:0.8,fear:1.8},gambler:{hope:0.95,fear:0.6}}},
+ // The street fund: a public good with a threshold. Each evening the committee names an event, a ticket and how many stands must buy one.
+ // Each stand decides in secret to buy the ticket or not. At 08:00: enough tickets and the event happens, and it pays every stand on the street the same (givers and others alike);
+ // too few and the ticket comes back in part. So giving pays only when your ticket may be the one that tips it: if the street gets there without you, keeping your money pays more,
+ // and if it doesn't get there, giving loses. No choice always wins (measured in the scratchpad's share.cjs)
+ FUND:{back:0.4,pay:2.8,open:0.15,moods:[0.8,1,1.15],tiers:[{n:'🎵 הופעה קטנה',ticket:12,need:0.5,boost:1.3},{n:'🛍️ יריד רחוב',ticket:18,need:0.6,boost:1.45},{n:'🎪 פסטיבל',ticket:25,need:0.7,boost:1.6}],
+ // tonight's target, around the event's usual size
+  noise:{easy:0.2,medium:0.1,hard:0.05},
+  char:{steady:{p:0.8,ok:0.05,no:-0.05},veteran:{p:0.6,ok:0.25,no:-0.3},premium:{p:0.65,ok:0.05,no:-0.1},trendy:{p:0.5,ok:0.35,no:-0.35},budget:{p:0.25,ok:0.05,no:-0.1},gambler:{p:0.45,ok:0,no:0}}},
  // the black hat as a bot plays it: nerve = how much it fears being caught and hit back, mem = how many days it holds a grudge, para = how much it fears being attacked
  HAT:{steady:{nerve:1.3,mem:1,para:0.6},veteran:{nerve:1.5,mem:9,para:0.7},premium:{nerve:1.8,mem:2,para:0.9},budget:{nerve:1,mem:2,para:0.35},trendy:{nerve:1,mem:2,para:0.55,herd:1},gambler:{nerve:0.7,mem:3,para:0.3}},
  HAT_V:{ads:[45,75,10],rumor:[10,80,20]},HAT_FEAR:35,HAT_DRIVE:70, // what a trick is worth (to me, to the rival, if caught), the price of being hit back, and how much value makes a bot certain
@@ -289,14 +293,14 @@ const couponSay=(persona,move,r)=>{if(persona.id==='budget')return true;if(perso
 // A bot's night, the same in the evening (what it says) and at 08:00 (what it does)
 const couponNight=(persona,diff,seed,day,k,o)=>{const r=rng(seed*97+day*131+k*7+3),move=couponMove(persona,diff,r,{...o,day,diff});return{move,say:couponSay(persona,move,r)};};
 // Tonight's event: the same for the whole street, from the neighborhood's id and the day. n: stands on the street
-const fundOffer=(id,day,n)=>{let h=7;for(const c of String(id))h=(h*31+c.charCodeAt(0))%2147483647;const t=NB.FUND.tiers[Math.floor(rng(h+day*101)()*NB.FUND.tiers.length)];const R=rng(h+day*101+7),j=NB.FUND.jitter;const target=Math.round(t.per*n*(1-j+2*j*R())),M=NB.FUND.moods;return{...t,target,mood:M[Math.floor(R()*M.length)]};};
+// tonight's event: its ticket, how many stands must buy one (target = tickets × ticket), and what it pays every stand if it happens
+const fundOffer=(id,day,n)=>{let h=7;for(const c of String(id))h=(h*31+c.charCodeAt(0))%2147483647;const t=NB.FUND.tiers[Math.floor(rng(h+day*101)()*NB.FUND.tiers.length)];const R=rng(h+day*101+7),M=NB.FUND.moods;
+ const need=Math.max(1,Math.min(n,Math.ceil(n*t.need))),ticket=t.ticket;return{...t,ticket,need,target:ticket*need,pays:Math.round(ticket*NB.FUND.pay),mood:M[Math.floor(R()*M.length)]};};
 // A bot's gift: its character, how the last few funds went (fd: its record), and a chance to surprise
 // A bot weighs the fund as a player does: it guesses what the others will give from what they gave lately and tonight's mood on the street, then works out each gift. How much it fears a loss is its character
-const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c=F.char[persona.id],T=o.offer.target,n=o.n,fair=T/n,seen=o.fd.filter(x=>x.t).slice(c.herd?-1:-3);
- const guess=(seen.length?(seen.reduce((a,x)=>a+(x.a-x.g)/x.t,0)/seen.length+c.hope)/2:c.hope)*(o.offer.mood||1)*(0.85+r()*0.3);
- if(r()<F.floor[diff])return Math.round(fair*Math.floor(r()*4)/2);
- let best=0,top=0;for(const m of [0.5,1,1.5]){const v=fair*m;let ev=0;for(const q of [0.6,1,1.4]){const O=guess*T*q;ev+=O+v>=T?T*F.pot*v/(O+v)-v*(1-F.back):-v*(1-F.back)*c.fear;}if(ev>top){top=ev;best=m;}}
- return Math.round(fair*best);};
+const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c=F.char[persona.id]||{p:0.5,ok:0,no:0},last=o.fd.filter(x=>x.t).slice(-1)[0],f=F.noise[diff]||0.1;
+ let p=(c.p+(last?(last.ok?c.ok:c.no):0))*(o.offer.mood||1);p=Math.max(0.03,Math.min(0.97,p*(1-2*f)+f));
+ return r()<p?o.offer.ticket:0;};
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?NB.CAP.station:NB.CAP.base)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
@@ -365,7 +369,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  const open=(s,m)=>!s.closed&&(s.sick===null||m<s.sick);
  // the crowd: 60 people on an ordinary street, more with more stands and with everyone's marketing (the difficulty is only the bots' level)
  // the street fund: did the gifts reach the target? The event brings a small crowd to the whole street; the real prize is the pot, split by the gifts
- const gifts=S.reduce((x,s)=>x+(s.plan.fund||0),0),fundOn=!!fund&&gifts>=fund.target,FR=rng(seed*53+day*211+5),[l0,l1]=NB.FUND.luck,fundLuck=l0+(l1-l0)*FR(),more=fundOn?(fund.boost-1)*fundLuck:0;
+ const givers=S.filter(s=>(s.plan.fund||0)>0).length,fundOn=!!fund&&givers>=fund.need,more=fundOn?fund.boost-1:0;
  const mkLift=1+S.reduce((x,s)=>x+(s.boost-1),0)*0.3/Math.max(1,n),street0=NB.WALK*softEnv(T,fm,evm)*Math.pow(Math.max(1,n),NB.CROWD)*mkLift,street=street0*(1+more*NB.FUND.open);
  const zw=LOC.map(l=>l.dm),zs=zw.reduce((a,b)=>a+b,0),walkers=[],HS=NB.HOURS.reduce((a,b)=>a+b,0);
  NB.HOURS.forEach((h,i)=>{const sur=W.sur&&i>=5?W.sur.f:1,cnt=Math.round(street*h/HS*sur);for(let j=0;j<cnt;j++)walkers.push(OPEN+i*60+Math.floor(r()*60));});
@@ -381,7 +385,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
   if(s.sold>=s.cups){s.miss++;s.byType[typ].miss++;if(s.soldAt===null){s.soldAt=m;at(m,{type:'soldout',stand:s.id});}at(m,{type:'miss',stand:s.id,cust:typ});return 'miss';}
   s.sold++;s.rev+=s.plan.price;s.byType[typ].buy++;s.repD+=sc.ts>35?c.rI[0]:sc.ts>20?1:sc.ts>10?0:-1;at(m,{type:'sale',stand:s.id,cust:typ,rx:sc.ts>35?'😊':sc.ts>20?'🙂':sc.ts>10?'😐':'😕'});
   if(s.sold>=s.cups){s.soldAt=m;at(m,{type:'soldout',stand:s.id});}return 'buy';};
- if(fund)at(OPEN,{type:'fund',ok:fundOn,n:fund.n,gifts,target:fund.target});
+ if(fund)at(OPEN,{type:'fund',ok:fundOn,n:fund.n,need:fund.need});
  if(W.ev)at(OPEN,{type:'event',ev:W.ev.id,n:W.ev.n,d:W.ev.d});
  S.forEach(s=>{if(s.closed)at(OPEN,{type:'closed',stand:s.id});if(s.sick!==null)at(s.sick,{type:'sick',stand:s.id});});
  if(W.sur)at(OPEN+5*60,{type:'surprise',n:W.sur.n,f:W.sur.f});
@@ -405,13 +409,13 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
   const rep=Math.max(0,Math.min(100,Math.round(s.st.rep+repD+(50-s.st.rep-repD)*0.06)));
   // what the stand's security tells it: the caught ones by name, the others maybe as "someone attacked you"
   const kr=rng(seed*71+day*13+s.k),attacks=hitBy.map(t=>t.caught.has(s)?{trick:t.id,all:t.all,by:t.by.id,at:hhmm(t.caught.get(s)),caught:true}:kr()<NB.SECURITY[s.plan.sec].know?{trick:t.id,caught:false}:null).filter(Boolean);
-  const comp=Math.round([...caughtBy.values()].reduce((x,c)=>x+(c.has(s)?NB.CAUGHT.fine/c.size:0),0)*100)/100,t=mate.get(s),give=s.plan.fund||0,fundPaid=!fund||!give?0:Math.round((give*NB.FUND.back+(fundOn?fund.target*NB.FUND.pot*fundLuck*give/gifts:0))*100)/100,
+  const comp=Math.round([...caughtBy.values()].reduce((x,c)=>x+(c.has(s)?NB.CAUGHT.fine/c.size:0),0)*100)/100,t=mate.get(s),give=s.plan.fund||0,fundPaid=!fund?0:fundOn?fund.pays:Math.round(give*NB.FUND.back),
    [q0,q1]=NB.COUPON.luck,P=NB.COUPON.pay,cpLuck=t?q0+(q1-q0)*rng(seed*59+day*223+Math.min(s.k,t.k)*17+Math.max(s.k,t.k))():1,cpCash=t?Math.round((s.plan.coupon?(t.plan.coupon?P.both:P.sucker):t.plan.coupon?P.tempt:P.none)*cpLuck*100)/100:0,prize=Math.round((fundPaid+cpCash)*100)/100;
   return{id:s.id,sold:s.sold,cups:s.cups,rev:s.rev,miss:s.miss,walk:s.walk,visitors:s.vis,byType:s.byType,price:s.plan.price,loc:s.plan.loc,closed:s.closed,sick:s.sick!==null?hhmm(s.sick):null,
-   sus:s.bot?hitBy.filter(t=>t.caught.has(s)||kr()<0.3).map(t=>t.by.id):[],soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,costs,comp,prize,repD:rep-s.st.rep,rep,attacks,coupon:t?{with:t.id,gave:s.plan.coupon,got:t.plan.coupon,said:s.plan.say,cash:cpCash}:null,fund:fund?{gave:give,ok:fundOn,paid:fundPaid,all:gifts,target:fund.target}:null,
+   sus:s.bot?hitBy.filter(t=>t.caught.has(s)||kr()<0.3).map(t=>t.by.id):[],soldAt:s.soldAt!==null?hhmm(s.soldAt):null,vip:s.vip,insp:s.insp,stole:s.steal.length,costs,comp,prize,repD:rep-s.st.rep,rep,attacks,coupon:t?{with:t.id,gave:s.plan.coupon,got:t.plan.coupon,said:s.plan.say,cash:cpCash}:null,fund:fund?{gave:give,ok:fundOn,paid:fundPaid,target:fund.target,need:fund.need}:null,
    myTricks:s.tricks.map(t=>({trick:t.id,all:t.all,caught:t.caught.size>0,times:t.caught.size}))};});
  at(CLOSE,{type:'close'});
- ev.sort((a,b)=>a.m-b.m);return{results,events:ev,weather:{t:T,w:W.w},ev:W.ev?W.ev.id:null,fund:fund?{n:fund.n,target:fund.target,boost:fund.boost,gifts,ok:fundOn,luck:Math.round(fundLuck*100)/100}:null};};
+ ev.sort((a,b)=>a.m-b.m);return{results,events:ev,weather:{t:T,w:W.w},ev:W.ev?W.ev.id:null,fund:fund?{n:fund.n,ticket:fund.ticket,need:fund.need,pays:fund.pays,boost:fund.boost,ok:fundOn}:null};};
 
 // After the day: stock used and spoiled, cash, loan interest, reputation, and the score (profit so far)
 const settleStand=(st,plan,res,spent,day)=>{const n={...st,ups:[...st.ups]};
@@ -427,7 +431,7 @@ const settleStand=(st,plan,res,spent,day)=>{const n={...st,ups:[...st.ups]};
  n.tot=Math.round((st.tot+profit)*100)/100;n.rep=res.rep;n.tricks=st.tricks+res.myTricks.length;n.paper=res.vip===true;
  n.cp=res.coupon?[...(st.cp||[]),{d:day,w:res.coupon.with,m:res.coupon.gave,o:res.coupon.got,s:res.coupon.said}]:st.cp||[];
  if(res.sus&&res.sus.length)n.foes=[...(st.foes||[]).slice(-8),...res.sus.map(id=>({id,d:day}))];
- n.fd=res.fund?[...(st.fd||[]),{d:day,ok:res.fund.ok,g:res.fund.gave,a:res.fund.all,t:res.fund.target}]:st.fd||[];
+ n.fd=res.fund?[...(st.fd||[]),{d:day,ok:res.fund.ok,g:res.fund.gave,t:res.fund.target}]:st.fd||[];
  return{st:n,profit,spoiled};};
 const nbScore=st=>Math.round((st.tot-st.loan)*100)/100;
 
@@ -511,10 +515,12 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fun
  const due=d=>d<=days&&(now.day>d||(now.day===d&&now.minutes>=NB.OPEN*60));
  while(due(last+1)){const day=last+1,board=g.members.map(m=>({id:m.id,tot:states[m.id].tot}));
   const offer=F.fund?fundOffer(hood.id,day,n):null,pairs=F.coupons?couponPairs(g.members.map(m=>m.id),day):[],mateOf=Object.fromEntries(pairs.flatMap(([a,b])=>[[a,b],[b,a]])),peers=Object.fromEntries(g.members.map(m=>[m.id,states[m.id].cp||[]]));
+  const ticketOf=d=>offer&&d&&(d.fund||0)>0?{...d,fund:offer.ticket}:d&&d.fund?{...d,fund:0}:d;
   const decs=g.members.map(m=>{if(m.persona)return{dec:botDecision(PERSONAS.find(p=>p.id===m.persona)||PERSONAS[0],states[m.id],{seed,world,day,diff,n,board,me:m.id,k:m.slot,prev:prev[m.id],street,partner:mateOf[m.id],peers,days,fund:offer,caught:g.members.filter(x=>((prev[x.id]&&prev[x.id].res&&prev[x.id].res.myTricks)||[]).some(t=>t.caught)).map(x=>x.id)}),auto:'bot'};
    const own=((g.decisions||{})[day]||{})[m.id];if(own)return{dec:{...own,fc:0},auto:null}; // a forecast was paid when bought
    const p=prev[m.id]||{};return{dec:autopilot(states[m.id],p.dec,p.res,world,day),auto:'autopilot'};});
   if(!F.black)decs.forEach(d=>{d.dec={...d.dec,bh:[],sec:0};}); // a league without the black hat
+  decs.forEach(d=>{d.dec=ticketOf(d.dec);});
   const prep=g.members.map((m,k)=>prepareStand(states[m.id],decs[k].dec,world,day,n));
   const out=runNeighborhoodDay({seed,world,day,pairs,fund:offer,stands:g.members.map((m,k)=>({id:m.id,bot:!!m.persona,st:prep[k].st,plan:prep[k].plan}))});
   const paid=(g.paid||{})[day]||{},open=[],results=[],privates=[];
