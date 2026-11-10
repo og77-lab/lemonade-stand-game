@@ -1789,7 +1789,7 @@ const hoodReport=(st,d)=>{const x=st.me.days[d],r=x.res,me=st.me.id,names=hoodNa
  {const os=rows.filter(o=>o.id!==me&&!o.closed);if(os.length&&!r.closed){const ap=Math.round(os.reduce((a,o)=>a+o.price,0)/os.length*10)/10,as=Math.round(os.reduce((a,o)=>a+o.sold,0)/os.length),p=x.plan.price;
   T(r.sold>=as?'good':'warn',`💰 המחיר שלך ₪${p}, ממוצע הרחוב ₪${ap}${p<ap-0.4?' (זול מהרחוב)':p>ap+0.4?' (יקר מהרחוב)':''}. מכרת ${r.sold} כוסות, ובממוצע דוכן ברחוב מכר ${as}`);}}
  if(r.stole)T('good',`📢 ${r.stole} לקוחות עברו אליך מהקמפיין`);
- if(r.soldAt)T('warn',r.miss?`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו, וזה הוריד ${Math.min(6,r.miss*2)} מוניטין: כדאי להכין יותר מחר`:`💨 הכוסות נגמרו ב-${r.soldAt}, ואף לקוח לא נשאר בלי כוס`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות לא נמכרו. הלימון והסוכר שלהן נשארים למחר, והקרח נמס: כדאי להכין פחות, או להוריד מחיר`);
+ if(r.soldAt)T('warn',r.miss?`💨 הכוסות נגמרו ב-${r.soldAt}. ${r.miss} רצו לקנות ולא קיבלו, וזה הוריד ${LemonEngine.missPen(r.miss)} מוניטין: כדאי להכין יותר מחר`:`💨 הכוסות נגמרו ב-${r.soldAt}, ואף לקוח לא נשאר בלי כוס`);else if(r.cups-r.sold>=5)T('warn',`${r.cups-r.sold} כוסות לא נמכרו. הלימון והסוכר שלהן נשארים למחר, והקרח נמס: כדאי להכין פחות, או להוריד מחיר`);
  if(x.autoBuy)T('warn',`🛒 לא היה מספיק מלאי, אז ב-08:00 קנינו בשבילך ${[x.autoBuy.l&&x.autoBuy.l+'🍋',x.autoBuy.h&&x.autoBuy.h+'🍬',x.autoBuy.i&&x.autoBuy.i+'🧊'].filter(Boolean).join(' ')} (${fmt2(x.autoBuy.cost)})`);
  if(r.insp)T('warn','🏛️ פיקוח עירוני: ₪8');if(x.spoiled>0)T('warn',`${x.spoiled} לימונים התקלקלו`);
  if(x.skipped&&x.skipped.length)T('warn','⚠️ לא היה מספיק כסף, ולכן לא בוצעו: '+x.skipped.map(skipN).join(', '));
@@ -2118,7 +2118,7 @@ function Game(){
   onMe('ads').forEach(b=>tips.push({k:'bad',t:`📢 ${b.em} ${b.n} הריץ קמפיין נגדך: איבדת כ-18% מהלקוחות`}));
   onMe('rumor').forEach(b=>{const c=b.bh.find(x=>x.id==='rumor').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מפיץ עליך שמועות: −8 מוניטין לו וקנס ₪10`}:{k:'bad',t:'🗣️ מישהו הפיץ עליך שמועות: −5 מוניטין'});});
   onMe('signs').forEach(b=>{const c=b.bh.find(x=>x.id==='signs').caught;tips.push(c?{k:'good',t:`🚨 ${b.em} ${b.n} נתפס מוריד לך שלטים: −15 מוניטין לו וקנס ₪15`}:{k:'bad',t:'🚫 מישהו הוריד לך את השלטים: פחות אנשים ראו את הדוכן'});});
-  if(R.miss>=3)tips.push({k:'warn',t:`${R.miss} לקוחות רצו לקנות אבל נגמר המלאי — כדאי להכין יותר מחר`});
+  if(R.miss>=3)tips.push({k:'warn',t:`${R.miss} לקוחות רצו לקנות אבל נגמר המלאי, וזה הוריד ${LemonEngine.missPen(R.miss)} מוניטין. כדאי להכין יותר מחר`});
   if(R.cups-R.sold>=5)tips.push({k:'warn',t:`${R.cups-R.sold} כוסות נזרקו — כדאי להכין פחות, או להוריד מחיר`});
   const worst=aud.filter(x=>x.why[1]==='bad').sort((a,b)=>b.vis-a.vis)[0];if(worst)tips.push({k:'bad',t:`${worst.c.nm}: "${worst.why[0]}" — שם הפסדת הכי הרבה קונים`});
   if(spoiled>0)tips.push({k:'warn',t:`${spoiled} לימונים התקלקלו`});

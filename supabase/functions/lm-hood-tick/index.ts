@@ -196,7 +196,7 @@ const playerDay=(c,plans,closed,cups,quality)=>{const {seed,day,acts,W,comps,tem
   const ct=CT[k],s=cSc(recipe.l,recipe.h,recipe.i,temp,ct),wants=r()<buyProb(s.sc,price,rep,ct,temp),shut=i>=vA&&meSick,buys=wants&&sold<c0&&!shut;byType[k].vis++;
   let rx='🚶';if(buys){sold++;rev+=price;byType[k].buy++;rx=s.ts>35?'😊':s.ts>20?'🙂':s.ts>10?'😐':'😕';repD+=s.ts>35?ct.rI[0]:s.ts>20?1:s.ts>10?0:-1;}else if(wants&&!shut){rx='💨';miss++;byType[k].miss++;}else walk++;
   list.push({id:i,type:k,em:ct.em,buys,rx,isVip:false,sp:shut?'סגור':''});}
- repD=Math.max(-10,Math.min(10,repD))-Math.min(6,miss*2)+(ups.includes('cups')?1:0);
+ repD=Math.max(-10,Math.min(10,repD))-missPen(miss)+(ups.includes('cups')?1:0);
  let fine=0;if(rumor==='caught'){repD-=8;fine+=10;}if(signs==='caught'){repD-=15;fine+=15;}
  const usedL=c0*recipe.l-(ups.includes('juicer')?Math.floor(c0/10):0);
  return{list,shown:[],sold:0,rev:0,walk:0,done:closed,mid:closed?null:vA+(vipAt>=0?1:0),midSur:sur&&!closed?sur:null,meSick,sickR,result:{sold,rev,repD,walk,miss,visitors:v,usedL,cups:c0,byType,whys,vip,rumor,signs,fine,closed:!!closed,sur:closed?null:sur,meSick}};};
@@ -311,6 +311,8 @@ const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c0=F.char[persona.id]||F.cha
  const buy=withMe*pays-t-(c.loss-1)*t*(1-withMe)+c.alt*m*pays*tip,skip=without*pays;
  const T=(F.temp[diff]||8),p=1/(1+Math.exp(-(buy-skip)/T));
  return r()<p?t:0;};
+// reputation lost to customers who came and found no cup: it grows with each one, more slowly as they pile up (3 → 5, 10 → 9, 30 → 15)
+const missPen=m=>m>0?Math.min(20,Math.round(2.8*Math.sqrt(m))):0;
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?NB.CAP.station:NB.CAP.base)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
@@ -412,7 +414,7 @@ const runNeighborhoodDay=({seed,world,day,stands,pairs=[],fund=null})=>{
  const results=S.map(s=>{const costs={rent:s.closed?0:LOC[s.plan.loc].rent,helper:s.plan.helper?HELPER_C:0,
    mkt:s.plan.mk.reduce((x,id)=>x+MKTG.find(m=>m.id===id).c,0),bh:s.tricks.reduce((x,t)=>x+trickCost(t.id,t.all?'all':'one',n),0),
    fine:(caughtBy.has(s)?NB.CAUGHT.fine:0)+(s.insp?8:0)+((W.ev&&W.ev.cost)||0),coupon:mate.has(s)&&s.plan.coupon?NB.COUPON.cost:0};
-  let repD=Math.max(-10,Math.min(10,s.repD))-Math.min(6,s.miss*2)+(s.st.ups.includes('cups')?1:0)+((W.ev&&W.ev.rep)||0)+(s.plan.mk.includes('taste')&&s.plan.recipe.l>=3&&s.sold>0?3:0)+(s.plan.mk.includes('social')&&r()<0.5?2:0);
+  let repD=Math.max(-10,Math.min(10,s.repD))-missPen(s.miss)+(s.st.ups.includes('cups')?1:0)+((W.ev&&W.ev.rep)||0)+(s.plan.mk.includes('taste')&&s.plan.recipe.l>=3&&s.sold>0?3:0)+(s.plan.mk.includes('social')&&r()<0.5?2:0);
   const hitBy=tricks.filter(t=>t.vs.includes(s));
   repD-=hitBy.filter(t=>t.id==='rumor'&&!t.caught.size).reduce((x,t)=>x+rumorOn(t,s),0);
   if(caughtBy.has(s))repD-=NB.CAUGHT.rep;
@@ -553,7 +555,7 @@ const advanceHood=g=>{const {hood,now}=g,{seed,days,difficulty:diff}=hood,F={fun
 const LemonEngine={CUP,DAYS,CAP_BASE,CAP_STATION,CAP_TEAM,HELPER_B,HELPER_C,LOAN_INT,TP,SR,SW,ITP,WTP,HFR,crP,CT,TYPES,WE,tM,softEnv,iFr,tSc,fSc,freshW,cSc,heatF,setPM,pMt,buyProb,rawQ,bestQ,relQ,VIP_Q,standAttr,rng,
  LOC,UPG_MKT,UPG_OPS,MKTG,BLACK,FORECAST,RESEARCH_C,SPY_C,DIFF,PRESETS,sameR,EVENTS,evGood,MEV,SUR,PERSONAS,AI,SMART,ALL_UPS,MK_EM,buildWorld,
  DOW,dowOf,mixOf,rivalsOf,dayCtx,hitOn,rivalDemand,planRivals,rivalsFor,visitorsFor,whyOf,perType,buyersFor,playerDay,settleDay,makeForecast,
- NB,hhmm,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,couponPairs,couponRule,couponMove,couponSay,couponNight,fundOffer,fundMove,botDecision,autopilot,nbIntel,advanceHood};
+ NB,hhmm,missPen,nbCap,newStand,trickCost,nbForecast,prepareStand,runNeighborhoodDay,settleStand,nbScore,couponPairs,couponRule,couponMove,couponSay,couponNight,fundOffer,fundMove,botDecision,autopilot,nbIntel,advanceHood};
 if(typeof module!=='undefined'&&module.exports)module.exports=LemonEngine;else root.LemonEngine=LemonEngine;
 })(typeof globalThis!=='undefined'?globalThis:this);
 
