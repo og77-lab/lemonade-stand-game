@@ -847,6 +847,9 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; transition: opacity .6s, filter .6s; }
     .quick-r { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0; font-weight: 700; }
     .quick .btn.sm { margin-top: 8px; width: 100%; }
+    .quick-cap { display: block; font-weight: 500; font-size: 12px; color: var(--dim); }
+    .cap-line { margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); font-size: 13.5px; line-height: 1.45; }
+    .cap-line small { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
     .st-comp-off { opacity: 0.6; filter: grayscale(0.7); }
     .st-spr { display: block; background-repeat: no-repeat; }
     .st-walk { display: block; background-repeat: no-repeat; background-position: var(--x0) var(--y); }
@@ -2406,7 +2409,8 @@ function Game(){
      {hood&&hoodShort?<div className="limit">מהמלאי: <b>{afterCups}</b> כוסות · את השאר (כ-{fmt(hoodShort.cost)}) נקנה בשבילך ב-08:00 אם לא קונים בשוק<button className="btn sm" style={{marginTop:6}} onClick={()=>setTab('stock')}>🛒 לקנות בשוק ›</button></div>
      :isEve&&maxCups===0?<div className="limit">אין עדיין מצרכים לכוס אחת<button className="btn sm" style={{marginTop:6}} onClick={()=>setTab('stock')}>🛒 לקנות בשוק ›</button></div>
      :<div className="limit">{phase==='morning'||isEve?<>מקסימום <b>{maxCups}</b> · מגבלה: {limiter?.em} {limiter?.n}{limiter&&limiter.k?` (${limiter.have} ${isEve?'כולל הסל':'במלאי'})`:''}</>:null}</div>}
-     {isEve&&maxCups>0&&<div className="ing-d">מכינים בבוקר · צריך עוד? <a className="lnk" onClick={()=>setTab('stock')}>לשוק</a></div>}</div>
+     {isEve&&maxCups>0&&<div className="ing-d">מכינים בבוקר · צריך עוד? <a className="lnk" onClick={()=>setTab('stock')}>לשוק</a></div>}
+     {CapLine()}</div>
    </div>
    {hood&&<div className="note">💡 הלקוחות רואים את כל המחירים ברחוב והולכים יותר לזול. מי שמוריד לבד מרוויח. אבל אם כולם מורידים, כולם מרוויחים פחות. המחירים של אתמול גלויים לכולם בטבלה במרכז הבקרה.</div>}
   </section>
@@ -2432,7 +2436,7 @@ function Game(){
     avail=free+shopCost,want=needFor(N),cost=costOf(want),fits=cost<=avail+0.001,most=(()=>{let x=N;while(x>0&&costOf(needFor(x))>avail+0.001)x--;return x;})(),
     take=x=>{setBuy(needFor(x));setCupsWanted(x);setQuickAsk(null);sfx('coin');},none=want.l+want.h+want.i===0,done=!none&&buy.l===want.l&&buy.h===want.h&&buy.i===want.i;
    return <section className="blk quick"><div className="blk-h"><h3>🧺 קנייה לפי המתכון</h3><span className="tag">{recipe.l}🍋 {recipe.h}🍬 {recipe.i}🧊 לכוס</span></div>
-    <div className="quick-r"><span>לכמה כוסות לקנות?</span><Stepper v={N} set={v=>{if(v>=0){setQuickN(v);setQuickAsk(null);}}} min={0} max={cap} big5/></div>
+    <div className="quick-r"><span>לכמה כוסות לקנות?<small className="quick-cap">{ups.includes('team')?'בלי הגבלה':`עד ${cap} ביום`}</small></span><Stepper v={N} set={v=>{if(v>=0){setQuickN(v);setQuickAsk(null);}}} min={0} max={cap} big5/></div>
     <div className="hint">{none?'יש לך מספיק מלאי לכל הכוסות האלה.':<>חסר: {want.l?want.l+'🍋 ':''}{want.h?want.h+'🍬 ':''}{want.i?want.i+'🧊':''} · <b>{fmt2(cost)}</b>. מה שכבר במלאי לא נקנה שוב.</>}</div>
     {quickAsk!=null?<div className="hd-del"><span>{quickAsk>0?<>יש לך כסף רק ל-<b>{quickAsk}</b> כוסות ({fmt2(costOf(needFor(quickAsk)))}). לקנות ל-{quickAsk}?</>:'אין מספיק כסף אפילו לכוס אחת.'}</span>{quickAsk>0&&<button className="chip" onClick={()=>take(quickAsk)}>כן, ל-{quickAsk}</button>}<button className="chip" onClick={()=>setQuickAsk(null)}>ביטול</button></div>
      :done?<div className="hint">✓ בעגלה: מה שחסר ל-{N} כוסות.</div>:!none&&<button className="btn sm" onClick={()=>fits?take(N):setQuickAsk(most)}>{fits?<>לקנות ל-{N} כוסות · {fmt2(cost)}</>:<>לקנות ל-{N} כוסות · חסר {fmt2(cost-avail)}</>}</button>}
@@ -2562,6 +2566,9 @@ function Game(){
   </section>}
  </div>;
 
+ // how many cups the stand can serve a day, and what would raise it
+ const CapLine=()=>{const team=ups.includes('team'),st=ups.includes('station'),capSt=hood?NB.CAP.station:CAP_STATION,next=[!helper&&`🧑‍💼 עוזר: +${HELPER_B} (₪${HELPER_C} ליום)`,!st&&!team&&`🏪 עמדה נוספת: עד ${capSt+(helper?HELPER_B:0)}`,!team&&'👥 צוות מלא: בלי הגבלה'].filter(Boolean);
+  return <div className="cap-line"><div>🧃 הדוכן מגיש <b>{team?'בלי הגבלה':<>עד {cap} כוסות</>}</b> ביום{team?' (צוות מלא)':''}</div>{next.length>0&&<small>להגדיל: {next.join(' · ')} · <a className="lnk" onClick={()=>setTab('biz')}>לדוכן ›</a></small>}</div>;};
  const Biz=()=> <div className="pane">
   <Banner kind="biz" ic="🏪" title="הדוכן" sub="מיקום, צוות, ציוד וכסף" onBack={()=>setTab('news')}/>
   <div className="budget">💰 פנוי: <b className="num">{fmt(free)}</b></div>
