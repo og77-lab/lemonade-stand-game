@@ -837,6 +837,8 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
     .st-w-lRain .st-sun, .st-w-hRain .st-sun { display: none; }
     .st-comp-wrap { position: absolute; bottom: 110px; z-index: 2; transform: scale(0.7); transform-origin: bottom center; }
     .st-comp { position: relative; display: flex; flex-direction: column; align-items: center; transition: opacity .6s, filter .6s; }
+    .quick-r { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0; font-weight: 700; }
+    .quick .btn.sm { margin-top: 8px; width: 100%; }
     .st-comp-off { opacity: 0.6; filter: grayscale(0.7); }
     .st-spr { display: block; background-repeat: no-repeat; }
     .st-walk { display: block; background-repeat: no-repeat; background-position: var(--x0) var(--y); }
@@ -1912,6 +1914,7 @@ function Game(){
  const rivals=useMemo(()=>rivalsOf(seed),[seed]);
  const comps=rivals.slice(0,nComp);
  const [tab,setTab]=useState('news');
+ const [quickN,setQuickN]=useState(null),[quickAsk,setQuickAsk]=useState(null); // the market's "buy for X cups", and the smaller number it offers when the money is short
  const [show,setShow]=useState(null);
  const [cash,setCash]=useState(80),[loan,setLoan]=useState(0);
  const [lemons,setLemons]=useState([{q:40,d:1}]),[sugar,setSugar]=useState(0),[ice,setIce]=useState(0);
@@ -2417,6 +2420,16 @@ function Game(){
   return <div className="pane">
   {isEve?<Banner kind="market" ic="🏮" title="שוק הלילה" sub="דוכנים פתוחים עד שמתחיל הלילה · משלמים במקום" onBack={()=>setTab('news')}/>
    :<Banner kind="store" ic="🏚️" title="המחסן" sub="השוק סגור עד הערב · זה מה שיש לך" onBack={()=>setTab('news')}/>}
+  {isEve&&(()=>{const N=quickN??cupsWanted,needFor=x=>({l:Math.max(0,x*recipe.l-lm),h:Math.max(0,x*recipe.h-sugar),i:Math.max(0,x*recipe.i-ice)}),costOf=b=>b.l*tP.l+b.h*tP.h+b.i*tP.i,
+    avail=free+shopCost,want=needFor(N),cost=costOf(want),fits=cost<=avail+0.001,most=(()=>{let x=N;while(x>0&&costOf(needFor(x))>avail+0.001)x--;return x;})(),
+    take=x=>{setBuy(needFor(x));setCupsWanted(x);setQuickAsk(null);sfx('coin');},none=want.l+want.h+want.i===0,done=!none&&buy.l===want.l&&buy.h===want.h&&buy.i===want.i;
+   return <section className="blk quick"><div className="blk-h"><h3>🧺 קנייה לפי המתכון</h3><span className="tag">{recipe.l}🍋 {recipe.h}🍬 {recipe.i}🧊 לכוס</span></div>
+    <div className="quick-r"><span>לכמה כוסות לקנות?</span><Stepper v={N} set={v=>{if(v>=0){setQuickN(v);setQuickAsk(null);}}} min={0} max={cap} big5/></div>
+    <div className="hint">{none?'יש לך מספיק מלאי לכל הכוסות האלה.':<>חסר: {want.l?want.l+'🍋 ':''}{want.h?want.h+'🍬 ':''}{want.i?want.i+'🧊':''} · <b>{fmt2(cost)}</b>. מה שכבר במלאי לא נקנה שוב.</>}</div>
+    {quickAsk!=null?<div className="hd-del"><span>{quickAsk>0?<>יש לך כסף רק ל-<b>{quickAsk}</b> כוסות ({fmt2(costOf(needFor(quickAsk)))}). לקנות ל-{quickAsk}?</>:'אין מספיק כסף אפילו לכוס אחת.'}</span>{quickAsk>0&&<button className="chip" onClick={()=>take(quickAsk)}>כן, ל-{quickAsk}</button>}<button className="chip" onClick={()=>setQuickAsk(null)}>ביטול</button></div>
+     :done?<div className="hint">✓ בעגלה: מה שחסר ל-{N} כוסות.</div>:!none&&<button className="btn sm" onClick={()=>fits?take(N):setQuickAsk(most)}>{fits?<>לקנות ל-{N} כוסות · {fmt2(cost)}</>:<>לקנות ל-{N} כוסות · חסר {fmt2(cost-avail)}</>}</button>}
+    {(buy.l+buy.h+buy.i)>0&&!done&&<div className="hint">הקנייה מחליפה את מה שסימנת בדוכנים. אפשר לשנות בדוכנים אחר כך.</div>}
+   </section>;})()}
   {isEve&&<div className="stalls">{rows.map(([k,em,n,have,p,life,cls])=>{const prev=world[Math.max(0,day-2)].p[k],pct=prev?Math.round((p-prev)/prev*100):0;
    return <div key={k} className={"stall st-"+cls+(buy[k]?' on':'')}>
     <div className="awning" aria-hidden="true"/>
