@@ -1,31 +1,48 @@
-// The street fund. Whole days on a street of six medium stands, with every event tier: what giving is worth, by who else gives; then how often bots alone reach the target.
-// Margin = revenue less the ingredients of the cups sold, less the gift, against the same day with no fund at all.
-// usage: node tools/fund.js [days=600]   (env SPONSORS tries another share of the crowd for the givers)
+// The street fund over whole seasons: streets of different sizes, with some human players who each keep one way of playing the fund, and bots for the rest.
+// Does the event happen because of the street as a whole, not because of one player? Does any way of playing always win?
+// usage: node tools/fund.js [seasons=300] [days=7] [level=medium]
 const E = require('../engine.js');
-const N = +process.argv[2] || 600, n = +process.env.STANDS || 6;
-if (process.env.OPEN) E.NB.FUND.open = +process.env.OPEN;
-function day(seed, offer, gifts, extraCups) {
-  const world = E.buildWorld(seed, 7), d = 3, P = world[d - 1].p;
-  const S = Array.from({ length: n }, (_, k) => ({ id: 's' + k, p: E.PERSONAS[2], st: { ...E.newStand(), cash: 200, lemons: [{ q: 90, d: 3 }], sugar: 40, ice: 0 } }));
-  const decs = S.map((s, k) => { const x = E.botDecision(s.p, s.st, { seed, world, day: d, diff: 'medium', n, board: S.map(q => ({ id: q.id, tot: 0 })), me: s.id, k, prev: null, street: [] }); x.bh = []; x.sec = 0; x.autoStock = true; x.fund = gifts[k]; if (extraCups && gifts[k]) x.cups = Math.round(x.cups * extraCups); return x; });
-  const prep = S.map((s, k) => E.prepareStand(s.st, decs[k], world, d, n));
-  const out = E.runNeighborhoodDay({ seed, world, day: d, fund: offer, stands: S.map((s, k) => ({ id: s.id, st: prep[k].st, plan: prep[k].plan })) });
-  return out.results.map((r, k) => { const p = prep[k].plan; return r.rev + (r.prize || 0) - r.sold * (p.recipe.l * P.l + p.recipe.h * P.h + p.recipe.i * P.i) - gifts[k]; });
+const [N = 300, DAYS = 7, LEVEL = 'medium'] = process.argv.slice(2).map((x, i) => i === 2 ? x : +x);
+const CAST = ['steady', 'gambler', 'budget', 'veteran', 'trendy', 'premium'];
+// how a human might play the fund: always buy, never, a coin, or buy again only after an event that happened
+const WAYS = { always: () => true, never: () => false, coin: r => r() < 0.5, 'after a success': (r, last) => !last || last.ok };
+
+function season(seed, n, humans) {
+  const members = Array.from({ length: n }, (_, k) => ({ id: 'm' + k, slot: k, persona: k < humans.length ? null : CAST[(k + seed) % CAST.length], nick: 'x', em: 'x', state: E.newStand() }));
+  let g = { hood: { id: 'h' + seed, seed, days: DAYS, difficulty: LEVEL, last_day: 0 }, members, decisions: {}, paid: {}, prev: {}, street: [] };
+  const r = E.rng(seed * 31 + 7), happened = [], bought = { human: 0, humanN: 0, bot: 0, botN: 0 };
+  for (let day = 1; day <= DAYS; day++) {
+    const world = E.buildWorld(seed, DAYS), board = g.members.map(m => ({ id: m.id, tot: m.state.tot })), decisions = {};
+    humans.forEach((way, k) => {
+      const m = g.members[k], d = E.botDecision(E.PERSONAS.find(p => p.id === 'steady'), m.state, { seed, world, day, diff: LEVEL, n, board, me: m.id, k, prev: g.prev[m.id], street: g.street });
+      decisions[m.id] = { ...d, bh: [], fund: WAYS[way](r, happened[happened.length - 1]) ? 1 : 0 };
+    });
+    const out = E.advanceHood({ ...g, decisions: { [day]: decisions }, now: { day, minutes: 18 * 60 } }), run = out.runs[out.runs.length - 1];
+    if (run.open.fund) happened.push({ ok: run.open.fund.ok });
+    run.privates.forEach(p => { const k = +p.member.slice(1), gave = ((p.data.res || {}).fund || {}).gave > 0; if (k < humans.length) { bought.human += gave; bought.humanN++; } else { bought.bot += gave; bought.botN++; } });
+    g = { ...g, members: g.members.map(m => ({ ...m, state: out.states[m.id] })), hood: { ...g.hood, last_day: out.last_day }, street: run.results.map(q => ({ id: q.id, price: q.price, loc: q.loc })),
+      prev: Object.fromEntries(g.members.map(m => { const p = run.privates.find(x => x.member === m.id); return [m.id, { dec: p.data.dec, res: p.data.res }]; })) };
+  }
+  const sc = g.members.map(m => E.nbScore(m.state)), top = Math.max(...sc);
+  return { sc, first: sc.map(v => v >= top ? 1 : 0), ok: happened.filter(x => x.ok).length / Math.max(1, happened.length), bought };
 }
-const avg = (offer, gifts, x) => { const t = Array(n).fill(0); for (let g = 1; g <= N; g++) day(g * 7919 + 31, offer, gifts, x).forEach((v, k) => { t[k] += v; }); return t.map(v => v / N); };
-const none = avg(null, Array(n).fill(0));
-for (const t of E.NB.FUND.tiers) {
-  const offer = { ...t, target: Math.round(t.per * n) }, fair = Math.ceil(offer.target / n), four = Math.ceil(offer.target / 4), base = none[0];
-  const all = avg(offer, Array(n).fill(fair)), allP = avg(offer, Array(n).fill(fair), 1.3), most = avg(offer, [0, four, four, four, four, 0]), lost = avg(offer, [fair, 0, 0, 0, 0, 0]), mostP = avg(offer, [0, four, four, four, four, 0], 1.3);
-  console.log(`${t.n}: target ₪${offer.target}, crowd ×${t.boost}`);
-  console.log(`  everyone gives ₪${fair}             giver ${(all[0] - base).toFixed(1).padStart(6)}   (with 30% more cups ${(allP[0] - base).toFixed(1)})`);
-  console.log(`  four give ₪${four}, two don't       giver ${(most[1] - base).toFixed(1).padStart(6)}   (with 30% more cups ${(mostP[1] - base).toFixed(1)})   free rider ${(most[0] - base).toFixed(1)}`);
-  console.log(`  I alone give ₪${fair}, target missed  giver ${(lost[0] - base).toFixed(1).padStart(6)}`);
-  // what a bigger gift is worth to me when the others give their share (the rows on the card)
-  const others = k => Array(n - 1).fill(k ? fair : Math.ceil(offer.target / (n - 1)));
-  for (const x of [1.2]) console.log(`  the others reach the target, cups ×${x}, I give: ` + [0, 1, 1.5, 2, 3].map(k => `₪${Math.round(k * fair)}: ${(avg(offer, [Math.round(k * fair), ...others(k)], x)[0] - base).toFixed(1)}`).join(' · '));
+
+function street(label, n, humans) {
+  const per = {}, add = (k, s, f) => { const a = per[k] = per[k] || { s: 0, f: 0, c: 0 }; a.s += s; a.f += f; a.c++; };
+  let ok = 0, hb = 0, hn = 0, bb = 0, bn = 0;
+  for (let i = 1; i <= N; i++) {
+    const res = season(i * 7919 + 13, n, humans); ok += res.ok; hb += res.bought.human; hn += res.bought.humanN; bb += res.bought.bot; bn += res.bought.botN;
+    res.sc.forEach((v, k) => add(k < humans.length ? 'human: ' + humans[k] : 'bot', v, res.first[k]));
+  }
+  console.log(`\n${label} (${n} stands, ${E.fundOffer('x', 1, n).need} tickets needed)`);
+  console.log(`  the event happened on ${(ok / N * 100).toFixed(0)}% of the days · bots bought ${(bb / Math.max(1, bn) * 100).toFixed(0)}% of the time` + (hn ? ` · humans ${(hb / hn * 100).toFixed(0)}%` : ''));
+  for (const [k, a] of Object.entries(per)) console.log(`  ${k.padEnd(26)} season ₪${(a.s / a.c).toFixed(0).padStart(4)}   first in ${(a.f / a.c * 100).toFixed(0)}% of seasons`);
 }
-// how often the bots alone get there, in random streets
-let ok = 0, tot = 0, gave = 0; const r = E.rng(77);
-for (let g = 1; g <= 4000; g++) { const cast = Array.from({ length: n }, () => E.PERSONAS[Math.floor(r() * 6)]), offer = E.fundOffer('h' + g, 1 + g % 7, n); let sum = 0; cast.forEach(p => { const v = E.fundMove(p, 'medium', r, { offer, n, fd: [] }); sum += v; if (v) gave++; }); tot++; if (sum >= offer.target) ok++; }
-console.log(`\nsix bots alone reach the target ${(100 * ok / tot).toFixed(0)}% of the time; ${(100 * gave / tot / n).toFixed(0)}% of them give`);
+
+street('only bots', 6, []);
+street('one human, each way of playing', 6, ['always', 'never', 'coin', 'after a success'].slice(0, 1));
+street('one human who never buys', 6, ['never']);
+street('only bots', 10, []);
+street('three humans who always buy', 10, ['always', 'always', 'always']);
+street('three humans who never buy', 10, ['never', 'never', 'never']);
+street('three humans, mixed', 10, ['always', 'never', 'after a success']);

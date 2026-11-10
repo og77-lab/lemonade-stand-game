@@ -255,16 +255,16 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
  COUPON:{cost:0,pay:{both:30,tempt:60,sucker:20,none:0},luck:[0.8,1.2], // what each night really pays
   noise:{easy:0.25,medium:0.12,hard:0.05}, // how far a bot strays from its rule
   honest:{steady:1,veteran:1,premium:0.9,trendy:0.75}}, // how often a character's evening word matches what it will do (Avi always promises, Moti says the opposite)
- // The street fund: a contest over a shared pot. Each evening the committee names an event and a target, and everyone gives in secret. At 08:00: below the target, part of each gift comes back.
- // At the target the event pays a pot, split by what each stand gave, so giving too little risks the target and everyone giving a lot leaves each a thin slice. The event also fills the street a little, for givers and others alike
  // The street fund: a public good with a threshold. Each evening the committee names an event, a ticket and how many stands must buy one.
  // Each stand decides in secret to buy the ticket or not. At 08:00: enough tickets and the event happens, and it pays every stand on the street the same (givers and others alike);
- // too few and the ticket comes back in part. So giving pays only when your ticket may be the one that tips it: if the street gets there without you, keeping your money pays more,
- // and if it doesn't get there, giving loses. No choice always wins (measured in the scratchpad's share.cjs)
- FUND:{back:0,pay:4,open:0.15,moods:[0.8,1,1.15],tiers:[{n:'🎵 הופעה קטנה',ticket:12,need:0.8,boost:1.3},{n:'🛍️ יריד רחוב',ticket:18,need:0.8,boost:1.45},{n:'🎪 פסטיבל',ticket:25,need:0.8,boost:1.6}],
- // tonight's target, around the event's usual size
-  noise:{easy:0.2,medium:0.1,hard:0.05},
-  char:{steady:{p:0.95,ok:0.02,no:-0.05},veteran:{p:0.85,ok:0.1,no:-0.3},premium:{p:0.9,ok:0.03,no:-0.1},trendy:{p:0.75,ok:0.2,no:-0.35},budget:{p:0.4,ok:0.05,no:-0.1},gambler:{p:0.65,ok:0,no:0}}},
+ // too few and the ticket is lost. So giving pays only when your ticket may be the one that tips it: if the street gets there without you, keeping your money pays more,
+ // and if it doesn't get there, giving loses. No choice always wins (measured in tools/fund.js)
+ FUND:{back:0,pay:4,open:0.15,moods:[0.8,1,1.15],tiers:[{n:'🎵 הופעה קטנה',ticket:12,need:0.7,boost:1.3},{n:'🛍️ יריד רחוב',ticket:18,need:0.7,boost:1.45},{n:'🎪 פסטיבל',ticket:25,need:0.7,boost:1.6}],
+  // the bots weigh the fund like a player: how many others will buy (from how the street's last events went), how likely their own ticket is the one that tips it,
+  // and their character: opt = how hopeful about the others at first, alt = how much the street's gain counts for them, loss = how much a lost ticket hurts, mem = how long they remember
+  temp:{easy:14,medium:8,hard:5}, // how loosely a bot follows its own sums (in shekels)
+  char:{steady:{opt:0.85,alt:0.42,loss:1.2,mem:0.7},veteran:{opt:0.75,alt:0.18,loss:1.3,mem:0.85},premium:{opt:0.8,alt:0.24,loss:1.1,mem:0.6},
+   trendy:{opt:0.8,alt:0.15,loss:1,mem:0.3},budget:{opt:0.65,alt:0,loss:1.8,mem:0.6},gambler:{opt:0.9,alt:0.06,loss:0.7,mem:0.5}}},
  // the black hat as a bot plays it: nerve = how much it fears being caught and hit back, mem = how many days it holds a grudge, para = how much it fears being attacked
  HAT:{steady:{nerve:1.3,mem:1,para:0.6},veteran:{nerve:1.5,mem:9,para:0.7},premium:{nerve:1.8,mem:2,para:0.9},budget:{nerve:1,mem:2,para:0.35},trendy:{nerve:1,mem:2,para:0.55,herd:1},gambler:{nerve:0.7,mem:3,para:0.3}},
  HAT_V:{ads:[45,75,10],rumor:[10,80,20]},HAT_FEAR:35,HAT_DRIVE:70, // what a trick is worth (to me, to the rival, if caught), the price of being hit back, and how much value makes a bot certain
@@ -298,9 +298,19 @@ const fundOffer=(id,day,n)=>{let h=7;for(const c of String(id))h=(h*31+c.charCod
  const need=Math.max(1,Math.min(n,Math.ceil(n*t.need))),ticket=t.ticket;return{...t,ticket,need,target:ticket*need,pays:Math.round(ticket*NB.FUND.pay),mood:M[Math.floor(R()*M.length)]};};
 // A bot's gift: its character, how the last few funds went (fd: its record), and a chance to surprise
 // A bot weighs the fund as a player does: it guesses what the others will give from what they gave lately and tonight's mood on the street, then works out each gift. How much it fears a loss is its character
-const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c=F.char[persona.id]||{p:0.5,ok:0,no:0},last=o.fd.filter(x=>x.t).slice(-1)[0],f=F.noise[diff]||0.1;
- let p=(c.p+(last?(last.ok?c.ok:c.no):0))*(o.offer.mood||1);p=Math.max(0.03,Math.min(0.97,p*(1-2*f)+f));
- return r()<p?o.offer.ticket:0;};
+const binom=(m,q)=>{const P=[];let c=1;for(let k=0;k<=m;k++){P.push(c*Math.pow(q,k)*Math.pow(1-q,m-k));c=c*(m-k)/(k+1);}return P;};
+const fundMove=(persona,diff,r,o)=>{const F=NB.FUND,c0=F.char[persona.id]||F.char.steady,{ticket:t,need,pays}=o.offer,n=o.n,m=n-1;
+ // two stands with the same character are still two people: each gets its own shade of it
+ const J=rng((o.seed||1)*977+(o.k||0)*131+7),j=()=>0.8+0.4*J(),c={opt:Math.min(0.92,c0.opt*j()),alt:c0.alt*j(),loss:c0.loss*j(),mem:Math.min(0.95,c0.mem*j())};
+ // what the street's past events say about how many others buy: an event that happened means at least need-1 others bought (if I did), one that did not means fewer
+ let q=c.opt,w=2;o.fd.filter(x=>x.t).slice().reverse().forEach((x,age)=>{const nd=x.nd||need,mine=x.g>0?1:0,lo=Math.max(0,(nd-mine)/m),hi=Math.max(0,(nd-1-mine)/m),
+   seen=x.ok?Math.min(0.97,lo+0.5*(1-lo)):Math.max(0.03,hi*0.75),wt=Math.pow(c.mem,age)*1.5;q=(q*w+seen*wt)/(w+wt);w+=wt;});
+ q=Math.max(0.03,Math.min(0.97,q*(o.offer.mood||1)));
+ // the sums: buying pays when my ticket may be the one that tips it; not buying pays when the street gets there without me
+ const P=binom(m,q),atLeast=k=>P.slice(Math.max(0,k)).reduce((a,b)=>a+b,0),withMe=atLeast(need-1),without=atLeast(need),tip=withMe-without;
+ const buy=withMe*pays-t-(c.loss-1)*t*(1-withMe)+c.alt*m*pays*tip,skip=without*pays;
+ const T=(F.temp[diff]||8),p=1/(1+Math.exp(-(buy-skip)/T));
+ return r()<p?t:0;};
 const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const nbCap=(ups,helper)=>(ups.includes('team')?CAP_TEAM:ups.includes('station')?NB.CAP.station:NB.CAP.base)+(helper?HELPER_B:0);
 const newStand=()=>({cash:NB.START_CASH,lemons:[{q:40,d:1}],sugar:0,ice:0,rep:50,ups:[],loan:0,tot:0,tricks:0,paper:false});
@@ -431,7 +441,7 @@ const settleStand=(st,plan,res,spent,day)=>{const n={...st,ups:[...st.ups]};
  n.tot=Math.round((st.tot+profit)*100)/100;n.rep=res.rep;n.tricks=st.tricks+res.myTricks.length;n.paper=res.vip===true;
  n.cp=res.coupon?[...(st.cp||[]),{d:day,w:res.coupon.with,m:res.coupon.gave,o:res.coupon.got,s:res.coupon.said}]:st.cp||[];
  if(res.sus&&res.sus.length)n.foes=[...(st.foes||[]).slice(-8),...res.sus.map(id=>({id,d:day}))];
- n.fd=res.fund?[...(st.fd||[]),{d:day,ok:res.fund.ok,g:res.fund.gave,t:res.fund.target}]:st.fd||[];
+ n.fd=res.fund?[...(st.fd||[]),{d:day,ok:res.fund.ok,g:res.fund.gave,t:res.fund.target,nd:res.fund.need}]:st.fd||[];
  return{st:n,profit,spoiled};};
 const nbScore=st=>Math.round((st.tot-st.loan)*100)/100;
 
@@ -497,7 +507,7 @@ const botDecision=(persona,st,o)=>{const {seed,world,day,diff,n,board,me,k,prev}
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
  dec.buy={l:Math.max(0,cups*rec.l-lm),h:Math.max(0,cups*rec.h-st.sugar),i:Math.max(0,cups*rec.i-(st.ups.includes('cooler')?st.ice:0))};dec.cups=cups;
  if(o.partner){const c=couponNight(persona,diff,seed,day,k,{me,partner:o.partner,peers:o.peers,tot:Object.fromEntries(board.map(b=>[b.id,b.tot]))});dec.coupon=c.move;dec.say=c.say;}
- if(o.fund){const g=fundMove(persona,diff,rr,{offer:o.fund,n,fd:st.fd||[]});if(g&&spend(g))dec.fund=g;}
+ if(o.fund){const g=fundMove(persona,diff,rr,{offer:o.fund,n,fd:st.fd||[],seed,k});if(g&&spend(g))dec.fund=g;}
  return dec;};
 const autopilot=(st,last,lastRes,world,day)=>{const P=world[day-1].p,rec=(last&&last.recipe)||{l:3,h:1,i:1},cups=Math.max(10,Math.round(((lastRes&&lastRes.sold)||15)*1.1));
  const lm=st.lemons.filter(b=>day-b.d<2).reduce((s,b)=>s+b.q,0);
