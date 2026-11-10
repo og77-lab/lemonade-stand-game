@@ -1907,7 +1907,11 @@ function Game(){
  const [hood,setHood]=useState(null),[hoodCoupon,setHoodCoupon]=useState(true),[hoodMk,setHoodMk]=useState('up'),[hoodSt,setHoodSt]=useState('fund'),[hoodTg,setHoodTg]=useState(null),[hoodFund,setHoodFund]=useState(0),[hoodSpied,setHoodSpied]=useState({}),[hoodDashDay,setHoodDashDay]=useState(null),[hoodDashM,setHoodDashM]=useState('rep'),[hoodDashTab,setHoodDashTab]=useState('tables'),[hoodDashRow,setHoodDashRow]=useState(null),[targets,setTargets]=useState({}),[sec,setSec]=useState(0),[hoodCups,setHoodCups]=useState(null);
  const world=useMemo(()=>hood&&hood.st?hoodWorld(hood.st):buildWorld(seed),[seed,hood&&hood.st]);
  const [day,setDay]=useState(1);
- const [homeHoods,setHomeHoods]=useState([]);
+ const [homeHoods,setHomeHoods]=useState([]),[homeSolo,setHomeSolo]=useState([]),[homeDel,setHomeDel]=useState(null);
+ const soloId=useRef(null);
+ const soloList=()=>{try{return JSON.parse(localStorage.getItem('lm-solo')||'[]')||[];}catch(_){return[];}};
+ const soloPut=l=>{try{localStorage.setItem('lm-solo',JSON.stringify(l.slice(0,8)));}catch(_){}};
+ const hiddenHoods=()=>{try{return JSON.parse(localStorage.getItem('lm-hood-hidden')||'[]')||[];}catch(_){return[];}};
  const [phase,setPhase]=useState('title'); // title | setup | evening (before `day`) | morning | sim | report | over
  const [diff,setDiff]=useState('medium'),[nComp,setNComp]=useState(2);
  const withComp=nComp>0&&!hood;
@@ -2182,8 +2186,20 @@ function Game(){
  const openHood=id=>{if(cfg.gender)hoodRpc('lm_hood_set_gender',{p_hood:id,p_gender:cfg.gender}).catch(()=>{});setHood({id,st:null,skew:0});hoodKey.current='';setHoodMsg(null);setPhase('hoodwait');hoodLoad(id).catch(e=>setHoodMsg(hoodErr(e)));};
  // leaving a neighborhood: nothing of it may carry into a regular game
  // the leagues still running, for the home screen. Only for someone who already has a neighborhood account
- useEffect(()=>{if(phase!=='title'||!sbLoad())return;hoodRpc('lm_my_hoods',{}).then(l=>setHomeHoods((l||[]).filter(h=>h.status!=='done'))).catch(()=>{});},[phase]);
- const leaveHood=()=>{setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);setHoodStreet([]);hoodSnap.current='';
+ useEffect(()=>{if(phase!=='title')return;setHomeSolo(soloList());setHomeDel(null);if(!sbLoad())return;const hid=hiddenHoods();hoodRpc('lm_my_hoods',{}).then(l=>setHomeHoods((l||[]).filter(h=>h.status!=='done'&&!hid.includes(h.id)))).catch(()=>{});},[phase]);
+ // a single game is saved each evening (its choices too), and forgotten when it ends
+ useEffect(()=>{if(hood||!soloId.current)return;
+  if(phase==='over'){soloPut(soloList().filter(g=>g.id!==soloId.current));return;}
+  if(phase!=='evening')return;
+  const g={id:soloId.current,at:Date.now(),seed,gameId,diff,nComp,day,cash,loan,lemons,sugar,ice,rep,buy,recipe,price,cupsWanted,loc,helper,ups,acts,fcast,history,read,inspPaid,vipBoost,rv};
+  soloPut([g,...soloList().filter(x=>x.id!==g.id)]);},[phase,day,cash,loan,lemons,sugar,ice,rep,buy,recipe,price,cupsWanted,loc,helper,ups,acts,fcast,history.length,rv,hood]);
+ const resumeSolo=g=>{soloId.current=g.id;setSeed(g.seed);setGameId(g.gameId||null);setDiff(g.diff);setNComp(g.nComp);setDay(g.day);setCash(g.cash);setLoan(g.loan);setLemons(g.lemons);setSugar(g.sugar);setIce(g.ice);setRep(g.rep);
+  setBuy(g.buy);setRecipe(g.recipe);setPrice(g.price);setCupsWanted(g.cupsWanted);setLoc(g.loc);setHelper(g.helper);setUps(g.ups||[]);setActs(g.acts||[]);setFcast(g.fcast||null);setHistory(g.history||[]);setRead(g.read||{});
+  setInspPaid(!!g.inspPaid);setVipBoost(!!g.vipBoost);setRv(g.rv||[]);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setSim(null);setTab('news');setPhase('evening');setShow({kind:'dusk',l1:'ערב',l2:`לפני יום ${g.day}`});};
+ // a fresh single game: nothing of an earlier one carries over
+ const freshSolo=()=>{setDay(1);setCash(80);setLoan(0);setLemons([{q:40,d:1}]);setSugar(0);setIce(0);setRep(50);setBuy({l:0,h:0,i:0});setRecipe({l:3,h:1,i:1});setPrice(6);setCupsWanted(20);setLoc(1);setHelper(false);
+  setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');};
+ const leaveHood=()=>{soloId.current=null;setHood(null);hoodKey.current='';setHoodSpied({});setHoodDashDay(null);setTargets({});setSec(0);setHoodCups(null);setHoodCounts({});setHoodAlerts([]);setHoodStreet([]);hoodSnap.current='';
   setDay(1);setCash(80);setLoan(0);setLemons([{q:40,d:1}]);setSugar(0);setIce(0);setRep(50);setBuy({l:0,h:0,i:0});setRecipe({l:3,h:1,i:1});setPrice(6);setCupsWanted(20);setLoc(1);setHelper(false);
   setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');setPhase('hood');};
  useEffect(()=>{if(!hood||!hood.id)return;const t=setInterval(()=>hoodLoad().catch(()=>{}),30000),c=setInterval(()=>hoodClock(x=>x+1),1000);return()=>{clearInterval(t);clearInterval(c);};},[hood&&hood.id]);
@@ -2929,7 +2945,7 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
   if(phase==='report'&&report){hoodSeen(hood.id,report.day);hoodSync(hst,true);}};
  const skyKind=phase==='evening'?'eve':phase==='report'||phase==='over'?'dusk':'day';
  const wxKind=phase==='evening'?'night':phase==='report'||phase==='over'?'dusk':W.w;
- const start=async()=>{setStarting(true);
+ const start=async()=>{setStarting(true);freshSolo();const s0=Date.now()%100000;setSeed(s0);soloId.current='s'+Date.now();
   // register the game on the server (it picks the seed); offline it still plays, just without the community board
   try{const j=await Promise.race([sbStart(diff,nComp),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),4000))]);if(j&&j.id){setSeed(j.seed);setGameId(j.id);}}catch(_){setGameId(null);}
   setStarting(false);setPhase('evening');setTab('news');setShow({kind:'dusk',l1:'ערב',l2:'לפני יום 1'});};
@@ -2947,8 +2963,14 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
    <h1 className="intro-title">{GAME_NAME}</h1>
    <p className="intro-sub">10 ימים · דוכן אחד · כמה אפשר להרוויח?</p>
    <div className="intro-pts"><span>🛒 קונים בשוק</span><span>🥤 ממציאים כוס</span><span>📣 מושכים לקוחות</span></div>
+   {homeSolo.length>0&&<section className="blk hd-list hd-home"><div className="blk-h"><h3>🍋 המשחקים שלך</h3></div>
+    {homeSolo.map(g=><div key={g.id} className="hd-rw"><button className="hd-row" onClick={()=>resumeSolo(g)}><b>{DIFF[g.diff]?.em} יום {g.day}/{DAYS}</b><small>בקופה {fmt(g.cash)} · {DIFF[g.diff]?.n} · {g.nComp?g.nComp+' מתחרים':'לבד'}</small><span>›</span></button>
+     {homeDel===g.id?<div className="hd-del"><span>למחוק את המשחק?</span><button className="chip" onClick={()=>{const l=soloList().filter(x=>x.id!==g.id);soloPut(l);setHomeSolo(l);setHomeDel(null);}}>כן, למחוק</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
+      :<button className="hd-bin" aria-label="למחוק את המשחק" onClick={()=>setHomeDel(g.id)}>🗑️</button>}</div>)}</section>}
    {homeHoods.length>0&&<section className="blk hd-list hd-home"><div className="blk-h"><h3>🏘️ הליגות שלך</h3></div>
-    {homeHoods.map(h=><button key={h.id} className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='open'?'מתחילה בקרוב':`יום ${h.last_day}/${h.days}`}</small><span>›</span></button>)}</section>}
+    {homeHoods.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='open'?'מתחילה בקרוב':`יום ${h.last_day}/${h.days}`}</small><span>›</span></button>
+     {homeDel===h.id?<div className="hd-del"><span>{h.owner?'למחוק לתמיד, לכל השחקנים?':'להסתיר מהרשימה שלך?'}</span><button className="chip" onClick={async()=>{try{if(h.owner)await hoodRpc('lm_hood_delete',{p_hood:h.id});else localStorage.setItem('lm-hood-hidden',JSON.stringify([...hiddenHoods(),h.id]));}catch(_){}setHomeHoods(l=>l.filter(x=>x.id!==h.id));setHomeDel(null);}}>{h.owner?'כן, למחוק':'כן, להסתיר'}</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
+      :<button className="hd-bin" aria-label={(h.owner?'למחוק את ':'להסתיר את ')+h.name} onClick={()=>setHomeDel(h.id)}>{h.owner?'🗑️':'🙈'}</button>}</div>)}</section>}
    <button className="cta" onClick={()=>setPhase('setup')}>🍋 משחק חדש ליחיד ›</button>
    <button className="btn ghost hd-go" onClick={()=>setPhase('hood')}>🏘️ ליגה חדשה מול חברים</button>
    <button className="btn ghost" onClick={()=>{setCbOpen(true);loadBoard(cb.diff,cb.n);}}>🌍 שיאי הקהילה</button>
