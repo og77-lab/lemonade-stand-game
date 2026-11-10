@@ -261,10 +261,10 @@ const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts 
  // Each stand decides in secret to buy the ticket or not. At 08:00: enough tickets and the event happens, and it pays every stand on the street the same (givers and others alike);
  // too few and the ticket comes back in part. So giving pays only when your ticket may be the one that tips it: if the street gets there without you, keeping your money pays more,
  // and if it doesn't get there, giving loses. No choice always wins (measured in the scratchpad's share.cjs)
- FUND:{back:0.4,pay:2.8,open:0.15,moods:[0.8,1,1.15],tiers:[{n:'🎵 הופעה קטנה',ticket:12,need:0.5,boost:1.3},{n:'🛍️ יריד רחוב',ticket:18,need:0.6,boost:1.45},{n:'🎪 פסטיבל',ticket:25,need:0.7,boost:1.6}],
+ FUND:{back:0,pay:4,open:0.15,moods:[0.8,1,1.15],tiers:[{n:'🎵 הופעה קטנה',ticket:12,need:0.8,boost:1.3},{n:'🛍️ יריד רחוב',ticket:18,need:0.8,boost:1.45},{n:'🎪 פסטיבל',ticket:25,need:0.8,boost:1.6}],
  // tonight's target, around the event's usual size
   noise:{easy:0.2,medium:0.1,hard:0.05},
-  char:{steady:{p:0.8,ok:0.05,no:-0.05},veteran:{p:0.6,ok:0.25,no:-0.3},premium:{p:0.65,ok:0.05,no:-0.1},trendy:{p:0.5,ok:0.35,no:-0.35},budget:{p:0.25,ok:0.05,no:-0.1},gambler:{p:0.45,ok:0,no:0}}},
+  char:{steady:{p:0.95,ok:0.02,no:-0.05},veteran:{p:0.85,ok:0.1,no:-0.3},premium:{p:0.9,ok:0.03,no:-0.1},trendy:{p:0.75,ok:0.2,no:-0.35},budget:{p:0.4,ok:0.05,no:-0.1},gambler:{p:0.65,ok:0,no:0}}},
  // the black hat as a bot plays it: nerve = how much it fears being caught and hit back, mem = how many days it holds a grudge, para = how much it fears being attacked
  HAT:{steady:{nerve:1.3,mem:1,para:0.6},veteran:{nerve:1.5,mem:9,para:0.7},premium:{nerve:1.8,mem:2,para:0.9},budget:{nerve:1,mem:2,para:0.35},trendy:{nerve:1,mem:2,para:0.55,herd:1},gambler:{nerve:0.7,mem:3,para:0.3}},
  HAT_V:{ads:[45,75,10],rumor:[10,80,20]},HAT_FEAR:35,HAT_DRIVE:70, // what a trick is worth (to me, to the rival, if caught), the price of being hit back, and how much value makes a bot certain
