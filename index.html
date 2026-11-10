@@ -2636,7 +2636,7 @@ function Game(){
      <span className="lb-r num">{i+1}</span><span className="hd-lem">{m.em}</span>
      <span className="hd-ln"><b>{m.nick}{m.bot?' 🤖':''}</b><small>{LOC[s.loc].em} {LOC[s.loc].n}{s.mk.length?' · '+s.mk.map(k=>MK_EM[k]).join(''):''}{s.ups.filter(u=>['sign','shade','cups'].includes(u)).map(u=>ALL_UPS.find(z=>z.id===u).em).join('')}{s.helper?'🧑‍💼':''}</small></span>
      <span className="hd-lst">{s.closed?<i>🔒</i>:c.sick?<i className="bad">🤒 חלה ב-{c.sick}</i>:c.out?<i className="warn">💨 אזל ב-{c.out}</i>:null}{c.caught?<i className="bad">🚨 נתפס</i>:null}{c.saved?<i>🚨 האבטחה עצרה</i>:null}{c.vip?<i>🎩 מבקר {c.vip}</i>:null}</span>
-     <span className="hd-lv"><b className="num">₪{s.price}</b><small className="num he">{c.sold} קנו מתוך {c.vis||0} · {fmt(c.sold*s.price)}</small></span>
+     <span className="hd-lv"><b className="num">{fmt(c.sold*s.price)}</b><small className="num he">₪{s.price} לכוס · {c.sold} קנו מתוך {c.vis||0}</small></span>
      {d!==0&&<span className={"hd-mv "+(d>0?'up':'dn')}>{d>0?'⬆':'⬇'}</span>}</div>;})}</section>
    <section className="blk"><div className="blk-h"><h3>📰 מה קורה ברחוב</h3></div>
     {hoodAlerts.length?hoodAlerts.slice().reverse().map(a=><div key={a.m+a.t} className={"hd-ev "+a.type}><span className="num">{a.at}</span><p>{a.t}</p></div>):<div className="hint">עוד שקט ברחוב</div>}</section></>;};
