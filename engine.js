@@ -235,7 +235,7 @@ const makeForecast=(c,f)=>{const {seed,day,world,acAdj}=c;
 const NB={OPEN:8,CLOSE:17,MAX:10,START_CASH:200,WALK:60, // what a stand starts with, and the walkers on a one-stand street on an ordinary day
  // Cups a stand can serve in a day, and how much of the street a bot expects (tools/street-econ.js). About 40 people a day want to buy from an ordinary stand on a street of ten,
  // so the first day's money has to cover that and still leave room for marketing, security and the dilemmas
- CAP:{base:60,station:120},SHARE:0.9,
+ CAP:{base:40,station:80},SHARE:0.9,
  HOURS:[0.5,0.6,0.75,0.95,1.2,1.1,1.3,1.5,1.8], // crowd by hour, 08:00–16:00 (the peak comes after school and work)
  CROWD:0.85,  // the street's crowd grows with the stands on it, a little slower than their number
  STAY:0.75,   // share of walkers who only look at the stands in their own part of the street
