@@ -2184,7 +2184,7 @@ function Game(){
  const openHood=id=>{if(cfg.gender)hoodRpc('lm_hood_set_gender',{p_hood:id,p_gender:cfg.gender}).catch(()=>{});setHood({id,st:null,skew:0});hoodKey.current='';setHoodMsg(null);setPhase('hoodwait');hoodLoad(id).catch(e=>setHoodMsg(hoodErr(e)));};
  // leaving a neighborhood: nothing of it may carry into a regular game
  // the leagues still running, for the home screen. Only for someone who already has a neighborhood account
- useEffect(()=>{if(phase!=='title')return;setHomeSolo(soloList());setHomeDel(null);if(!sbLoad())return;const hid=hiddenHoods();hoodRpc('lm_my_hoods',{}).then(l=>setHomeHoods((l||[]).filter(h=>h.status!=='done'&&!hid.includes(h.id)))).catch(()=>{});},[phase]);
+ useEffect(()=>{if(phase!=='title')return;setHomeSolo(soloList());setHomeDel(null);if(!sbLoad())return;const hid=hiddenHoods();hoodRpc('lm_my_hoods',{}).then(l=>setHomeHoods((l||[]).filter(h=>!hid.includes(h.id)).sort((a,b)=>(a.status==='done')-(b.status==='done')))).catch(()=>{});},[phase]);
  // a single game is saved each evening (its choices too), and forgotten when it ends
  useEffect(()=>{if(hood||!soloId.current)return;
   if(phase==='over'){soloPut(soloList().filter(g=>g.id!==soloId.current));return;}
@@ -2980,7 +2980,7 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
      {homeDel===g.id?<div className="hd-del"><span>למחוק את המשחק?</span><button className="chip" onClick={()=>{const l=soloList().filter(x=>x.id!==g.id);soloPut(l);setHomeSolo(l);setHomeDel(null);}}>כן, למחוק</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
       :<button className="hd-bin" aria-label="למחוק את המשחק" onClick={()=>setHomeDel(g.id)}>🗑️</button>}</div>)}</section>}
    {homeHoods.length>0&&<section className="blk hd-list hd-home"><div className="blk-h"><h3>🏘️ הליגות שלך</h3></div>
-    {homeHoods.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='open'?'מתחילה בקרוב':`יום ${h.last_day}/${h.days}`}</small><span>›</span></button>
+    {homeHoods.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='done'?'🏁 הסתיימה · לתוצאות הסופיות':h.status==='open'?'מתחילה בקרוב':`יום ${h.last_day}/${h.days}`}</small><span>›</span></button>
      {homeDel===h.id?<div className="hd-del"><span>{h.owner?'למחוק לתמיד, לכל השחקנים?':'להסתיר מהרשימה שלך?'}</span><button className="chip" onClick={async()=>{try{if(h.owner)await hoodRpc('lm_hood_delete',{p_hood:h.id});else localStorage.setItem('lm-hood-hidden',JSON.stringify([...hiddenHoods(),h.id]));}catch(_){}setHomeHoods(l=>l.filter(x=>x.id!==h.id));setHomeDel(null);}}>{h.owner?'כן, למחוק':'כן, להסתיר'}</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
       :<button className="hd-bin" aria-label={(h.owner?'למחוק את ':'להסתיר את ')+h.name} onClick={()=>setHomeDel(h.id)}>{h.owner?'🗑️':'🙈'}</button>}</div>)}</section>}
    <button className="cta" onClick={()=>setPhase('setup')}>🍋 משחק חדש ליחיד ›</button>
