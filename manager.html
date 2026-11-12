@@ -689,6 +689,14 @@ html.hc .tag,html.hc .why{outline:1px solid currentColor}
 .coach-tip.welcome .coach-b{justify-content:center}.coach-tip.welcome .coach-n{display:none}
 
 /* ── The ending ── */
+.fin-drum{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(14,10,30,.92);pointer-events:none;animation:finDrum 2.2s ease both}
+.fin-drum span{font-size:64px;animation:finBeat .25s ease-in-out 8 alternate}.fin-drum b{font-size:22px;color:var(--lemon)}
+@keyframes finDrum{0%,80%{opacity:1}100%{opacity:0;visibility:hidden}}@keyframes finBeat{from{transform:scale(1) rotate(-6deg)}to{transform:scale(1.15) rotate(6deg)}}
+.pod-crown{font-style:normal;font-size:30px;display:block;animation:finCrown .7s var(--spring) both}@keyframes finCrown{from{opacity:0;transform:translateY(-40px) scale(.4)}to{opacity:1;transform:none}}
+.fin-pod-wrap{position:relative;overflow:hidden}.fin-fw{position:absolute;inset:0;pointer-events:none}.fin-fw i{position:absolute;width:8px;height:8px;border-radius:50%;opacity:0;animation:finFw 1.4s ease-out 3 both}
+@keyframes finFw{0%{opacity:0;transform:scale(.2);box-shadow:0 0 0 0 currentColor}20%{opacity:1}100%{opacity:0;transform:scale(1);box-shadow:0 -24px 0 -2px #FFD23F,17px -17px 0 -2px #FF8FB1,24px 0 0 -2px #5CC8F0,17px 17px 0 -2px #4ADE80,0 24px 0 -2px #FFD23F,-17px 17px 0 -2px #FF8FB1,-24px 0 0 -2px #5CC8F0,-17px -17px 0 -2px #4ADE80}}
+.fin-btns{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+@media (prefers-reduced-motion:reduce){.fin-drum{display:none}}
 .fin-hero{padding:22px 12px 18px;background:linear-gradient(170deg,#3B2A6B,#7A3E5E 55%,#D9773E)}
 .fin-rank{display:flex;flex-direction:column;align-items:center;margin:8px 0 2px;animation:popUp .6s var(--spring) .2s both}
 .fin-rank span{font-size:54px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35));animation:heroBob 3s ease-in-out 1s infinite}
@@ -1628,7 +1636,7 @@ const Roll=({v,f=x=>Math.round(x)})=>{const [d,setD]=useState(v);const from=useR
 // Player settings, kept only on this device
 const CFG0={music:true,vol:0.45,sfx:true,motion:'auto',big:false,hc:false,remEve:false,remMorn:false,gender:null};
 // how the game speaks to this player, g('אתה','את'), and about another stand by what its player chose, gd(id,'חילק','חילקה')
-let PG='m',HOOD_G={};
+let PG='m',HOOD_G={},HOOD_CUPS={};
 const g=(m,f)=>PG==='f'?f:m,gd=(id,m,f)=>HOOD_G[id]==='f'?f:m;
 const loadCfg=()=>{try{return{...CFG0,...JSON.parse(localStorage.getItem('lm-cfg')||'{}')};}catch(_){return{...CFG0};}};
 const reduced=()=>document.documentElement.classList.contains('reduce');
@@ -1751,7 +1759,7 @@ const pushSet=async(evening,morning)=>{const reg='serviceWorker' in navigator&&'
 const hoodMate=st=>{const me=st.me.id,p=st.deciding&&couponPairs(st.members.map(m=>m.id),st.deciding).find(x=>x.includes(me));return p?st.members.find(m=>m.id===(p[0]===me?p[1]:p[0])):null;};
 // the season's prize anyone can win, even a late joiner: the most profitable single day so far
 const hoodBestDay=st=>Object.entries(st.results||{}).flatMap(([d,rs])=>rs.map(r=>({d:+d,r}))).reduce((b,x)=>!b||x.r.profit>b.r.profit?x:b,null);
-const hoodNames=st=>Object.fromEntries(st.members.map(m=>[m.id,m]));
+const hoodNames=st=>Object.fromEntries(st.members.map(m=>[m.id,HOOD_CUPS[m.id]?{...m,nick:m.nick+' '+'🏆'.repeat(Math.min(3,HOOD_CUPS[m.id]))}:m]));
 // A moment on the street, in words (other stands' sales are counted, not told)
 const hoodMoment=(e,meId,names)=>{const n=id=>id===meId?g('אתה','את'):(names[id]?names[id].nick:'?');
  switch(e.type){case 'soldout':return e.stand===meId?'💨 נגמרו לך הכוסות':`💨 ל${n(e.stand)} נגמרו הכוסות`;
@@ -1862,7 +1870,7 @@ function Hood({onExit,onOpen}){
     <div className="intro-btns"><button className="cta" disabled={!nickOk(nick.trim())} onClick={()=>setView('create')}>שכונה חדשה ›</button>
      <button className="btn ghost" disabled={!nickOk(nick.trim())} onClick={()=>setView('join')}>יש לי קוד</button></div>
     {list&&list.length>0&&<section className="blk hd-list"><div className="blk-h"><h3>השכונות שלי</h3></div>
-     {list.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>open(h.id)}><b>{h.name}</b><small>{h.status==='done'?'🏁 הסתיימה':h.status==='open'?`מתחילה ב-${h.start.split('-').reverse().slice(0,2).join('.')}`:`יום ${h.last_day}/${h.days}`} · {h.size} דוכנים</small><span>›</span></button>
+     {list.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>open(h.id)}><b>{h.name}</b><small>{h.status==='closed'?'🔒 נסגרה':h.status==='done'?'🏁 העונה הסתיימה':h.status==='open'?`מתחילה ב-${h.start.split('-').reverse().slice(0,2).join('.')}`:`יום ${h.last_day}/${h.days}`} · {h.size} דוכנים</small><span>›</span></button>
       {h.owner&&(gone===h.id?<div className="hd-del"><span>למחוק לתמיד, לכל השחקנים?</span><button className="chip" disabled={busy} onClick={()=>run(async()=>{await hoodRpc('lm_hood_delete',{p_hood:h.id});setGone(null);setList(l=>l.filter(x=>x.id!==h.id));})}>כן, למחוק</button><button className="chip" onClick={()=>setGone(null)}>לא</button></div>
        :<button className="hd-bin" aria-label={'למחוק את '+h.name} onClick={()=>setGone(h.id)}>🗑️</button>)}</div>)}</section>}
     {list&&!list.length&&<p className="intro-sub">עוד אין לך שכונות. אפשר לפתוח אחת ולשלוח לחברים את הקוד.</p>}
@@ -2177,7 +2185,8 @@ function Game(){
  const hoodLiveOrder=c=>{const op=hst&&(hst.opened||{})[hst.today];if(!op)return[];return op.stands.map(s=>({id:s.id,v:((c[s.id]||{}).sold||0)*s.price})).sort((a,b)=>b.v-a.v).map(x=>x.id);};
  const hst=hood&&hood.st,hNow=hood?Date.now()+hood.skew:0;
  const hoodLoad=async(id=hood&&hood.id)=>{const st=await hoodRpc('lm_hood_state',{p_hood:id}),features=(hood&&hood.id===id&&hood.features)||await hoodRpc('lm_hood_features',{p_hood:id}).catch(()=>({}))||{};
-  const said=await hoodRpc('lm_hood_genders',{p_hood:id}).catch(()=>({})),recs=await hoodRpc('lm_my_records',{p_hood:id}).catch(()=>({}));HOOD_G={...Object.fromEntries(st.members.filter(m=>m.bot&&/^(נועה|סבתא)/.test(m.nick)).map(m=>[m.id,'f'])),...said};
+  const said=await hoodRpc('lm_hood_genders',{p_hood:id}).catch(()=>({})),recs=await hoodRpc('lm_my_records',{p_hood:id}).catch(()=>({})),seasons=await hoodRpc('lm_hood_seasons',{p_hood:id}).catch(()=>null);
+  HOOD_CUPS={};((seasons&&seasons.past)||[]).forEach(p=>{const w=(p.board||[])[0];if(w)HOOD_CUPS[w.id]=(HOOD_CUPS[w.id]||0)+1;});st.seasons=seasons;HOOD_G={...Object.fromEntries(st.members.filter(m=>m.bot&&/^(נועה|סבתא)/.test(m.nick)).map(m=>[m.id,'f'])),...said};
   // the server runs the days every few minutes; a player who arrives first nudges it
   if((st.today&&!(st.opened||{})[st.today]&&st.hood.last_day<st.today)||(st.deciding&&!st.market))hoodTick(id);
   setHood(h=>({...(h||{}),id,st,features,recs,skew:Date.parse(st.now+'Z')-Date.now()}));return st;};
@@ -2202,7 +2211,7 @@ function Game(){
   setUps([]);setActs([]);setFcast(null);setSpy(false);setResearch(false);setSpentToday(0);spentCat.current={};setReport(null);setHistory([]);setRead({});setInspPaid(false);setVipBoost(false);setSim(null);setRv([]);setTab('news');setPhase('hood');};
  useEffect(()=>{if(!hood||!hood.id)return;const t=setInterval(()=>hoodLoad().catch(()=>{}),30000),c=setInterval(()=>hoodClock(x=>x+1),1000);return()=>{clearInterval(t);clearInterval(c);};},[hood&&hood.id]);
  // which screen the neighborhood is on: deciding (evening), the stands open (sim), the day's report, or the end
- const hoodPhaseOf=st=>{const now=Date.parse(st.now+'Z');if(st.deciding)return 'evening';if(st.today&&now<openMs(st.hood.start,st.today)+9*36e5)return 'sim';return st.hood.status==='done'?'over':'report';};
+ const hoodPhaseOf=st=>{const now=Date.parse(st.now+'Z');if(st.deciding)return 'evening';if(st.today&&now<openMs(st.hood.start,st.today)+9*36e5)return 'sim';return st.hood.status==='done'||st.hood.status==='closed'?'over':'report';};
  const hoodSeen=(id,d)=>{try{if(d!=null)localStorage.setItem('lm-hood-seen-'+id,String(d));return +(localStorage.getItem('lm-hood-seen-'+id)||0);}catch(_){return 0;}};
  const hoodSnap=useRef('');
  const hoodSync=(st,force)=>{const ph=hoodPhaseOf(st),d=st.deciding||st.today||st.hood.last_day||1,key=hood.id+':'+ph+':'+d;
@@ -2318,10 +2327,20 @@ function Game(){
   const sold=my.reduce((s,x)=>s+x.res.sold,0),caughtThem=my.reduce((s,x)=>s+x.res.attacks.filter(a=>a.caught).length,0),gotCaught=my.reduce((s,x)=>s+x.res.myTricks.filter(t=>t.caught).length,0);
   const winners=Object.entries(hst.results||{}).map(([d,rs])=>{const w=rs.slice().sort((a,b)=>b.profit-a.profit)[0];return{d:+d,w};}).sort((a,b)=>a.d-b.d);
   const Fact=({ic,label,v,delay})=><div className="fx-rec" style={{animationDelay:delay+'s'}}><small>{ic} {label}</small><b className="num">{v}</b></div>;
+  const season=(hst.seasons&&hst.seasons.season)||1,past=(hst.seasons&&hst.seasons.past)||[],closed=hst.hood.status==='closed',owner=hst.hood.owner,D=2.2;
+  // the season's titles, from the days everyone saw
+  const days=Object.keys(hst.results||{}).map(Number).sort((a,b)=>a-b),cupsOf={};days.forEach(d=>hst.results[d].forEach(r=>{cupsOf[r.id]=(cupsOf[r.id]||0)+(r.sold||0);}));
+  const rankOn=d=>(hst.results[d]||[]).slice().sort((a,b)=>b.score-a.score).map(r=>r.id),first=days.length?rankOn(days[0]):[],fin=rows.map(r=>r.id);
+  const top=(f,lab,ic,fmtV)=>{const b=rows.slice().sort((x,y)=>f(y)-f(x))[0];return b&&f(b)>0?{ic,lab,id:b.id,v:fmtV(f(b))}:null;};
+  const awards=[top(r=>cupsOf[r.id]||0,'הכי הרבה כוסות','🥤',v=>v+' כוסות'),top(r=>r.rep||0,'המוניטין הגבוה ביותר','⭐',v=>'⭐ '+v),
+   (()=>{const up=rows.map(r=>({id:r.id,v:first.indexOf(r.id)<0?0:first.indexOf(r.id)-fin.indexOf(r.id)})).sort((a,b)=>b.v-a.v)[0];return up&&up.v>=2?{ic:'🚀',lab:'ההפתעה של העונה',id:up.id,v:'עלה '+up.v+' מקומות'}:null;})()].filter(Boolean);
+  const next=async(rest,len)=>{try{await hoodRpc('lm_hood_next',{p_hood:hst.hood.id,p_rest:rest,p_days:len||null});const st=await hoodLoad();hoodSync(st,true);}catch(e){setHoodMsg(hoodErr(e));}};
+  const close=async()=>{try{await hoodRpc('lm_hood_close',{p_hood:hst.hood.id});const st=await hoodLoad();hoodSync(st,true);}catch(e){setHoodMsg(hoodErr(e));}};
   return <div className="report fin">
+   {!closed&&<div className="fin-drum" aria-hidden="true"><span>🥁</span><b>ומי ניצח בעונה?</b></div>}
    <div className="rp-hero fin-hero">
     {place<=3&&<div className="confetti" aria-hidden="true">{Array.from({length:place===1?44:24}).map((_,i)=><i key={i} style={{left:(i*37%100)+'%',background:['#FFD23F','#4ADE80','#FF8FB1','#5CC8F0'][i%4],animationDelay:(0.6+(i%10)*0.12)+'s'}}/>)}</div>}
-    <div className="rp-day">🏁 {hst.hood.name} · {hst.hood.days} ימים · {n} דוכנים</div>
+    <div className="rp-day">🏁 {hst.hood.name} · עונה {season} · {hst.hood.days} ימים · {n} דוכנים</div>
     <div className="fin-rank"><span>{rk[0]}</span><b>{rk[1]}</b></div>
     <div className="stars">{[1,2,3,4,5].map(i=><span key={i} className={i<=st?'on':''} style={{animationDelay:0.5+i*0.18+'s'}}>★</span>)}</div>
     <div className={"rp-big num "+(tot>=0?'g':'r')}>{tot<0?'−':''}₪<CountTo v={Math.abs(Math.round(tot))}/></div>
@@ -2329,12 +2348,27 @@ function Game(){
    </div>
    <section className="blk fin-pod-wrap"><div className="blk-h"><h3>🏆 הטבלה הסופית</h3><span className="tag">{place===1?'ניצחת! 🎉':`מקום ${place} מתוך ${n}`}</span></div>
     <div className="fin-pod">{order.map(x=>{const p=rows.indexOf(x)+1,m=names[x.id]||{};return <div key={x.id} className={"pod-col p"+p+(x.id===hst.me.id?' me':'')}>
-     <div className="pod-who" style={{animationDelay:1.6+(3-p)*0.35+'s'}}><span>{m.em}</span><b>{m.nick}{m.bot?' 🤖':''}</b><i className="num">{fmt(x.score)}</i></div>
-     <div className="pod-bar" style={{height:podH[p],animationDelay:1.2+(3-p)*0.35+'s'}}><b>{p}</b></div></div>;})}</div>
+     <div className="pod-who" style={{animationDelay:D+(3-p)*0.9+'s'}}>{p===1&&<i className="pod-crown" style={{animationDelay:D+2*0.9+0.3+'s'}}>👑</i>}<span>{m.em}</span><b>{m.nick}{m.bot?' 🤖':''}</b><i className="num">{fmt(x.score)}</i></div>
+     <div className="pod-bar" style={{height:podH[p],animationDelay:D-0.3+(3-p)*0.9+'s'}}><b>{p}</b></div></div>;})}</div>
+    <div className="fin-fw" aria-hidden="true">{Array.from({length:14}).map((_,i)=><i key={i} style={{left:(8+i*6.5)%92+'%',top:(10+(i*23)%45)+'%',animationDelay:D+2*0.9+0.4+(i%5)*0.25+'s',background:['#FFD23F','#FF8FB1','#5CC8F0','#4ADE80','#FFFFFF'][i%5]}}/>)}</div>
     {n>3&&<div className="pod-rest">{rows.slice(3).map((x,i)=><span key={x.id} className={x.id===hst.me.id?'me':''}>{i+4}. {names[x.id]?.em} {names[x.id]?.nick} · <b className="num">{fmt(x.score)}</b></span>)}</div>}
    </section>
    {(()=>{const b=hoodBestDay(hst);return b&&b.r.profit>0&&<section className="blk"><div className="blk-h"><h3>🏅 היום הכי רווחי</h3><span className="tag">פרס העונה</span></div>
     <div className={"lb"+(b.r.id===hst.me.id?' me':'')}><span className="lb-r">🏅</span><span className="lb-n">{names[b.r.id]?.em} {b.r.id===hst.me.id?g('אתה!','את!'):names[b.r.id]?.nick}</span><span className="num he lb-s">יום {b.d} · {b.r.sold} כוסות</span><b className="num g">{fmt(b.r.profit)}</b></div></section>;})()}
+   {awards.length>0&&<section className="blk"><div className="blk-h"><h3>🎖️ תארי העונה</h3></div>
+    {awards.map((a,i)=><div key={a.lab} className={"lb"+(a.id===hst.me.id?' me':'')} style={{animation:'hdIn .4s var(--ease-out) both',animationDelay:D+3+i*0.25+'s'}}><span className="lb-r">{a.ic}</span><span className="lb-n">{a.lab}: {names[a.id]?.em} {a.id===hst.me.id?g('אתה!','את!'):names[a.id]?.nick}</span><b className="num he lb-s">{a.v}</b></div>)}</section>}
+   <section className="blk fin-next"><div className="blk-h"><h3>{closed?'🔒 השכונה נסגרה':'🗓️ מה עכשיו?'}</h3></div>
+    {closed?<div className="note">העונה האחרונה הסתיימה, והשכונה נסגרה. הטבלאות של כל העונות נשמרות כאן. תודה ששיחקתם!</div>
+     :owner?<><div className="note">העונה הסתיימה, אבל הרחוב לא חייב להיגמר. בעונה חדשה כל הדוכנים מתחילים מחדש, עם אותם שחקנים. האלוף מקבל 🏆 ליד השם.</div>
+      <div className="fin-btns"><button className="cta" onClick={()=>next(0)}>🍋 עונה חדשה מחר</button>
+       <button className="btn ghost" onClick={()=>next(3)}>☕ הפסקה של 3 ימים, ואז עונה חדשה</button>
+       <button className="btn ghost" onClick={()=>{if(confirm('לסגור את השכונה? כל השחקנים יראו את הסיכום, ולא יהיו עוד ימים.'))close();}}>🔒 לסגור את השכונה</button></div>
+      <div className="hint">בהפסקה אפשר להזמין חברים חדשים עם הקוד <b>{hst.hood.code}</b>.</div></>
+     :<div className="note">מי שפתח את השכונה מחליט עכשיו: עונה חדשה מחר, הפסקה קצרה, או סגירה. תקבל הודעה כשהעונה הבאה מתחילה.</div>}
+    {hoodMsg&&<div className="note">{hoodMsg}</div>}</section>
+   {past.length>0&&<section className="blk"><div className="blk-h"><h3>🏆 אלופי הרחוב</h3></div>
+    {past.map(p=>{const w=(p.board||[])[0];return w&&<div key={p.season} className="lb"><span className="lb-r num">{p.season}</span><span className="lb-n">{w.em} {w.nick}{w.bot?' 🤖':''}</span><b className="num he lb-s">{fmt(w.score)}</b></div>;})}
+    {!closed&&<div className="lb me"><span className="lb-r num">{season}</span><span className="lb-n">{names[rows[0]?.id]?.em} {names[rows[0]?.id]?.nick}</span><b className="num he lb-s">{fmt(rows[0]?.score||0)}</b></div>}</section>}
    <section className="blk"><div className="blk-h"><h3>📊 העונה שלך</h3></div>
     <div className="fx-recs">
      <Fact ic="📅" label={best?`היום הכי טוב (יום ${best.d})`:'היום הכי טוב'} v={best?fmt(best.profit):'—'} delay={2.4}/>
@@ -2980,7 +3014,7 @@ const navIdx=k=>['news','product','stock','mkt','street','intel','biz'].indexOf(
      {homeDel===g.id?<div className="hd-del"><span>למחוק את המשחק?</span><button className="chip" onClick={()=>{const l=soloList().filter(x=>x.id!==g.id);soloPut(l);setHomeSolo(l);setHomeDel(null);}}>כן, למחוק</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
       :<button className="hd-bin" aria-label="למחוק את המשחק" onClick={()=>setHomeDel(g.id)}>🗑️</button>}</div>)}</section>}
    {homeHoods.length>0&&<section className="blk hd-list hd-home"><div className="blk-h"><h3>🏘️ הליגות שלך</h3></div>
-    {homeHoods.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='done'?'🏁 הסתיימה · לתוצאות הסופיות':h.status==='open'?'מתחילה בקרוב':`יום ${h.last_day}/${h.days}`}</small><span>›</span></button>
+    {homeHoods.map(h=><div key={h.id} className="hd-rw"><button className="hd-row" onClick={()=>openHood(h.id)}><b>{h.name}</b><small>{h.status==='closed'?'🔒 נסגרה · לסיכום':h.status==='done'?'🏁 העונה הסתיימה · לתוצאות':h.status==='open'?(h.season>1?`עונה ${h.season} מתחילה בקרוב`:'מתחילה בקרוב'):`${h.season>1?'עונה '+h.season+' · ':''}יום ${h.last_day}/${h.days}`}</small><span>›</span></button>
      {homeDel===h.id?<div className="hd-del"><span>{h.owner?'למחוק לתמיד, לכל השחקנים?':'להסתיר מהרשימה שלך?'}</span><button className="chip" onClick={async()=>{try{if(h.owner)await hoodRpc('lm_hood_delete',{p_hood:h.id});else localStorage.setItem('lm-hood-hidden',JSON.stringify([...hiddenHoods(),h.id]));}catch(_){}setHomeHoods(l=>l.filter(x=>x.id!==h.id));setHomeDel(null);}}>{h.owner?'כן, למחוק':'כן, להסתיר'}</button><button className="chip" onClick={()=>setHomeDel(null)}>לא</button></div>
       :<button className="hd-bin" aria-label={(h.owner?'למחוק את ':'להסתיר את ')+h.name} onClick={()=>setHomeDel(h.id)}>{h.owner?'🗑️':'🙈'}</button>}</div>)}</section>}
    <button className="cta" onClick={()=>setPhase('setup')}>🍋 משחק חדש ליחיד ›</button>

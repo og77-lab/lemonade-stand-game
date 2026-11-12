@@ -41,7 +41,7 @@ async function tick(db, E, now = israelNow(), only = null) {
       await db.saveStates(members.map(m => ({ id: m.id, state: out.states[m.id] })));
     } else if (out.status !== h.status) await db.setStatus(h.id, out.status);
     if (out.intel) await db.saveIntel({ hood: h.id, day: out.intel.day, data: out.intel });
-    report.push({ hood: h.id, ran: out.runs.map(r => r.day), intel: out.intel && out.intel.day, status: out.status });
+    report.push({ hood: h.id, ran: out.runs.map(r => r.day), intel: out.intel && out.intel.day, status: out.status, ...(out.status === 'done' && h.status !== 'done' ? { ended: true, name: h.name, season: h.season || 1 } : {}) });
   }
   return report;
 }
@@ -61,6 +61,17 @@ function reminderFor(h, now) {
 }
 const reminderText = (h, r) => ({ title: '🍋 ' + h.name, tag: 'lm-' + h.id, body: r.slot === 'evening' ? `מה התוכנית ליום ${r.day}? עוד לא החלטת, ויש לך עד 08:00.`
   : `נשארה שעה: עוד לא החלטת ליום ${r.day}. ב-08:00 הדוכנים נפתחים, ובלי החלטה הטייס האוטומטי יפעיל את שלך.` });
+// When a season ends, every player on the street who turned notices on hears it once
+async function seasonEnded(db, report, send) {
+  const sent = [];
+  for (const r of report.filter(x => x.ended)) {
+    if (!(await db.claimReminder(r.hood, r.season, 'season'))) continue;
+    const text = JSON.stringify({ title: '🏆 ' + r.name, tag: 'lm-season-' + r.hood, body: `העונה הסתיימה! בוא לראות מי ניצח, ומה קורה בעונה הבאה.` }), to = await db.seasonTargets(r.hood);
+    for (const t of to) { const status = await send(t, text).catch(() => 0); if (status === 404 || status === 410) await db.dropPush(t.endpoint); }
+    sent.push({ hood: r.hood, season: r.season, to: to.length });
+  }
+  return sent;
+}
 async function remind(db, now, send) {
   const sent = [];
   for (const h of await db.hoods(null)) {
@@ -120,7 +131,7 @@ function restDb(url, key) {
   const inList = ids => 'in.(' + ids.join(',') + ')';
   const upsert = (table, conflict, rows) => rows.length ? q(table + '?on_conflict=' + conflict, { method: 'POST', body: JSON.stringify(rows), headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } }) : null;
   return {
-    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status,features&status=neq.done' + (only ? '&id=eq.' + only : '')),
+    hoods: only => q('lm_hoods?select=id,name,seed,days,difficulty,start_date,last_day,status,features,season&status=in.(open,running)' + (only ? '&id=eq.' + only : '')),
     members: hood => q('lm_members?select=id,slot,persona,state&hood=eq.' + hood + '&order=slot'),
     decisions: (ids, a, b) => q(`lm_decisions?select=member,day,dec&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
     bought: (ids, a, b) => q(`lm_bought?select=member,day,cost&member=${inList(ids)}&day=gte.${a}&day=lte.${b}`),
@@ -140,6 +151,9 @@ function restDb(url, key) {
       if (!people.length) return [];
       const done = new Set((await q(`lm_decisions?select=member&member=${inList(people.map(m => m.id))}&day=eq.${day}`)).map(d => d.member)), users = people.filter(m => !done.has(m.id)).map(m => m.user_id);
       return users.length ? q(`lm_push?select=endpoint,p256dh,auth&user_id=${inList(users)}&${slot}=is.true`) : []; },
+    // every device of a player on this street with any notice on
+    seasonTargets: async hood => { const people = await q(`lm_members?select=user_id&hood=eq.${hood}&user_id=not.is.null`), users = [...new Set(people.map(p => p.user_id))];
+      return users.length ? q(`lm_push?select=endpoint,p256dh,auth&user_id=${inList(users)}&or=(evening.is.true,morning.is.true)`) : []; },
     dropPush: endpoint => q('lm_push?endpoint=eq.' + encodeURIComponent(endpoint), { method: 'DELETE', headers: { Prefer: 'return=minimal' } }),
   };
 }
@@ -154,10 +168,11 @@ if (typeof Deno !== 'undefined') {
       const db = restDb(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
       const now = israelNow(), report = await tick(db, globalThis.LemonEngine, now, only), key = Deno.env.get('VAPID_KEY');
       const reminders = !only && key ? await remind(db, now, pushSender(key)).catch(e => ({ error: String(e && e.message || e) })) : [];
-      return new Response(JSON.stringify({ ok: true, report, reminders, push: await pushKeyStatus(key) }), { headers: { ...cors, 'Content-Type': 'application/json' } });
+      const seasons = key ? await seasonEnded(db, report, pushSender(key)).catch(e => ({ error: String(e && e.message || e) })) : [];
+      return new Response(JSON.stringify({ ok: true, report, reminders, seasons, push: await pushKeyStatus(key) }), { headers: { ...cors, 'Content-Type': 'application/json' } });
     } catch (e) {
       return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e) }), { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } });
     }
   });
 }
-if (typeof module !== 'undefined' && module.exports) module.exports = { tick, israelNow, dayNumber, restDb, reminderFor, remind, encryptPush, vapidAuth, pushKeyStatus, VAPID_PUBLIC };
+if (typeof module !== 'undefined' && module.exports) module.exports = { tick, israelNow, dayNumber, restDb, reminderFor, remind, seasonEnded, encryptPush, vapidAuth, pushKeyStatus, VAPID_PUBLIC };
