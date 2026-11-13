@@ -1890,7 +1890,7 @@ function Hood({onExit,onOpen}){
     <div className="hd-line"><span>דוכנים ברחוב</span><Stepper v={form.size} min={2} max={10} set={v=>setForm({...form,size:v})}/></div>
     <button className="set-row" role="switch" aria-checked={form.bots} onClick={()=>setForm({...form,bots:!form.bots})}><span className="set-t"><b>🤖 למלא מקומות פנויים בבוטים</b><small>חברים שמצטרפים תופסים את מקומם. אפשר גם לשחק רק מולם</small></span><span className={"tgl"+(form.bots?' on':'')}><i/></span></button>
     {form.bots&&<><div className="cl-h">רמת הבוטים</div>
-    <div className="locs">{Object.entries(DIFF).map(([k,d])=><button key={k} className={"loc"+(form.diff===k?' on':'')} onClick={()=>setForm({...form,diff:k})}><span>{d.em}</span><b>{d.n}</b><small>{k==='easy'?'טועים הרבה':k==='hard'?'חדים וממולחים':'סבירים'}</small></button>)}</div></>}
+    <div className="locs">{Object.entries(DIFF).map(([k,d])=><button key={k} className={"loc"+(form.diff===k?' on':'')} onClick={()=>setForm({...form,diff:k})}><span>{d.em}</span><b>{d.n}</b><small>{k==='easy'?'טועים הרבה':k==='hard'?'סוחרים מומחים':'סבירים'}</small></button>)}</div></>}
     <div className="cl-h">מה יש בליגה הזו</div>
     {[['fund','🎪 קרן הרחוב','תורמים בסתר לאירוע של כל הרחוב'],['coupons','🎟️ קופונים של שכנים','כל ערב: לחלק או לזרוק, מול שכן אחר'],['black','🎩 כובע שחור ואבטחה','טריקים נגד יריבים, ואבטחה מפניהם']].map(([k,t,d])=><button key={k} className="set-row" role="switch" aria-checked={form[k]} onClick={()=>setForm({...form,[k]:!form[k]})}><span className="set-t"><b>{t}</b><small>{d}</small></span><span className={"tgl"+(form[k]?' on':'')}><i/></span></button>)}
     <p className="hd-note">פחות דברים זה ערב קצר יותר. אחרי שהליגה נפתחת אי אפשר לשנות.</p>
